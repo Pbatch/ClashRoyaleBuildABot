@@ -1,7 +1,7 @@
 from PIL import Image, ImageOps
 import numpy as np
 import cv2
-from constants import OCR_CONFIG, PRINCESS_HP
+from src.constants import OCR_CONFIG, PRINCESS_HP
 
 
 class OCR:
@@ -14,24 +14,24 @@ class OCR:
             self.digits.append(np.array(image))
 
     @staticmethod
-    def _preprocess_output(output):
+    def _preprocess_state(state):
         """
-        Preprocess the output from OCR
+        Preprocess the state from OCR
 
         TODO: Can't distinguish between (full hp, no hp) and (no hp, full hp)
         """
         for i, j in [['ally', 'enemy'], ['enemy', 'ally']]:
-            if output[f'{i}_crowns'] == 2:
-                output[f'left_{j}_princess'] = 0
-                output[f'right_{j}_princess'] = 0
-            elif output[f'{i}_crowns'] == 1 and output[f'left_{j}_princess'] == -1 and output[f'right_{j}_princess'] != -1:
-                output[f'left_{j}_princess'] = 0
-            elif output[f'{i}_crowns'] == 1 and output[f'right_{j}_princess'] == -1 and output[f'left_{j}_princess'] != -1:
-                output[f'right_{j}_princess'] = 0
-            elif output[f'{i}_crowns'] == 0 and output[f'right_{j}_princess'] == -1 and output[f'left_{j}_princess'] == -1:
-                output[f'right_{j}_princess'] = PRINCESS_HP[output[f'{j}_level'] - 1]
-                output[f'left_{j}_princess'] = PRINCESS_HP[output[f'{j}_level'] - 1]
-        return output
+            if state[f'{i}_crowns'] == 2:
+                state[f'left_{j}_princess'] = 0
+                state[f'right_{j}_princess'] = 0
+            elif state[f'{i}_crowns'] == 1 and state[f'left_{j}_princess'] == -1 and state[f'right_{j}_princess'] != -1:
+                state[f'left_{j}_princess'] = 0
+            elif state[f'{i}_crowns'] == 1 and state[f'right_{j}_princess'] == -1 and state[f'left_{j}_princess'] != -1:
+                state[f'right_{j}_princess'] = 0
+            elif state[f'{i}_crowns'] == 0 and state[f'right_{j}_princess'] == -1 and state[f'left_{j}_princess'] == -1:
+                state[f'right_{j}_princess'] = PRINCESS_HP[state[f'{j}_level'] - 1]
+                state[f'left_{j}_princess'] = PRINCESS_HP[state[f'{j}_level'] - 1]
+        return state
 
     @staticmethod
     def _calculate_bounding_boxes(image):
@@ -84,14 +84,14 @@ class OCR:
         return number
 
     def run(self, image):
-        output = {}
+        state = {}
         for name, position, threshold in OCR_CONFIG:
             crop = image.crop(position)
             number = self._infer_number(crop, threshold)
-            output[name] = number
-        output = self._preprocess_output(output)
+            state[name] = number
+        state = self._preprocess_state(state)
 
-        return output
+        return state
 
 
 def main():

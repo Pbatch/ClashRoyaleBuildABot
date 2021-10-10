@@ -1,18 +1,16 @@
 from PIL import ImageGrab, ImageOps
 import win32gui
-from win32api import GetSystemMetrics
+from win32api import GetSystemMetrics, MAKELONG
+from win32con import WM_LBUTTONDOWN, WM_LBUTTONUP, MK_LBUTTON
 import numpy as np
+from src.constants import APP_WIDTH, APP_HEIGHT, BORDER_SIZE
 
 
 class Screen:
-    APP_WIDTH = 400
-    APP_HEIGHT = 684
-
     def __init__(self):
         self.bluestacks_id = win32gui.FindWindow(None, 'BlueStacks')
         self.system_width = GetSystemMetrics(0)
         self.system_height = GetSystemMetrics(1)
-        print(self.system_height)
 
         win32gui.SetForegroundWindow(self.bluestacks_id)
 
@@ -23,10 +21,10 @@ class Screen:
         # Move the window to the top-right of the screen
         # Resize to APP_WIDTH x APP_HEIGHT
         win32gui.MoveWindow(self.bluestacks_id,
-                            self.system_width - self.APP_WIDTH,
+                            self.system_width - APP_WIDTH,
                             0,
-                            self.APP_WIDTH,
-                            self.APP_HEIGHT,
+                            APP_WIDTH,
+                            APP_HEIGHT,
                             True)
 
     def take_screenshot(self):
@@ -37,9 +35,18 @@ class Screen:
         screenshot = ImageGrab.grab(screen)
 
         # The border goes from the top-left, to the top-right, to the bottom-right
-        border = (0, 32, 32, 0)
+        border = (0, BORDER_SIZE, BORDER_SIZE, 0)
         screenshot = ImageOps.crop(screenshot, border)
         return screenshot
+
+    def click(self, x, y):
+        """
+        Click at the given (x, y) coordinate
+        """
+        screen = win32gui.FindWindowEx(self.bluestacks_id, None, None, None)
+        lParam = MAKELONG(round(x), round(y))
+        win32gui.SendMessage(screen, WM_LBUTTONDOWN, MK_LBUTTON, lParam)
+        win32gui.SendMessage(screen, WM_LBUTTONUP, None, lParam)
 
 
 def main():
