@@ -3,7 +3,7 @@ import win32gui
 from win32api import GetSystemMetrics, MAKELONG
 from win32con import WM_LBUTTONDOWN, WM_LBUTTONUP, MK_LBUTTON
 import numpy as np
-from src.constants import APP_WIDTH, APP_HEIGHT, BORDER_SIZE
+from src.data.constants import APP_WIDTH, APP_HEIGHT, BORDER_SIZE
 
 
 class Screen:
