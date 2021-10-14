@@ -44,10 +44,10 @@ Build your own bot to play Clash Royale.
 ## Setup
 
 Clone the repository and install the requirements
-```
->>> git clone https://github.com/Pbatch/ClashRoyaleBuildABot.git
->>> cd ClashRoyaleBuildABot
->>> pip install -r requirements.txt
+```bash
+git clone https://github.com/Pbatch/ClashRoyaleBuildABot.git
+cd ClashRoyaleBuildABot
+pip install -r requirements.txt
 ```
 
 Download the BlueStacks emulator (https://www.bluestacks.com/download.html). 
@@ -81,7 +81,7 @@ This is a simple tutorial for building your own bot.
 
 I.e. RandomBot (`src/bot/random_bot.py`) chooses an action at random every 5 seconds.
 
-```
+```python
 from src.bot.bot import Bot
 import random
 import time
@@ -100,7 +100,7 @@ class RandomBot(Bot):
 
 3.) Load the emulator, start a game, and watch your bot play! I.e.
 
-```
+```python
 from src.bot.random_bot import RandomBot
 
 card_names = ['minions', 'archers', 'arrows', 'giant',
