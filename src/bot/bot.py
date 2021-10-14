@@ -26,13 +26,13 @@ class Bot:
         self.ocr = OCR(card_names)
 
     @staticmethod
-    def get_tile_centre(tile_x, tile_y):
+    def _get_tile_centre(tile_x, tile_y):
         x = LEFT_PAD + (tile_x + 0.5) * TILE_WIDTH
         y = APP_HEIGHT - BORDER_SIZE - LOWER_PAD - (tile_y + 0.5) * TILE_HEIGHT
         return x, y
 
     @staticmethod
-    def get_card_centre(card_n):
+    def _get_card_centre(card_n):
         x = CARD_INIT_X + CARD_WIDTH/2 + card_n * CARD_DELTA_X
         y = CARD_Y - BORDER_SIZE + CARD_HEIGHT/2
         return x, y
@@ -60,7 +60,7 @@ class Bot:
         return state
 
     def play_action(self, action):
-        card_centre = self.get_card_centre(action[0])
-        tile_centre = self.get_tile_centre(action[1], action[2])
+        card_centre = self._get_card_centre(action[0])
+        tile_centre = self._get_tile_centre(action[1], action[2])
         self.screen.click(*card_centre)
         self.screen.click(*tile_centre)
