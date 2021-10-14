@@ -192,9 +192,10 @@ class OCR:
 
         if debug:
             d = ImageDraw.Draw(image)
+
             for i in state['unit_positions']:
                 d.ellipse(tuple(i['bounding_box']), outline='white')
-            image.show()
+            image.save('ocr.jpg')
 
         return state
 
@@ -206,7 +207,7 @@ def main():
                   'minipekka', 'fireball', 'knight', 'musketeer']
     cls = OCR(card_names)
     result = cls.run(Image.open(image_path), debug=True)
-    pprint(result)
+    pprint(result, compact=True)
 
 
 if __name__ == '__main__':
