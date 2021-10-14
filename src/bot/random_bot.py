@@ -1,7 +1,6 @@
 from src.bot.bot import Bot
 import random
 import time
-from pprint import pprint
 
 
 class RandomBot(Bot):
@@ -14,5 +13,3 @@ class RandomBot(Bot):
                 self.play_action(action)
                 print(f'Playing {state["cards"][action[0] + 1]["name"]} at tile ({action[1]}, {action[2]})')
             time.sleep(5)
-
-
