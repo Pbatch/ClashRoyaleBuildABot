@@ -2,3 +2,4 @@ pywin32
 Pillow
 numpy
 onnxruntime
+imagehash

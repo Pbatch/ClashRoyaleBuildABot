@@ -1,10 +1,10 @@
-from src.bot.random_bot import RandomBot
+from src.bot.pete_bot import PeteBot
 
 
 def main():
     card_names = ['minions', 'archers', 'arrows', 'giant',
                   'minipekka', 'fireball', 'knight', 'musketeer']
-    bot = RandomBot(card_names)
+    bot = PeteBot(card_names)
     bot.run()
 
 
