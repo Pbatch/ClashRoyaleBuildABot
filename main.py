@@ -1,4 +1,4 @@
-from src.bot.pete_bot import PeteBot
+from src.bot.pete.pete_bot import PeteBot
 
 
 def main():
