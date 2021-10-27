@@ -6,7 +6,7 @@ DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
 
 
 class UnitDetector(OnnxDetector):
-    def _post_process(self, pred):
+    def _post_process(self, pred, **kwargs):
         clean_pred = {}
         for p in pred:
             name = UNITS[round(p[5])]
