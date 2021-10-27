@@ -1,5 +1,6 @@
 from src.screen import Screen
 from src.state.detector import Detector
+from src.bot.action import Action
 from src.data.constants import (
     ALLY_TILES,
     LEFT_PRINCESS_TILES,
@@ -19,11 +20,13 @@ from src.data.constants import (
 
 
 class Bot:
-    def __init__(self, card_names):
+    def __init__(self, card_names, action_class=Action):
         self.card_names = card_names
+        self.action_class = action_class
 
         self.screen = Screen()
         self.detector = Detector(card_names)
+        self.state = None
 
     @staticmethod
     def _get_nearest_tile(x, y):
@@ -52,41 +55,41 @@ class Bot:
         y = CARD_Y - BORDER_SIZE + CARD_HEIGHT / 2
         return x, y
 
-    @staticmethod
-    def _get_valid_tiles(state):
+    def _get_valid_tiles(self):
         """
         Calculate which tiles we are allowed to play on
         """
         tiles = ALLY_TILES
-        if state['numbers']['left_enemy_princess']['number'] == 0:
+        if self.state['numbers']['left_enemy_princess']['number'] == 0:
             tiles += LEFT_PRINCESS_TILES
-        if state['numbers']['right_enemy_princess']['number'] == 0:
+        if self.state['numbers']['right_enemy_princess']['number'] == 0:
             tiles += RIGHT_PRINCESS_TILES
         return tiles
 
-    def get_actions(self, state):
+    def get_actions(self):
         all_tiles = ALLY_TILES + LEFT_PRINCESS_TILES + RIGHT_PRINCESS_TILES
-        valid_tiles = self._get_valid_tiles(state)
+        valid_tiles = self._get_valid_tiles()
 
         # Compute the list of playable actions
         # An action is a tuple (card_index, tile_x, tile_y)
         actions = []
         for i in range(4):
-            if int(state['numbers']['elixir']['number']) >= state['cards'][i+1]['cost']:
-                if state['cards'][i+1]['type'] == 'spell':
-                    actions.extend([[i, x, y] for (x, y) in all_tiles])
+            if int(self.state['numbers']['elixir']['number']) >= self.state['cards'][i + 1]['cost']:
+                if self.state['cards'][i + 1]['type'] == 'spell':
+                    tiles = all_tiles
                 else:
-                    actions.extend([[i, x, y] for (x, y) in valid_tiles])
+                    tiles = valid_tiles
+                actions.extend([self.action_class(i, x, y, *self.state['cards'][i + 1].values())
+                                for (x, y) in tiles])
 
         return actions
 
-    def get_state(self):
+    def set_state(self):
         screenshot = self.screen.take_screenshot()
-        state = self.detector.run(screenshot)
-        return state
+        self.state = self.detector.run(screenshot)
 
     def play_action(self, action):
-        card_centre = self._get_card_centre(action[0])
-        tile_centre = self._get_tile_centre(action[1], action[2])
+        card_centre = self._get_card_centre(action.index)
+        tile_centre = self._get_tile_centre(action.tile_x, action.tile_y)
         self.screen.click(*card_centre)
         self.screen.click(*tile_centre)
