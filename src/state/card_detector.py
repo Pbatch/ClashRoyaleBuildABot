@@ -21,12 +21,12 @@ class CardDetector:
         card_hashes = []
         with open(f'{DATA_DIR}/cards.csv') as f:
             for line in f:
-                name, _, cost, type_ = line.strip().replace('"', '').split(',')
+                name, _, cost, type_, target = line.strip().replace('"', '').split(',')
                 if name in self.card_names:
                     path = f'{DATA_DIR}/images/cards/{name}.png'
                     card = Image.open(path)
                     card_hash = average_hash(card, hash_size=16)
-                    cards.append([name, int(cost), type_])
+                    cards.append([name, int(cost), type_, target])
                     card_hashes.append(card_hash)
         return cards, card_hashes
 
@@ -39,6 +39,6 @@ class CardDetector:
             crop = image.crop(position)
             hash_diff = [average_hash(crop, hash_size=16) - h for h in self.card_hashes]
             card = self.cards[np.argmin(hash_diff)]
-            cards.append({'name': card[0], 'cost': card[1], 'type': card[2]})
+            cards.append({'name': card[0], 'cost': card[1], 'type': card[2], 'target': card[3]})
 
         return cards
