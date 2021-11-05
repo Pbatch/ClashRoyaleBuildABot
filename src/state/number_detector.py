@@ -3,8 +3,7 @@ import os
 from imagehash import average_hash
 import numpy as np
 import cv2
-from glob import glob
-from src.data.constants import NUMBER_CONFIG, KING_HP, PRINCESS_HP
+from src.data.constants import NUMBER_CONFIG
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
 
@@ -29,10 +28,9 @@ class NumberDetector:
         """
         Get the 'true' hashes for the digits 0 to 9
         """
-        # Because the paths are sorted, we don't need to record the digit names
         digit_hashes = []
-        for path in sorted(glob(f'{DATA_DIR}/images/digits/*.png')):
-            digit = Image.open(path)
+        for i in range(10):
+            digit = Image.open(f'{DATA_DIR}/images/digits/{i}.png')
             digit = digit.convert('L')
             digit = digit.point(lambda x: 1 if x > 0 else 0)
             digit_hash = average_hash(digit, hash_size=16)
@@ -72,60 +70,27 @@ class NumberDetector:
 
         return number, hash_diffs
 
-    def _calculate_hp(self, image, max_hp):
-        """
-        Calculate the health that the given health bar represents
-        """
-        image = image.convert('L')
-        column_sums = np.array(np.sum(image, axis=0), dtype=np.int32)
-        column_diff = np.diff(column_sums)
-        column_change_idx = np.argmax(np.abs(column_diff))
-        # Not sure whether to add 1 or 2 here
-        hp_multiplier = (column_change_idx + 2) / len(column_sums)
-        hp = round(hp_multiplier * max_hp)
-        return hp
-
     def run(self, image):
         """
         Detect the numbers in the image
         """
         pred = {}
-        # First predict the elixir, the timer and the crowns
-        for name in ['timer', 'elixir', 'ally_crowns', 'enemy_crowns']:
-            bounding_box, threshold = NUMBER_CONFIG[name]
-            crop = image.crop(bounding_box)
-            number, _ = self._calculate_number_and_hash_diffs(crop, threshold)
-            pred[name] = {'bounding_box': bounding_box,
-                          'number': number}
 
-        # Then try to predict the king levels
-        for name in ['enemy_king_level', 'ally_king_level']:
-            *bounding_boxes, threshold = NUMBER_CONFIG[name]
+        for name, params in NUMBER_CONFIG.items():
+            if 'king' in name:
+                *bounding_boxes, threshold = NUMBER_CONFIG[name]
 
-            crops = [image.crop(bounding_box) for bounding_box in bounding_boxes]
+                crops = [image.crop(bounding_box) for bounding_box in bounding_boxes]
 
-            output = [[bounding_box, *self._calculate_number_and_hash_diffs(crop, threshold)]
-                      for bounding_box, crop in zip(bounding_boxes, crops)]
+                output = [[bounding_box, *self._calculate_number_and_hash_diffs(crop, threshold)]
+                          for bounding_box, crop in zip(bounding_boxes, crops)]
 
-            bounding_box, number, _ = min(output, key=lambda x: np.mean(x[2]))
-            pred[name] = {'bounding_box': bounding_box,
-                          'number': number}
+                bounding_box, number, _ = min(output, key=lambda x: np.mean(x[2]))
+            else:
+                bounding_box, threshold = NUMBER_CONFIG[name]
+                crop = image.crop(bounding_box)
+                number, _ = self._calculate_number_and_hash_diffs(crop, threshold)
 
-        # End by predicting the hp of the towers
-        ally_idx = min([int(pred['ally_king_level']['number']) - 1, 13])
-        enemy_idx = min([int(pred['enemy_king_level']['number']) - 1, 13])
-        for name in ['right_ally_princess_hp',
-                     'left_ally_princess_hp',
-                     'ally_king_hp',
-                     'right_enemy_princess_hp',
-                     'left_enemy_princess_hp',
-                     'enemy_king_hp']:
-            bounding_box = NUMBER_CONFIG[name]
-            crop = image.crop(bounding_box)
-            hp_list = PRINCESS_HP if 'princess' in name else KING_HP
-            idx = ally_idx if 'ally' in name else enemy_idx
-            max_hp = hp_list[idx]
-            number = self._calculate_hp(crop, max_hp)
             pred[name] = {'bounding_box': bounding_box,
                           'number': number}
 
