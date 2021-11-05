@@ -6,72 +6,49 @@ APP_HEIGHT = 684
 BORDER_SIZE = 32
 
 """
-Princess position and size
-"""
-PRINCESS_WIDTH = 28
-PRINCESS_HEIGHT = 10
-LEFT_PRINCESS_X = 75
-RIGHT_PRINCESS_X = 267
-ENEMY_PRINCESS_Y = 92
-ALLY_PRINCESS_Y = 399
-
-"""
-King level position and size
+Bounding boxes for numbers
 """
 KING_LEVEL_X = 148
 KING_LEVEL_WIDTH = 14
 KING_LEVEL_HEIGHT = 10
+NUMBER_CONFIG = {
+    'elixir': [(96, 621, 123, 638), 190],
+    'timer': [(311, 16, 362, 34), 180],
+    'enemy_king_level': [(KING_LEVEL_X, 18, KING_LEVEL_X + KING_LEVEL_WIDTH, 18 + KING_LEVEL_HEIGHT),
+                         (177, 18, 177 + 13, 18 + KING_LEVEL_HEIGHT),
+                         180],
+    'ally_king_level': [(KING_LEVEL_X, 486, KING_LEVEL_X + KING_LEVEL_WIDTH, 486 + KING_LEVEL_HEIGHT),
+                        (177, 486, 177 + 13, 486 + KING_LEVEL_HEIGHT),
+                        180],
+}
 
 """
-King position and size
+Bounding boxes for HP
 """
+HP_WIDTH = 28
+HP_HEIGHT = 7
 KING_HP_X = 188
-KING_HP_WIDTH = PRINCESS_WIDTH
-KING_HP_HEIGHT = PRINCESS_HEIGHT
-
-"""
-Card position and size
-"""
-CARD_ELIXIR_SIZE = 15
-CARD_ELIXIR_Y = 603
-CARD_ELIXIR_INIT_X = 106
-CARD_Y = 545
-CARD_INIT_X = 87
-CARD_WIDTH = 55
-CARD_HEIGHT = 65
-CARD_DELTA_X = 69
-
-"""
-Crown position and size
-"""
-CROWN_SIZE = 20
-CROWN_X = 339
-
-"""
-Bounding boxes for numbers
-"""
-NUMBER_CONFIG = [
-    ['left_enemy_princess',
-     (LEFT_PRINCESS_X, ENEMY_PRINCESS_Y, LEFT_PRINCESS_X + PRINCESS_WIDTH, ENEMY_PRINCESS_Y + PRINCESS_HEIGHT), 170],
-    ['right_enemy_princess',
-     (RIGHT_PRINCESS_X, ENEMY_PRINCESS_Y, RIGHT_PRINCESS_X + PRINCESS_WIDTH, ENEMY_PRINCESS_Y + PRINCESS_HEIGHT), 170],
-    ['left_ally_princess',
-     (LEFT_PRINCESS_X, ALLY_PRINCESS_Y, LEFT_PRINCESS_X + PRINCESS_WIDTH, ALLY_PRINCESS_Y + PRINCESS_HEIGHT), 170],
-    ['right_ally_princess',
-     (RIGHT_PRINCESS_X, ALLY_PRINCESS_Y, RIGHT_PRINCESS_X + PRINCESS_WIDTH, ALLY_PRINCESS_Y + PRINCESS_HEIGHT), 170],
-    ['enemy_level', (KING_LEVEL_X, 18, KING_LEVEL_X + KING_LEVEL_WIDTH, 18 + KING_LEVEL_HEIGHT), 180],
-    ['ally_level', (KING_LEVEL_X, 486, KING_LEVEL_X + KING_LEVEL_WIDTH, 486 + KING_LEVEL_HEIGHT), 180],
-    ['elixir', (96, 621, 123, 638), 190],
-    ['timer', (311, 16, 362, 34), 180],
-    ['ally_crowns', (CROWN_X, 332, CROWN_X + CROWN_SIZE, 332 + CROWN_SIZE), 100],
-    ['enemy_crowns', (CROWN_X, 200, CROWN_X + CROWN_SIZE, 200 + CROWN_SIZE), 100],
-    ['ally_hp', (KING_HP_X, 493, KING_HP_X + KING_HP_WIDTH, 493 + KING_HP_HEIGHT), 180],
-    ['enemy_hp', (KING_HP_X, 14, KING_HP_X + KING_HP_WIDTH, 14 + KING_HP_HEIGHT), 195],
+LEFT_PRINCESS_HP_X = 74
+RIGHT_PRINCESS_HP_X = 266
+ALLY_PRINCESS_HP_Y = 405
+ENEMY_PRINCESS_HP_Y = 97
+HP_CONFIG = [
+    ['enemy_king', (KING_HP_X, 15, 188 + HP_WIDTH, 15 + HP_HEIGHT)],
+    ['ally_king', (KING_HP_X, 495, 188 + HP_WIDTH, 495 + HP_HEIGHT)],
+    ['right_ally_princess', (RIGHT_PRINCESS_HP_X, ALLY_PRINCESS_HP_Y, RIGHT_PRINCESS_HP_X + HP_WIDTH, ALLY_PRINCESS_HP_Y + HP_HEIGHT)],
+    ['left_ally_princess', (LEFT_PRINCESS_HP_X, ALLY_PRINCESS_HP_Y, LEFT_PRINCESS_HP_X + HP_WIDTH, ALLY_PRINCESS_HP_Y + HP_HEIGHT)],
+    ['right_enemy_princess', (RIGHT_PRINCESS_HP_X, ENEMY_PRINCESS_HP_Y, RIGHT_PRINCESS_HP_X + HP_WIDTH, ENEMY_PRINCESS_HP_Y + HP_HEIGHT)],
+    ['left_enemy_princess', (LEFT_PRINCESS_HP_X, ENEMY_PRINCESS_HP_Y, LEFT_PRINCESS_HP_X + HP_WIDTH, ENEMY_PRINCESS_HP_Y + HP_HEIGHT)],
 ]
 
 """
 Bounding boxes for cards
 """
+CARD_Y = 545
+CARD_INIT_X = 87
+CARD_WIDTH = 55
+CARD_HEIGHT = 65
+CARD_DELTA_X = 69
 CARD_CONFIG = [
     (19, 605, 51, 645),
     (CARD_INIT_X, CARD_Y, CARD_INIT_X + CARD_WIDTH, CARD_Y + CARD_HEIGHT),
