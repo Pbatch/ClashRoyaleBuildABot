@@ -7,11 +7,12 @@ import numpy as np
 
 
 class OnnxDetector:
-    def __init__(self, image_size, model_path):
-        self.image_size = image_size
+    def __init__(self, model_path):
         self.model_path = model_path
 
         self.sess = onnxruntime.InferenceSession(self.model_path)
+        self.output_name = self.sess.get_outputs()[0].name
+        self.input_name = self.sess.get_inputs()[0].name
 
     @staticmethod
     def xywh2xyxy(x):
@@ -58,9 +59,9 @@ class OnnxDetector:
         inter = (torch.min(box1[:, None, 2:], box2[:, 2:]) - torch.max(box1[:, None, :2], box2[:, :2])).clamp(0).prod(2)
         return inter / (area1[:, None] + area2 - inter)  # iou = inter / (area1 + area2 - inter)
 
-    def non_max_suppression(self, prediction, conf_thres=0.25, iou_thres=0.45, classes=None, agnostic=False,
-                            multi_label=False,
-                            labels=(), max_det=300):
+    def nms(self, prediction, conf_thres=0.25, iou_thres=0.45, classes=None, agnostic=False,
+            multi_label=False,
+            labels=(), max_det=300):
         """Runs Non-Maximum Suppression (NMS) on inference results
         Returns:
              list of detections, on (n,6) tensor per image [xyxy, conf, cls]
@@ -151,38 +152,8 @@ class OnnxDetector:
 
         return output
 
-    def _preprocess(self, image):
-        """
-        Preprocess an image
-        """
-        image = image.resize((self.image_size, self.image_size), Image.BICUBIC)
-        image = np.array(image, dtype=np.float32)
-        image = np.expand_dims(image.transpose(2, 0, 1), axis=0)
-        image = image / 255
-        return image
-
     def _post_process(self, image):
         raise NotImplementedError
 
     def run(self, image):
-        height, width = image.height, image.width
-
-        # Preprocessing
-        image = self._preprocess(image)
-
-        # Inference
-        pred = self.sess.run([self.sess.get_outputs()[0].name], {self.sess.get_inputs()[0].name: image})[0]
-
-        # Forced post-processing
-        pred = np.array(self.non_max_suppression(pred)[0])
-        pred[:, [0, 2]] *= width / self.image_size
-        pred[:, [1, 3]] *= height / self.image_size
-
-        # Custom post-processing
-        pred = self._post_process(pred)
-
-        return pred
-
-
-
-
+        raise NotImplementedError
