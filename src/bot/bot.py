@@ -60,9 +60,9 @@ class Bot:
         Calculate which tiles we are allowed to play on
         """
         tiles = ALLY_TILES
-        if self.state['numbers']['left_enemy_princess']['number'] == 0:
+        if self.state['hp']['left_enemy_princess']['hp'] == 0:
             tiles += LEFT_PRINCESS_TILES
-        if self.state['numbers']['right_enemy_princess']['number'] == 0:
+        if self.state['hp']['right_enemy_princess']['hp'] == 0:
             tiles += RIGHT_PRINCESS_TILES
         return tiles
 
