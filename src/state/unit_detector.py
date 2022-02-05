@@ -1,10 +1,7 @@
 from src.state.onnx_detector import OnnxDetector
-import os
 from src.data.constants import UNITS
 import numpy as np
 from PIL import Image
-
-DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
 
 
 class UnitDetector(OnnxDetector):
