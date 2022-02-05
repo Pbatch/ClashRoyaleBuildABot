@@ -3,3 +3,4 @@ Pillow
 numpy
 onnxruntime
 imagehash
+mss
