@@ -1,16 +1,12 @@
 from PIL import Image
-import os
 from imagehash import average_hash
 import numpy as np
-from src.data.constants import CARD_CONFIG
-
-DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
+from src.data.constants import CARD_CONFIG, DATA_DIR
 
 
 class CardDetector:
     def __init__(self, card_names):
         self.card_names = card_names
-
         self.cards, self.card_hashes = self._calculate_cards_and_card_hashes()
 
     def _calculate_cards_and_card_hashes(self):
