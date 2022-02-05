@@ -9,6 +9,33 @@ class PeteAction(Action):
     def _distance(x1, y1, x2, y2):
         return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
 
+    def _calculate_building_score(self, units):
+        score = [0, 0, 0]
+
+        n_enemies = sum([len(v)
+                         for k, v in units.items() if k[:5] == 'enemy'])
+        # Play defensively if the enemy has a unit in our half
+        if n_enemies != 0:
+            rhs = 0
+            lhs = 0
+            for k, v in units.items():
+                if k[:4] == 'ally':
+                    continue
+                for unit in v:
+                    tile_x, tile_y = unit['tile_xy']
+                    if tile_x > 8 and tile_y <= 17:
+                        rhs += 1
+                    elif tile_x <= 8 and tile_y <= 17:
+                        lhs += 1
+
+            if rhs > lhs:
+                score[0] = int(self.tile_x > 8)
+            else:
+                score[0] = int(self.tile_x <= 8)
+            score[1] = -self._distance(self.tile_x, self.tile_y, 8.5, 11)
+
+        return score
+
     def _calculate_troop_score(self, units):
         """
         Calculate the score for a troop card (either fireball or arrows)
@@ -85,6 +112,8 @@ class PeteAction(Action):
             score = self._calculate_spell_score(units)
         elif self.type == 'troop':
             score = self._calculate_troop_score(units)
+        elif self.type == 'building':
+            score = self._calculate_building_score(units)
         else:
             raise ValueError(f'Scoring for type {self.type} is not supported')
         self.score = score
