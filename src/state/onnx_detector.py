@@ -1,6 +1,4 @@
 import onnxruntime
-from PIL import Image
-import time
 import torch
 import torchvision
 import numpy as np
@@ -16,55 +14,50 @@ class OnnxDetector:
 
     @staticmethod
     def xywh2xyxy(x):
-        # Convert nx4 boxes from [x, y, w, h] to [x1, y1, x2, y2] where xy1=top-left, xy2=bottom-right
         y = x.clone() if isinstance(x, torch.Tensor) else np.copy(x)
-        y[:, 0] = x[:, 0] - x[:, 2] / 2  # top left x
-        y[:, 1] = x[:, 1] - x[:, 3] / 2  # top left y
-        y[:, 2] = x[:, 0] + x[:, 2] / 2  # bottom right x
-        y[:, 3] = x[:, 1] + x[:, 3] / 2  # bottom right y
+        y[:, 0] = x[:, 0] - x[:, 2] / 2
+        y[:, 1] = x[:, 1] - x[:, 3] / 2
+        y[:, 2] = x[:, 0] + x[:, 2] / 2
+        y[:, 3] = x[:, 1] + x[:, 3] / 2
         return y
+
+    @staticmethod
+    def box_area(box):
+        box_area = (box[2] - box[0]) * (box[3] - box[1])
+        return box_area
 
     @staticmethod
     def xyxy2xywh(x):
-        # Convert nx4 boxes from [x1, y1, x2, y2] to [x, y, w, h] where xy1=top-left, xy2=bottom-right
         y = x.clone() if isinstance(x, torch.Tensor) else np.copy(x)
-        y[:, 0] = (x[:, 0] + x[:, 2]) / 2  # x center
-        y[:, 1] = (x[:, 1] + x[:, 3]) / 2  # y center
-        y[:, 2] = x[:, 2] - x[:, 0]  # width
-        y[:, 3] = x[:, 3] - x[:, 1]  # height
+        y[:, 0] = (x[:, 0] + x[:, 2]) / 2
+        y[:, 1] = (x[:, 1] + x[:, 3]) / 2
+        y[:, 2] = x[:, 2] - x[:, 0]
+        y[:, 3] = x[:, 3] - x[:, 1]
         return y
 
-    @staticmethod
-    def box_iou(box1, box2):
-        # https://github.com/pytorch/vision/blob/master/torchvision/ops/boxes.py
+    def box_iou(self, box1, box2):
         """
         Return intersection-over-union (Jaccard index) of boxes.
         Both sets of boxes are expected to be in (x1, y1, x2, y2) format.
-        Arguments:
-            box1 (Tensor[N, 4])
-            box2 (Tensor[M, 4])
-        Returns:
-            iou (Tensor[N, M]): the NxM matrix containing the pairwise
-                IoU values for every element in boxes1 and boxes2
         """
+        area1 = self.box_area(box1.T)
+        area2 = self.box_area(box2.T)
 
-        def box_area(box):
-            # box = 4xn
-            return (box[2] - box[0]) * (box[3] - box[1])
+        inter = (torch.min(box1[:, None, 2:], box2[:, 2:])
+                 - torch.max(box1[:, None, :2], box2[:, :2])).clamp(0).prod(2)
+        iou = inter / (area1[:, None] + area2 - inter)
+        return iou
 
-        area1 = box_area(box1.T)
-        area2 = box_area(box2.T)
-
-        # inter(N,M) = (rb(N,M,2) - lt(N,M,2)).clamp(0).prod(2)
-        inter = (torch.min(box1[:, None, 2:], box2[:, 2:]) - torch.max(box1[:, None, :2], box2[:, :2])).clamp(0).prod(2)
-        return inter / (area1[:, None] + area2 - inter)  # iou = inter / (area1 + area2 - inter)
-
-    def nms(self, prediction, conf_thres=0.25, iou_thres=0.45, classes=None, agnostic=False,
+    def nms(self, prediction,
+            conf_thres=0.25,
+            iou_thres=0.45,
+            classes=None,
+            agnostic=False,
             multi_label=False,
-            labels=(), max_det=300):
-        """Runs Non-Maximum Suppression (NMS) on inference results
-        Returns:
-             list of detections, on (n,6) tensor per image [xyxy, conf, cls]
+            labels=(),
+            max_det=300):
+        """
+        Runs Non-Maximum Suppression (NMS) on inference results
         """
         prediction = torch.tensor(prediction)
         nc = prediction.shape[2] - 5  # number of classes
@@ -77,12 +70,10 @@ class OnnxDetector:
         # Settings
         min_wh, max_wh = 2, 4096  # (pixels) minimum and maximum box width and height
         max_nms = 30000  # maximum number of boxes into torchvision.ops.nms()
-        time_limit = 10.0  # seconds to quit after
         redundant = True  # require redundant detections
         multi_label &= nc > 1  # multiple labels per box (adds 0.5ms/img)
         merge = False  # use merge-NMS
 
-        t = time.time()
         output = [torch.zeros((0, 6), device=prediction.device)] * prediction.shape[0]
         for xi, x in enumerate(prediction):  # image index, image inference
             # Apply constraints
@@ -120,10 +111,6 @@ class OnnxDetector:
             if classes is not None:
                 x = x[(x[:, 5:6] == torch.tensor(classes, device=x.device)).any(1)]
 
-            # Apply finite constraint
-            # if not torch.isfinite(x).all():
-            #     x = x[torch.isfinite(x).all(1)]
-
             # Check shape
             n = x.shape[0]  # number of boxes
             if not n:  # no boxes
@@ -146,9 +133,6 @@ class OnnxDetector:
                     i = i[iou.sum(1) > 1]  # require redundancy
 
             output[xi] = x[i]
-            if (time.time() - t) > time_limit:
-                print(f'WARNING: NMS time limit {time_limit}s exceeded')
-                break  # time limit exceeded
 
         return output
 
