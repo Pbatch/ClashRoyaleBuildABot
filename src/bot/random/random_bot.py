@@ -5,6 +5,7 @@ import random
 
 class RandomBot(Bot):
     def run(self):
+        self.screen.reset()
         while True:
             # Set the state of the game
             self.set_state()
