@@ -1,3 +1,13 @@
+import os
+
+from win32api import GetSystemMetrics
+
+"""
+Screen dimensions
+"""
+SCREEN_WIDTH = GetSystemMetrics(0)
+SCREEN_HEIGHT = GetSystemMetrics(1)
+
 """
 App dimensions
 """
@@ -6,39 +16,53 @@ APP_HEIGHT = 684
 BORDER_SIZE = 32
 
 """
-Bounding boxes for numbers
+Bounding boxes for screen ID
 """
-KING_LEVEL_X = 148
-KING_LEVEL_WIDTH = 14
-KING_LEVEL_HEIGHT = 10
-NUMBER_CONFIG = {
-    'elixir': [(96, 621, 123, 638), 190],
-    'timer': [(311, 16, 362, 34), 180],
-    'enemy_king_level': [(KING_LEVEL_X, 18, KING_LEVEL_X + KING_LEVEL_WIDTH, 18 + KING_LEVEL_HEIGHT),
-                         (177, 18, 177 + 13, 18 + KING_LEVEL_HEIGHT),
-                         180],
-    'ally_king_level': [(KING_LEVEL_X, 486, KING_LEVEL_X + KING_LEVEL_WIDTH, 486 + KING_LEVEL_HEIGHT),
-                        (177, 486, 177 + 13, 486 + KING_LEVEL_HEIGHT),
-                        180],
-}
+CHEST_SIZE = 62
+CHEST_X = 0
+CHEST_Y = 590
+OK_X = 143
+OK_Y = 558
+OK_WIDTH = 82
+OK_HEIGHT = 30
+SCREEN_CONFIG = [
+    ['lobby',
+     (CHEST_X,
+      CHEST_Y,
+      CHEST_X + CHEST_SIZE,
+      CHEST_Y + CHEST_SIZE),
+     (110, 425)],
+    ['end_of_game',
+     (OK_X, OK_Y, OK_X + OK_WIDTH, OK_Y + OK_HEIGHT),
+     (OK_X + OK_WIDTH/2, OK_Y + OK_HEIGHT/2)]
+]
 
 """
-Bounding boxes for HP
+Bounding boxes for numbers
 """
-HP_WIDTH = 28
-HP_HEIGHT = 7
+_W = 28
+_H = 7
 KING_HP_X = 188
 LEFT_PRINCESS_HP_X = 74
 RIGHT_PRINCESS_HP_X = 266
 ALLY_PRINCESS_HP_Y = 405
 ENEMY_PRINCESS_HP_Y = 97
-HP_CONFIG = [
-    ['enemy_king', (KING_HP_X, 15, 188 + HP_WIDTH, 15 + HP_HEIGHT)],
-    ['ally_king', (KING_HP_X, 495, 188 + HP_WIDTH, 495 + HP_HEIGHT)],
-    ['right_ally_princess', (RIGHT_PRINCESS_HP_X, ALLY_PRINCESS_HP_Y, RIGHT_PRINCESS_HP_X + HP_WIDTH, ALLY_PRINCESS_HP_Y + HP_HEIGHT)],
-    ['left_ally_princess', (LEFT_PRINCESS_HP_X, ALLY_PRINCESS_HP_Y, LEFT_PRINCESS_HP_X + HP_WIDTH, ALLY_PRINCESS_HP_Y + HP_HEIGHT)],
-    ['right_enemy_princess', (RIGHT_PRINCESS_HP_X, ENEMY_PRINCESS_HP_Y, RIGHT_PRINCESS_HP_X + HP_WIDTH, ENEMY_PRINCESS_HP_Y + HP_HEIGHT)],
-    ['left_enemy_princess', (LEFT_PRINCESS_HP_X, ENEMY_PRINCESS_HP_Y, LEFT_PRINCESS_HP_X + HP_WIDTH, ENEMY_PRINCESS_HP_Y + HP_HEIGHT)],
+ALLY_KING_LEVEL_Y = 487
+ENEMY_KING_LEVEL_Y = 19
+KING_LEVEL_X = 134
+KING_LEVEL_2_X = KING_LEVEL_X + _W
+ELIXIR_BOUNDING_BOX = (100, 628, 350, 643)
+NUMBER_CONFIG = [
+    ['enemy_king_level', (KING_LEVEL_X, ENEMY_KING_LEVEL_Y, KING_LEVEL_X + _W, ENEMY_KING_LEVEL_Y + _H)],
+    ['enemy_king_level_2', (KING_LEVEL_2_X, ENEMY_KING_LEVEL_Y, KING_LEVEL_2_X + _W, ENEMY_KING_LEVEL_Y + _H)],
+    ['ally_king_level', (KING_LEVEL_X, ALLY_KING_LEVEL_Y, KING_LEVEL_X + _W, ALLY_KING_LEVEL_Y + _H)],
+    ['ally_king_level_2', (KING_LEVEL_2_X, ALLY_KING_LEVEL_Y, KING_LEVEL_2_X + _W, ALLY_KING_LEVEL_Y + _H)],
+    ['enemy_king_hp', (KING_HP_X, 15, 188 + _W, 15 + _H)],
+    ['ally_king_hp', (KING_HP_X, 495, 188 + _W, 495 + _H)],
+    ['right_ally_princess_hp', (RIGHT_PRINCESS_HP_X, ALLY_PRINCESS_HP_Y, RIGHT_PRINCESS_HP_X + _W, ALLY_PRINCESS_HP_Y + _H)],
+    ['left_ally_princess_hp', (LEFT_PRINCESS_HP_X, ALLY_PRINCESS_HP_Y, LEFT_PRINCESS_HP_X + _W, ALLY_PRINCESS_HP_Y + _H)],
+    ['right_enemy_princess_hp', (RIGHT_PRINCESS_HP_X, ENEMY_PRINCESS_HP_Y, RIGHT_PRINCESS_HP_X + _W, ENEMY_PRINCESS_HP_Y + _H)],
+    ['left_enemy_princess_hp', (LEFT_PRINCESS_HP_X, ENEMY_PRINCESS_HP_Y, LEFT_PRINCESS_HP_X + _W, ENEMY_PRINCESS_HP_Y + _H)],
 ]
 
 """
@@ -60,8 +84,8 @@ CARD_CONFIG = [
 """
 King and Princess HP for levels 1 to 13
 """
-KING_HP = [2400, 2568, 2736, 2904, 3096, 3312, 3528, 3768, 4008, 4392, 4824, 5304, 5832]
-PRINCESS_HP = [1400, 1512, 1624, 1750, 1890, 2030, 2184, 2352, 2534, 2786, 3052, 3346, 3668]
+KING_HP = [2400, 2568, 2736, 2904, 3096, 3312, 3528, 3768, 4008, 4392, 4824, 5304, 5832, 6408]
+PRINCESS_HP = [1400, 1512, 1624, 1750, 1890, 2030, 2184, 2352, 2534, 2786, 3052, 3346, 3668, 4032]
 
 """
 Playable tiles
@@ -109,3 +133,8 @@ UNITS = [
     'enemy_skeleton',
     'enemy_spear_goblin'
 ]
+
+"""
+Directories
+"""
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
