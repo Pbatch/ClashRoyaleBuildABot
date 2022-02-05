@@ -1,5 +1,3 @@
-from src.screen import Screen
-from src.state.detector import Detector
 from src.bot.action import Action
 from src.data.constants import (
     ALLY_TILES,
@@ -15,14 +13,18 @@ from src.data.constants import (
     CARD_HEIGHT,
     CARD_Y,
     CARD_INIT_X,
-    CARD_DELTA_X
+    CARD_DELTA_X,
+    SCREEN_CONFIG
 )
+from src.screen import Screen
+from src.state.detector import Detector
 
 
 class Bot:
-    def __init__(self, card_names, action_class=Action):
+    def __init__(self, card_names, action_class=Action, auto_start=True):
         self.card_names = card_names
         self.action_class = action_class
+        self.auto_start = auto_start
 
         self.screen = Screen()
         self.detector = Detector(card_names)
@@ -60,13 +62,15 @@ class Bot:
         Calculate which tiles we are allowed to play on
         """
         tiles = ALLY_TILES
-        if self.state['hp']['left_enemy_princess']['hp'] == 0:
+        if self.state['numbers']['left_enemy_princess_hp']['number'] == 0:
             tiles += LEFT_PRINCESS_TILES
-        if self.state['hp']['right_enemy_princess']['hp'] == 0:
+        if self.state['numbers']['right_enemy_princess_hp']['number'] == 0:
             tiles += RIGHT_PRINCESS_TILES
         return tiles
 
     def get_actions(self):
+        if len(self.state) == 0:
+            return []
         all_tiles = ALLY_TILES + LEFT_PRINCESS_TILES + RIGHT_PRINCESS_TILES
         valid_tiles = self._get_valid_tiles()
 
@@ -87,6 +91,12 @@ class Bot:
     def set_state(self):
         screenshot = self.screen.take_screenshot()
         self.state = self.detector.run(screenshot)
+
+        # Try to click a button to get closer to starting a game
+        if self.auto_start:
+            for name, bounding_box, click_coordinates in SCREEN_CONFIG:
+                if self.state['screen'][name] and 'name' != 'in_game':
+                    self.screen.click(*click_coordinates)
 
     def play_action(self, action):
         card_centre = self._get_card_centre(action.index)
