@@ -1,10 +1,9 @@
-from src.bot.bot import Bot
-from src.bot.pete.pete_action import PeteAction
+import os
 import random
 import time
-import os
-import cProfile
-import pstats
+
+from src.bot.bot import Bot
+from src.bot.pete.pete_action import PeteAction
 
 
 class PeteBot(Bot):
@@ -34,10 +33,8 @@ class PeteBot(Bot):
     def run(self):
         i = 0
         os.makedirs('screenshots', exist_ok=True)
+        self.screen.reset()
         while True:
-            # Setup cProfile
-            profiler = cProfile.Profile()
-            profiler.enable()
             # Set the state of the game
             self.set_state()
             # Obtain a list of playable actions
@@ -60,8 +57,4 @@ class PeteBot(Bot):
                 screenshot = self.screen.take_screenshot()
                 screenshot.save(f'screenshots/{i}.jpg')
                 i += 1
-                # Show the cProfile results
-                profiler.disable()
-                stats = pstats.Stats(profiler).sort_stats('cumtime')
-                stats.print_stats(25)
-            time.sleep(3)
+            time.sleep(2)
