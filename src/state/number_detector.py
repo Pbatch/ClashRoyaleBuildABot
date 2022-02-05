@@ -1,97 +1,124 @@
-from PIL import Image, ImageOps
-import os
-from imagehash import average_hash
 import numpy as np
-import cv2
-from src.data.constants import NUMBER_CONFIG
+from PIL import Image
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
+from src.data.constants import NUMBER_CONFIG, ELIXIR_BOUNDING_BOX, KING_HP, PRINCESS_HP, KING_LEVEL_2_X
+from src.state.onnx_detector import OnnxDetector
 
 
-class NumberDetector:
-    def __init__(self):
-        self.digit_hashes = self._calculate_digit_hashes()
-
-    @staticmethod
-    def _calculate_bounding_boxes(image):
-        """
-        Find all bounding boxes in the image (with no parents)
-        """
-        contours, hierarchy = cv2.findContours(image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        # Find the contours with no parents
-        contours = [contours[i] for i in range(len(contours)) if hierarchy[0][i][3] == -1]
-        bounding_boxes = sorted([cv2.boundingRect(contour) for contour in contours])
-        return bounding_boxes
+class NumberDetector(OnnxDetector):
+    IMAGE_SIZE = 64
 
     @staticmethod
-    def _calculate_digit_hashes():
-        """
-        Get the 'true' hashes for the digits 0 to 9
-        """
-        digit_hashes = []
-        for i in range(10):
-            digit = Image.open(f'{DATA_DIR}/images/digits/{i}.png')
-            digit = digit.convert('L')
-            digit = digit.point(lambda x: 1 if x > 0 else 0)
-            digit_hash = average_hash(digit, hash_size=16)
-            digit_hashes.append(digit_hash)
-        return digit_hashes
+    def _calculate_elixir(image):
+        crop = image.crop(ELIXIR_BOUNDING_BOX)
+        std = np.array(crop).std(axis=(0, 2))
+        rolling_std = np.convolve(std, np.ones(10) / 10, mode='valid')
+        change_points = np.nonzero(rolling_std < 50)[0]
+        if len(change_points) == 0:
+            elixir = 10
+        else:
+            elixir = (change_points[0] + 10) // 25
+        return elixir
 
-    def _calculate_number_and_hash_diffs(self, image, threshold, height=400):
-        """
-        Preprocess the image using the given height and threshold
-        Create bounding boxes around the digits
-        Hash and compare bounding boxes to predict digits
-        Combine the digits to form a number
-        """
-        image = image.resize((height * image.size[0] // image.size[1], height),
-                             Image.BICUBIC)
-        image = image.convert('L')
-        image = 255 * np.array(np.array(image) > threshold, dtype=np.uint8)
-        bounding_boxes = self._calculate_bounding_boxes(image)
-        image = Image.fromarray(image)
-        image = ImageOps.invert(image)
+    @staticmethod
+    def _clean_king_levels(pred):
+        for side in ['ally', 'enemy']:
+            vals = [pred[f'{side}_king_level{s}'] for s in ['', '_2']]
+            pred[f'{side}_king_level'] = max(vals, key=lambda x: x['confidence'])
+            del pred[f'{side}_king_level_2']
+        return pred
 
-        number = ''
-        hash_diffs = []
-        for x, y, w, h in bounding_boxes:
-            # Skip regions which are not tall enough (I.e. random blobs)
-            if h < 0.6 * image.height:
-                continue
-            crop = image.crop((x, y, x + w, y + h))
-            hash_diff = [average_hash(crop, hash_size=16) - h for h in self.digit_hashes]
-            best_idx = np.argmin(hash_diff)
-            number += str(best_idx)
-            hash_diffs.append(hash_diff[best_idx])
+    @staticmethod
+    def _clean_king_hp(pred):
+        for side in ['ally', 'enemy']:
+            if pred[f'{side}_king_level']['bounding_box'][0] == KING_LEVEL_2_X:
+                pred[f'{side}_king_hp']['number'] = KING_HP[pred[f'{side}_king_level']['number'] - 1]
+                pred[f'{side}_king_hp']['confidence'] = pred[f'{side}_king_level']['confidence']
+        return pred
 
-        if number == '':
-            number = '-1'
-            hash_diffs = [float('inf')]
+    @staticmethod
+    def _calculate_confidence_and_number(pred, maxi):
+        confidence = -1
+        number = -1
+        pred = pred.tolist()
+        for n in range(len(pred) - 1):
+            # Sort by confidence (high to low)
+            pred = sorted(pred, key=lambda x: x[4])[n:]
 
-        return number, hash_diffs
+            # Sort from left-to-right
+            pred.sort(key=lambda x: x[0])
+
+            # Check that the resultant number is in the correct range
+            query = int(''.join([str(int(i[5])) for i in pred]))
+            if 1 <= query <= maxi:
+                number = query
+                confidence = np.prod([i[4] for i in pred])
+                break
+        return confidence, number
+
+    def _post_process(self, pred, **kwargs):
+        clean_pred = {}
+        for p, (name, bounding_box) in zip(pred, NUMBER_CONFIG):
+            if 'ally_princess' in name:
+                maxi = PRINCESS_HP[clean_pred['ally_king_level']['number'] - 1]
+            elif 'enemy_princess' in name:
+                maxi = PRINCESS_HP[clean_pred['enemy_king_level']['number'] - 1]
+            elif 'ally_king_hp' in name:
+                maxi = KING_HP[clean_pred['ally_king_level']['number'] - 1]
+            elif 'enemy_king_hp' in name:
+                maxi = KING_HP[clean_pred['enemy_king_level']['number'] - 1]
+            else:
+                # `king_level` in name
+                maxi = 14
+            confidence, number = self._calculate_confidence_and_number(p, maxi)
+            clean_pred[name] = {'bounding_box': bounding_box,
+                                'confidence': confidence,
+                                'number': number}
+
+            if name == 'ally_king_level_2':
+                clean_pred = self._clean_king_levels(clean_pred)
+        clean_pred = self._clean_king_hp(clean_pred)
+
+        return clean_pred
+
+    def _preprocess(self, image):
+        # Resize the image
+        height = self.IMAGE_SIZE // 4
+        image = image.resize((self.IMAGE_SIZE, height), Image.BICUBIC)
+
+        # Convert the image to grayscale
+        image = np.array(image, dtype=np.float32)
+        gray = np.dot(image[:, :, :3], [0.2125, 0.7154, 0.0721])
+        for i in range(3):
+            image[:, :, i] = gray
+
+        # Add padding
+        padded_image = 114 * np.ones((self.IMAGE_SIZE, self.IMAGE_SIZE, 3), dtype=np.float32)
+        top = 3 * self.IMAGE_SIZE // 8
+        padded_image[top: top+height, :, :] = image
+
+        padded_image = padded_image / 255
+        padded_image = np.expand_dims(padded_image.transpose(2, 0, 1), axis=0)
+        return padded_image
 
     def run(self, image):
-        """
-        Detect the numbers in the image
-        """
-        pred = {}
+        # Preprocessing
+        crops = np.empty((len(NUMBER_CONFIG), 3, self.IMAGE_SIZE, self.IMAGE_SIZE), dtype=np.float32)
+        for i, (_, bounding_box) in enumerate(NUMBER_CONFIG):
+            crop = image.crop(bounding_box)
+            crops[i] = self._preprocess(crop)
 
-        for name, params in NUMBER_CONFIG.items():
-            if 'king' in name:
-                *bounding_boxes, threshold = NUMBER_CONFIG[name]
+        # Inference
+        pred = self.sess.run([self.output_name], {self.input_name: crops})[0]
 
-                crops = [image.crop(bounding_box) for bounding_box in bounding_boxes]
+        # Forced post-processing
+        pred = self.nms(pred)
 
-                output = [[bounding_box, *self._calculate_number_and_hash_diffs(crop, threshold)]
-                          for bounding_box, crop in zip(bounding_boxes, crops)]
+        # Custom post-processing
+        pred = self._post_process(pred)
 
-                bounding_box, number, _ = min(output, key=lambda x: np.mean(x[2]))
-            else:
-                bounding_box, threshold = NUMBER_CONFIG[name]
-                crop = image.crop(bounding_box)
-                number, _ = self._calculate_number_and_hash_diffs(crop, threshold)
-
-            pred[name] = {'bounding_box': bounding_box,
-                          'number': number}
-
+        # Elixir
+        pred['elixir'] = {'bounding_box': ELIXIR_BOUNDING_BOX,
+                          'confidence': 1.0,
+                          'number': self._calculate_elixir(image)}
         return pred
