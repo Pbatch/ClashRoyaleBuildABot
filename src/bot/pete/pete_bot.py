@@ -1,4 +1,3 @@
-import os
 import random
 import time
 
@@ -7,8 +6,8 @@ from src.bot.pete.pete_action import PeteAction
 
 
 class PeteBot(Bot):
-    def __init__(self, card_names):
-        super().__init__(card_names, PeteAction)
+    def __init__(self, card_names, debug):
+        super().__init__(card_names, PeteAction, debug=debug)
 
     def _preprocess(self):
         """
@@ -31,8 +30,6 @@ class PeteBot(Bot):
         return action_scores
 
     def run(self):
-        i = 0
-        os.makedirs('screenshots', exist_ok=True)
         self.screen.reset()
         while True:
             # Set the state of the game
@@ -53,8 +50,4 @@ class PeteBot(Bot):
                 self.play_action(action)
                 # Log the result
                 print(f'Playing {action} with score {action.score}')
-                # Take a screenshot
-                screenshot = self.screen.take_screenshot()
-                screenshot.save(f'screenshots/{i}.jpg')
-                i += 1
-            time.sleep(2)
+            time.sleep(0.5)
