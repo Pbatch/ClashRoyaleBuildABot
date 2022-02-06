@@ -1,13 +1,12 @@
 import numpy as np
 from PIL import Image
 
-from src.data.constants import NUMBER_CONFIG, ELIXIR_BOUNDING_BOX, KING_HP, PRINCESS_HP, KING_LEVEL_2_X
+from src.data.constants import NUMBER_CONFIG, ELIXIR_BOUNDING_BOX, KING_HP, PRINCESS_HP, KING_LEVEL_2_X, \
+    NUMBER_MIN_CONFIDENCE, NUMBER_HEIGHT, NUMBER_WIDTH
 from src.state.onnx_detector import OnnxDetector
 
 
 class NumberDetector(OnnxDetector):
-    IMAGE_SIZE = 64
-
     @staticmethod
     def _calculate_elixir(image):
         crop = image.crop(ELIXIR_BOUNDING_BOX)
@@ -24,53 +23,38 @@ class NumberDetector(OnnxDetector):
     def _clean_king_levels(pred):
         for side in ['ally', 'enemy']:
             vals = [pred[f'{side}_king_level{s}'] for s in ['', '_2']]
-            pred[f'{side}_king_level'] = max(vals, key=lambda x: x['confidence'])
+            pred[f'{side}_king_level'] = max(vals, key=lambda x: np.prod(x['confidence']))
             del pred[f'{side}_king_level_2']
         return pred
 
     @staticmethod
     def _clean_king_hp(pred):
         for side in ['ally', 'enemy']:
-            if pred[f'{side}_king_level']['bounding_box'][0] == KING_LEVEL_2_X:
+            valid_bounding_box = pred[f'{side}_king_level']['bounding_box'][0] == KING_LEVEL_2_X
+            valid_king_level = pred[f'{side}_king_level']['number'] <= 14
+            if valid_bounding_box and valid_king_level:
                 pred[f'{side}_king_hp']['number'] = KING_HP[pred[f'{side}_king_level']['number'] - 1]
                 pred[f'{side}_king_hp']['confidence'] = pred[f'{side}_king_level']['confidence']
         return pred
 
     @staticmethod
-    def _calculate_confidence_and_number(pred, maxi):
-        confidence = -1
-        number = -1
+    def _calculate_confidence_and_number(pred):
         pred = pred.tolist()
-        for n in range(len(pred) - 1):
-            # Sort by confidence (high to low)
-            pred = sorted(pred, key=lambda x: x[4])[n:]
+        pred = [p for p in pred if p[4] > NUMBER_MIN_CONFIDENCE][:4]
+        pred.sort(key=lambda x: x[0])
 
-            # Sort from left-to-right
-            pred.sort(key=lambda x: x[0])
+        confidence = [p[4] for p in pred]
+        number = ''.join([str(int(p[5])) for p in pred])
 
-            # Check that the resultant number is in the correct range
-            query = int(''.join([str(int(i[5])) for i in pred]))
-            if 1 <= query <= maxi:
-                number = query
-                confidence = np.prod([i[4] for i in pred])
-                break
+        confidence = confidence if confidence else [-1]
+        number = int(number) if number != '' else -1
+
         return confidence, number
 
     def _post_process(self, pred, **kwargs):
         clean_pred = {}
         for p, (name, bounding_box) in zip(pred, NUMBER_CONFIG):
-            if 'ally_princess' in name:
-                maxi = PRINCESS_HP[clean_pred['ally_king_level']['number'] - 1]
-            elif 'enemy_princess' in name:
-                maxi = PRINCESS_HP[clean_pred['enemy_king_level']['number'] - 1]
-            elif 'ally_king_hp' in name:
-                maxi = KING_HP[clean_pred['ally_king_level']['number'] - 1]
-            elif 'enemy_king_hp' in name:
-                maxi = KING_HP[clean_pred['enemy_king_level']['number'] - 1]
-            else:
-                # `king_level` in name
-                maxi = 14
-            confidence, number = self._calculate_confidence_and_number(p, maxi)
+            confidence, number = self._calculate_confidence_and_number(p)
             clean_pred[name] = {'bounding_box': bounding_box,
                                 'confidence': confidence,
                                 'number': number}
@@ -83,8 +67,7 @@ class NumberDetector(OnnxDetector):
 
     def _preprocess(self, image):
         # Resize the image
-        height = self.IMAGE_SIZE // 4
-        image = image.resize((self.IMAGE_SIZE, height), Image.BICUBIC)
+        image = image.resize((NUMBER_WIDTH, NUMBER_HEIGHT), Image.BICUBIC)
 
         # Convert the image to grayscale
         image = np.array(image, dtype=np.float32)
@@ -93,9 +76,9 @@ class NumberDetector(OnnxDetector):
             image[:, :, i] = gray
 
         # Add padding
-        padded_image = 114 * np.ones((self.IMAGE_SIZE, self.IMAGE_SIZE, 3), dtype=np.float32)
-        top = 3 * self.IMAGE_SIZE // 8
-        padded_image[top: top+height, :, :] = image
+        padded_image = 114 * np.ones((NUMBER_WIDTH, NUMBER_WIDTH, 3), dtype=np.float32)
+        top = (NUMBER_WIDTH - NUMBER_HEIGHT) // 2
+        padded_image[top: top + NUMBER_HEIGHT, :, :] = image
 
         padded_image = padded_image / 255
         padded_image = np.expand_dims(padded_image.transpose(2, 0, 1), axis=0)
@@ -103,7 +86,7 @@ class NumberDetector(OnnxDetector):
 
     def run(self, image):
         # Preprocessing
-        crops = np.empty((len(NUMBER_CONFIG), 3, self.IMAGE_SIZE, self.IMAGE_SIZE), dtype=np.float32)
+        crops = np.empty((len(NUMBER_CONFIG), 3, NUMBER_WIDTH, NUMBER_WIDTH), dtype=np.float32)
         for i, (_, bounding_box) in enumerate(NUMBER_CONFIG):
             crop = image.crop(bounding_box)
             crops[i] = self._preprocess(crop)
