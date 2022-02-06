@@ -21,13 +21,17 @@ from src.state.detector import Detector
 
 
 class Bot:
-    def __init__(self, card_names, action_class=Action, auto_start=True):
+    def __init__(self, card_names,
+                 action_class=Action,
+                 auto_start=True,
+                 debug=False):
         self.card_names = card_names
         self.action_class = action_class
         self.auto_start = auto_start
+        self.debug = debug
 
         self.screen = Screen()
-        self.detector = Detector(card_names)
+        self.detector = Detector(card_names, debug=self.debug)
         self.state = None
 
     @staticmethod
