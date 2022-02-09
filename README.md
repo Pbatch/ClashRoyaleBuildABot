@@ -2,7 +2,7 @@
 
 Build your own bot to play Clash Royale (Windows only).
 
-![demo](https://media.giphy.com/media/wLcjtPSJxzfvUjgbbV/giphy-downsized-large.gif)
+![demo](images/demo.gif)
 
 ## Description
 
