@@ -1,4 +1,7 @@
 # Clash Royale Build-A-Bot
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Build your own bot to play Clash Royale (Windows only).
 
@@ -24,3 +27,23 @@ we can start to build bots that can make intelligent decisions.
 * [Try](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/Tutorial-(Basic)) the basic bot building tutorial.
 
 * [Learn](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/State) how the state is generated.
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/link-discord"><img src="https://avatars.githubusercontent.com/u/50463727?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Link</b></sub></a><br /><a href="#data-link-discord" title="Data">🔣</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
