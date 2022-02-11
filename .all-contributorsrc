@@ -13,6 +13,15 @@
       "contributions": [
         "data"
       ]
+    },
+    {
+      "login": "Emgimeer-Bazder",
+      "name": "Emgimeer-Bazder",
+      "avatar_url": "https://avatars.githubusercontent.com/u/17608446?v=4",
+      "profile": "http://www.pazder.ca",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
