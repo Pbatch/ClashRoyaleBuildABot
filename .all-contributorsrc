@@ -1,0 +1,24 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "link-discord",
+      "name": "Link",
+      "avatar_url": "https://avatars.githubusercontent.com/u/50463727?v=4",
+      "profile": "https://github.com/link-discord",
+      "contributions": [
+        "data"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "ClashRoyaleBuildABot",
+  "projectOwner": "Pbatch",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
