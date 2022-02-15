@@ -66,7 +66,7 @@
 "rocket","..\images\cards\rocket.png",6,"spell","air/ground"
 "royal_giant","..\images\cards\royal_giant.png",6,"troop","buildings"
 "skeletons","..\images\cards\skeletons.png",1,"troop","ground"
-"skeleton_army","..\images\cards\skeleton_army.png",3,"spell","ground"
+"skeleton_army","..\images\cards\skeleton_army.png",3,"troop","ground"
 "skeleton_barrel","..\images\cards\skeleton_barrel.png",3,"troop","ground"
 "skeleton_king","..\images\cards\skeleton_king.png",4,"troop","ground"
 "sparky","..\images\cards\sparky.png",6,"troop","ground"
