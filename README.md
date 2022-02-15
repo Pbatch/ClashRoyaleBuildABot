@@ -28,6 +28,21 @@ we can start to build bots that can make intelligent decisions.
 
 * [Learn](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/State) how the state is generated.
 
+## Roadmap
+
+* Improve flaws of PeteBot (Placement, elixir management, etc.).
+* Work out a way to get the code running on other platforms (Mac and Linux). 
+The ADB (Android Debug Bridge) might be able to do this.
+* Label more images, of more diverse cards, so that more decks can be played.
+* Add a layer that operates on the object detection output to produce more reliable unit predictions. 
+(I.e. Tracking units over time).
+* Add a basic Q-learning tutorial.
+* Add a basic imitation learning tutorial.
+* Publish the YOLOv5 training notebook.
+* Add the ability to open chests and upgrade cards.
+* Publish a leaderboard of the best bots made with the repo.
+* ... Your next big idea?
+
 ## Contributors ✨
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
@@ -39,6 +54,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tr>
     <td align="center"><a href="https://github.com/link-discord"><img src="https://avatars.githubusercontent.com/u/50463727?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Link</b></sub></a><br /><a href="#data-link-discord" title="Data">🔣</a></td>
     <td align="center"><a href="https://github.com/GavriloviciEduard"><img src="https://avatars.githubusercontent.com/u/33176335?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Gavrilovici Eduard</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=GavriloviciEduard" title="Documentation">📖</a> <a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=GavriloviciEduard" title="Code">💻</a></td>
+    <td align="center"><a href="http://www.pazder.ca"><img src="https://avatars.githubusercontent.com/u/17608446?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Emgimeer-Bazder</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/issues?q=author%3AEmgimeer-Bazder" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/GavriloviciEduard"><img src="https://avatars.githubusercontent.com/u/33176335?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Gavrilovici Eduard</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=GavriloviciEduard" title="Documentation">📖</a></td>
   </tr>
 </table>
 
