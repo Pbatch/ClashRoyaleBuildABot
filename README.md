@@ -53,8 +53,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <table>
   <tr>
     <td align="center"><a href="https://github.com/link-discord"><img src="https://avatars.githubusercontent.com/u/50463727?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Link</b></sub></a><br /><a href="#data-link-discord" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/GavriloviciEduard"><img src="https://avatars.githubusercontent.com/u/33176335?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Gavrilovici Eduard</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=GavriloviciEduard" title="Documentation">📖</a> <a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=GavriloviciEduard" title="Code">💻</a></td>
     <td align="center"><a href="http://www.pazder.ca"><img src="https://avatars.githubusercontent.com/u/17608446?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Emgimeer-Bazder</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/issues?q=author%3AEmgimeer-Bazder" title="Bug reports">🐛</a></td>
-    <td align="center"><a href="https://github.com/GavriloviciEduard"><img src="https://avatars.githubusercontent.com/u/33176335?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Gavrilovici Eduard</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=GavriloviciEduard" title="Documentation">📖</a></td>
   </tr>
 </table>
 
