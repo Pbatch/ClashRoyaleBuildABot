@@ -4,4 +4,3 @@ numpy
 onnxruntime
 imagehash
 mss
-torchvision
