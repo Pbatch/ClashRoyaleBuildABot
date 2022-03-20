@@ -47,8 +47,8 @@ class OnnxDetector:
         """
         Runs Non-Maximum Suppression (NMS) on inference results
         """
-        output = []
-        for i in range(prediction.shape[0]):
+        output = [np.zeros((0, 6))] * len(prediction)
+        for i in range(len(prediction)):
             # Mask out predictions below the confidence threshold
             mask = prediction[i, :, 4] > conf_thres
             x = prediction[i][mask]
@@ -76,7 +76,7 @@ class OnnxDetector:
 
             # Keep only the best class
             best = np.hstack([boxes[keep], best_scores[keep], best_scores_idx[keep]])
-            output.append(best)
+            output[i] = best
 
         return output
 
