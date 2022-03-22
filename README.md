@@ -3,7 +3,7 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-Build your own bot to play Clash Royale (Windows only).
+Build your own bot to play Clash Royale
 
 ![demo](images/demo.gif)
 
@@ -31,8 +31,6 @@ we can start to build bots that can make intelligent decisions.
 ## Roadmap
 
 * Improve flaws of PeteBot (Placement, elixir management, etc.).
-* Work out a way to get the code running on other platforms (Mac and Linux). 
-The ADB (Android Debug Bridge) might be able to do this.
 * Label more images, of more diverse cards, so that more decks can be played.
 * Add a layer that operates on the object detection output to produce more reliable unit predictions. 
 (I.e. Tracking units over time).

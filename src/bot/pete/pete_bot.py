@@ -6,7 +6,7 @@ from src.bot.pete.pete_action import PeteAction
 
 
 class PeteBot(Bot):
-    def __init__(self, card_names, debug):
+    def __init__(self, card_names, debug=False):
         super().__init__(card_names, PeteAction, debug=debug)
 
     def _preprocess(self):
@@ -30,7 +30,6 @@ class PeteBot(Bot):
         return action_scores
 
     def run(self):
-        self.screen.reset()
         while True:
             # Set the state of the game
             self.set_state()

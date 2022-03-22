@@ -1,6 +1,5 @@
-pywin32
 Pillow
 numpy
 onnxruntime
 imagehash
-mss
+pure-python-adb

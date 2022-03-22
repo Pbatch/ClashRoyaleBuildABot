@@ -3,18 +3,17 @@ from src.data.constants import (
     ALLY_TILES,
     LEFT_PRINCESS_TILES,
     RIGHT_PRINCESS_TILES,
-    LEFT_PAD,
-    LOWER_PAD,
-    APP_HEIGHT,
-    BORDER_SIZE,
     TILE_HEIGHT,
     TILE_WIDTH,
-    CARD_WIDTH,
-    CARD_HEIGHT,
-    CARD_Y,
-    CARD_INIT_X,
-    CARD_DELTA_X,
-    SCREEN_CONFIG
+    DISPLAY_CARD_WIDTH,
+    DISPLAY_CARD_HEIGHT,
+    DISPLAY_CARD_Y,
+    DISPLAY_CARD_INIT_X,
+    DISPLAY_CARD_DELTA_X,
+    SCREEN_CONFIG,
+    TILE_INIT_X,
+    TILE_INIT_Y,
+    DISPLAY_HEIGHT
 )
 from src.screen import Screen
 from src.state.detector import Detector
@@ -39,8 +38,8 @@ class Bot:
         """
         Get the nearest tile to (x, y)
         """
-        tile_x = round(((x - LEFT_PAD) / TILE_WIDTH) - 0.5)
-        tile_y = round(((APP_HEIGHT - BORDER_SIZE - LOWER_PAD - y) / TILE_HEIGHT) - 0.5)
+        tile_x = round(((x - TILE_INIT_X) / TILE_WIDTH) - 0.5)
+        tile_y = round(((DISPLAY_HEIGHT - TILE_INIT_Y - y) / TILE_HEIGHT) - 0.5)
         return tile_x, tile_y
 
     @staticmethod
@@ -48,8 +47,8 @@ class Bot:
         """
         Get the (x, y) coordinate of the centre of a tile
         """
-        x = LEFT_PAD + (tile_x + 0.5) * TILE_WIDTH
-        y = APP_HEIGHT - BORDER_SIZE - LOWER_PAD - (tile_y + 0.5) * TILE_HEIGHT
+        x = TILE_INIT_X + (tile_x + 0.5) * TILE_WIDTH
+        y = DISPLAY_HEIGHT - TILE_INIT_Y - (tile_y + 0.5) * TILE_HEIGHT
         return x, y
 
     @staticmethod
@@ -57,8 +56,8 @@ class Bot:
         """
         Get the (x, y) coordinate of the centre of card_n
         """
-        x = CARD_INIT_X + CARD_WIDTH / 2 + card_n * CARD_DELTA_X
-        y = CARD_Y - BORDER_SIZE + CARD_HEIGHT / 2
+        x = DISPLAY_CARD_INIT_X + DISPLAY_CARD_WIDTH / 2 + card_n * DISPLAY_CARD_DELTA_X
+        y = DISPLAY_CARD_Y + DISPLAY_CARD_HEIGHT / 2
         return x, y
 
     def _get_valid_tiles(self):
