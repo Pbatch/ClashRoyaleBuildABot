@@ -5,7 +5,7 @@
 
 Build your own bot to play Clash Royale
 
-![demo](images/demo.gif)
+![demo](https://raw.githubusercontent.com/wiki/Pbatch/ClashRoyaleBuildABot/images/demo.gif)
 
 ## Description
 
@@ -15,7 +15,7 @@ It uses:
 * Image hashes to detect the cards
 * A simple function of the pixels to deduce the elixir
 
-![detector](images/demo.jpg)
+![detector](https://raw.githubusercontent.com/wiki/Pbatch/ClashRoyaleBuildABot/images/demo.jpg)
 
 With a more powerful interpretation of the state,
 we can start to build bots that can make intelligent decisions.
