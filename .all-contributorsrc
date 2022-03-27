@@ -32,6 +32,15 @@
         "doc",
         "code"
       ]
+    },
+    {
+      "login": "Nyantad",
+      "name": "Nyantad",
+      "avatar_url": "https://avatars.githubusercontent.com/u/68382673?v=4",
+      "profile": "https://github.com/Nyantad",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
