@@ -27,17 +27,18 @@ OK_X = 143
 OK_Y = 558
 OK_WIDTH = 82
 OK_HEIGHT = 30
-SCREEN_CONFIG = [
-    ['lobby',
-     (CHEST_X,
-      CHEST_Y,
-      CHEST_X + CHEST_SIZE,
-      CHEST_Y + CHEST_SIZE),
-     (220, 830)],
-    ['end_of_game',
-     (OK_X, OK_Y, OK_X + OK_WIDTH, OK_Y + OK_HEIGHT),
-     (360, 1125)]
-]
+SCREEN_CONFIG = {
+    'lobby': {'bbox': (CHEST_X,
+                       CHEST_Y,
+                       CHEST_X + CHEST_SIZE,
+                       CHEST_Y + CHEST_SIZE),
+              'click_coordinates': (220, 830)},
+    'end_of_game': {'bbox': (OK_X,
+                             OK_Y,
+                             OK_X + OK_WIDTH,
+                             OK_Y + OK_HEIGHT),
+                    'click_coordinates': (360, 1125)}
+}
 
 # Playable tiles
 TILE_HEIGHT = 27.6
@@ -66,14 +67,11 @@ DISPLAY_CARD_HEIGHT = 147
 DISPLAY_CARD_DELTA_X = 136
 
 """
-Bounding boxes for numbers
-"""
-
-
-"""
 Detector config
 """
 # Cards
+HAND_SIZE = 5
+DECK_SIZE = 8
 CARD_Y = 545
 CARD_INIT_X = 87
 CARD_WIDTH = 55
@@ -155,3 +153,7 @@ UNITS = [
     "enemy_spear_goblin",
     "enemy_valkyrie"
 ]
+
+# Multihash coefficients
+MULTI_HASH_SCALE = 0.355
+MULTI_HASH_INTERCEPT = 163

@@ -6,13 +6,13 @@ from src.state.card_detector import CardDetector
 from src.state.number_detector import NumberDetector
 from src.state.unit_detector import UnitDetector
 from src.state.screen_detector import ScreenDetector
-from src.data.constants import DATA_DIR, SCREENSHOTS_DIR
+from src.data.constants import DATA_DIR, SCREENSHOTS_DIR, CARD_CONFIG, DECK_SIZE
 
 
 class Detector:
     def __init__(self, card_names, debug=False):
-        if len(card_names) != 8:
-            raise ValueError('You must specify all 8 of your cards')
+        if len(card_names) != DECK_SIZE:
+            raise ValueError(f'You must specify all {DECK_SIZE} of your cards')
 
         self.card_names = card_names
         self.debug = debug
@@ -52,6 +52,10 @@ class Detector:
                 for i in v:
                     d.rectangle(tuple(i['bounding_box']))
                     self._draw_text(d, i['bounding_box'], k)
+
+            for card, position in zip(state['cards'], CARD_CONFIG):
+                d.rectangle(tuple(position))
+                self._draw_text(d, position, card['name'])
 
             save_path = os.path.join(SCREENSHOTS_DIR, f"{len(os.listdir(SCREENSHOTS_DIR)) + 1}.jpg")
             image.save(save_path)
