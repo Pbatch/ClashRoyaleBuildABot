@@ -1,3 +1,5 @@
+import time
+
 from src.bot.action import Action
 from src.data.constants import (
     ALLY_TILES,
@@ -81,12 +83,16 @@ class Bot:
         # An action is a tuple (card_index, tile_x, tile_y)
         actions = []
         for i in range(4):
-            if int(self.state['numbers']['elixir']['number']) >= self.state['cards'][i + 1]['cost']:
-                if self.state['cards'][i + 1]['type'] == 'spell':
+            card = self.state['cards'][i + 1]
+            enough_elixir = int(self.state['numbers']['elixir']['number']) >= card['cost']
+            ready = card['ready']
+            not_blank = card['name'] != 'blank'
+            if enough_elixir and ready and not_blank:
+                if card['type'] == 'spell':
                     tiles = all_tiles
                 else:
                     tiles = valid_tiles
-                actions.extend([self.action_class(i, x, y, *self.state['cards'][i + 1].values())
+                actions.extend([self.action_class(i, x, y, *card.values())
                                 for (x, y) in tiles])
 
         return actions
@@ -97,9 +103,9 @@ class Bot:
 
         # Try to click a button to get closer to starting a game
         if self.auto_start:
-            for name, bounding_box, click_coordinates in SCREEN_CONFIG:
-                if self.state['screen'][name] and 'name' != 'in_game':
-                    self.screen.click(*click_coordinates)
+            if self.state['screen'] != 'in_game':
+                self.screen.click(*SCREEN_CONFIG[self.state['screen']]['click_coordinates'])
+                time.sleep(2)
 
     def play_action(self, action):
         card_centre = self._get_card_centre(action.index)
