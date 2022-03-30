@@ -3,6 +3,7 @@ import time
 
 from src.bot.bot import Bot
 from src.bot.pete.pete_action import PeteAction
+from src.data.constants import DISPLAY_WIDTH, SCREENSHOT_WIDTH, DISPLAY_HEIGHT, SCREENSHOT_HEIGHT
 
 
 class PeteBot(Bot):
@@ -17,9 +18,13 @@ class PeteBot(Bot):
         """
         for k, v in self.state['units'].items():
             for unit in v:
-                bb = unit['bounding_box']
-                bb_box_bottom = [((bb[0] + bb[2]) / 2), bb[3]]
-                unit['tile_xy'] = self._get_nearest_tile(*bb_box_bottom)
+                bbox = unit['bounding_box']
+                bbox[0] *= DISPLAY_WIDTH / SCREENSHOT_WIDTH
+                bbox[1] *= DISPLAY_HEIGHT / SCREENSHOT_HEIGHT
+                bbox[2] *= DISPLAY_WIDTH / SCREENSHOT_WIDTH
+                bbox[3] *= DISPLAY_HEIGHT / SCREENSHOT_HEIGHT
+                bbox_bottom = [((bbox[0] + bbox[2]) / 2), bbox[3]]
+                unit['tile_xy'] = self._get_nearest_tile(*bbox_bottom)
 
     def _calculate_action_scores(self, actions):
         """
