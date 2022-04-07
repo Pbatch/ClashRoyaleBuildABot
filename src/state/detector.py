@@ -49,7 +49,7 @@ class Detector:
                 self._draw_text(d, v['bounding_box'], str(v['number']))
 
             for k, v in state['units'].items():
-                for i in v:
+                for i in v['positions']:
                     d.rectangle(tuple(i['bounding_box']))
                     self._draw_text(d, i['bounding_box'], k)
 

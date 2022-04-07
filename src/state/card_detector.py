@@ -49,7 +49,7 @@ class CardDetector:
         i = 0
         with open(f'{DATA_DIR}/cards.csv') as f:
             for line in f:
-                name, _, cost, type_, target = line.strip().replace('"', '').split(',')
+                name, _, cost, type_, target, _ = line.strip().replace('"', '').split(',')
                 if name in self.card_names:
                     path = os.path.join(DATA_DIR, 'images', 'cards', f'{name}.png')
                     card = Image.open(path)

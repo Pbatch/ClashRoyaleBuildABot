@@ -2,13 +2,16 @@ import random
 import time
 
 from src.bot.bot import Bot
-from src.bot.pete.pete_action import PeteAction
+from src.bot.standard.standard_action import StandardAction
 from src.data.constants import DISPLAY_WIDTH, SCREENSHOT_WIDTH, DISPLAY_HEIGHT, SCREENSHOT_HEIGHT
 
 
-class PeteBot(Bot):
+class StandardBot(Bot):
     def __init__(self, card_names, debug=False):
-        super().__init__(card_names, PeteAction, debug=debug)
+        preset_deck = {'minions', 'archers', 'arrows', 'giant', 'minipekka', 'fireball', 'knight', 'musketeer'}
+        if set(card_names) != preset_deck:
+            raise ValueError(f'You must use the preset deck with cards {preset_deck} for StandardBot')
+        super().__init__(card_names, StandardAction, debug=debug)
 
     def _preprocess(self):
         """
@@ -38,7 +41,7 @@ class PeteBot(Bot):
                 # Preprocessing
                 self._preprocess()
                 # Get the best action
-                action = max(actions, key=lambda x: x.calculate_score(self.state['units']))
+                action = max(actions, key=lambda x: x.calculate_score(self.state))
                 # Skip the action if it doesn't score high enough
                 if action.score[0] == 0:
                     continue
