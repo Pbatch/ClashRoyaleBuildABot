@@ -1,10 +1,10 @@
-from src.bot.pete.pete_bot import PeteBot
+from src.bot.standard.standard_bot import StandardBot
 
 
 def main():
     card_names = ['minions', 'archers', 'arrows', 'giant',
                   'minipekka', 'fireball', 'knight', 'musketeer']
-    bot = PeteBot(card_names)
+    bot = StandardBot(card_names, debug=True)
     bot.run()
 
 

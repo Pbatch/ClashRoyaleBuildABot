@@ -21,7 +21,7 @@ class PeteAction(Action):
             for k, v in units.items():
                 if k[:4] == 'ally':
                     continue
-                for unit in v:
+                for unit in v['positions']:
                     tile_x, tile_y = unit['tile_xy']
                     if tile_x > 8 and tile_y <= 17:
                         rhs += 1
@@ -62,7 +62,7 @@ class PeteAction(Action):
             for k, v in units.items():
                 if k[:4] == 'ally':
                     continue
-                for unit in v:
+                for unit in v['positions']:
                     tile_x, tile_y = unit['tile_xy']
                     if tile_x > 8 and tile_y <= 17:
                         rhs += 1
@@ -90,7 +90,7 @@ class PeteAction(Action):
         for k, v in units.items():
             if k[:4] == 'ally':
                 continue
-            for unit in v:
+            for unit in v['positions']:
                 tile_x, tile_y = unit['tile_xy']
                 # Assume the unit will move down a space
                 tile_y -= 1

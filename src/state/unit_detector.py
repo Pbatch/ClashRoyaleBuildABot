@@ -1,29 +1,25 @@
 
-
 import numpy as np
 from PIL import Image
 
-from src.data.constants import UNITS, UNIT_Y_END, UNIT_Y_START, UNIT_SIZE
+from src.data.constants import UNITS, UNIT_Y_END, UNIT_Y_START, UNIT_SIZE, DATA_DIR
 from src.state.onnx_detector import OnnxDetector
 
 
 class UnitDetector(OnnxDetector):
-    @staticmethod
-    def _post_process(pred, **kwargs):
-        height, width = kwargs['height'], kwargs['width']
-        pred[:, [1, 3]] *= UNIT_Y_END - UNIT_Y_START
-        pred[:, [1, 3]] += UNIT_Y_START * height
+    def __init__(self, model_path):
+        super().__init__(model_path)
 
-        clean_pred = {}
-        for p in pred:
-            name = UNITS[round(p[5])]
-            info = {'bounding_box': [round(i) for i in p[:4]],
-                    'confidence': p[4]}
-            if name in clean_pred:
-                clean_pred[name].append(info)
-            else:
-                clean_pred[name] = [info]
-        return clean_pred
+        self.card_to_info = self._set_card_to_info()
+
+    @staticmethod
+    def _set_card_to_info():
+        card_to_info = {}
+        with open(f'{DATA_DIR}/cards.csv') as f:
+            for line in f:
+                name, _, _, type_, target, transport = line.strip().replace('"', '').split(',')
+                card_to_info[name] = {'type': type_, 'target': target, 'transport': transport}
+        return card_to_info
 
     @staticmethod
     def _preprocess(image):
@@ -36,6 +32,28 @@ class UnitDetector(OnnxDetector):
         image = np.expand_dims(image.transpose(2, 0, 1), axis=0)
         image = image / 255
         return image
+
+    def _post_process(self, pred, **kwargs):
+        height, width = kwargs['height'], kwargs['width']
+        pred[:, [1, 3]] *= UNIT_Y_END - UNIT_Y_START
+        pred[:, [1, 3]] += UNIT_Y_START * height
+
+        clean_pred = {}
+        for p in pred:
+            name = UNITS[round(p[5])]
+            info = {'bounding_box': [round(i) for i in p[:4]],
+                    'confidence': p[4]}
+            if name in clean_pred:
+                clean_pred[name]['positions'].append(info)
+            else:
+                key = name.replace('ally_', '').replace('enemy_', '').replace('muskateer', 'musketeer')
+                try:
+                    clean_pred[name] = self.card_to_info[key]
+                except KeyError:
+                    print(f'Could not find metadata for key "{key}"')
+                    clean_pred[name] = {'type': '', 'target': '', 'transport': ''}
+                clean_pred[name]['positions'] = [info]
+        return clean_pred
 
     def run(self, image):
         height, width = image.height, image.width
