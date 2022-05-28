@@ -1,6 +1,6 @@
 # Clash Royale Build-A-Bot
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Build your own bot to play Clash Royale
@@ -54,6 +54,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="http://www.pazder.ca"><img src="https://avatars.githubusercontent.com/u/17608446?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Emgimeer-Bazder</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/issues?q=author%3AEmgimeer-Bazder" title="Bug reports">🐛</a></td>
     <td align="center"><a href="https://github.com/GavriloviciEduard"><img src="https://avatars.githubusercontent.com/u/33176335?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Gavrilovici Eduard</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=GavriloviciEduard" title="Documentation">📖</a> <a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=GavriloviciEduard" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/Nyantad"><img src="https://avatars.githubusercontent.com/u/68382673?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Nyantad</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/issues?q=author%3ANyantad" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/OwenKruse"><img src="https://avatars.githubusercontent.com/u/91492770?v=4?s=100" width="100px;" alt=""/><br /><sub><b>OwenKruse</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=OwenKruse" title="Documentation">📖</a></td>
   </tr>
 </table>
 
