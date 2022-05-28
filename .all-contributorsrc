@@ -41,6 +41,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "OwenKruse",
+      "name": "OwenKruse",
+      "avatar_url": "https://avatars.githubusercontent.com/u/91492770?v=4",
+      "profile": "https://github.com/OwenKruse",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
