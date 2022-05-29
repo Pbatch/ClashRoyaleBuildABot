@@ -1,8 +1,7 @@
 from src.bot.action import Action
-from src.bot.TwoSixHogCycle import TwoSixHogCycle
 
 
-class BotAction(Action):
+class TwoSixHogCycleAction(Action):
     score = 0
 
     @staticmethod
