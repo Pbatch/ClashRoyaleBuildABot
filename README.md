@@ -41,6 +41,12 @@ we can start to build bots that can make intelligent decisions.
 * Publish a leaderboard of the best bots made with the repo.
 * ... Your next big idea?
 
+## Community Creations
+
+![Hog2.6Cycle](https://raw.githubusercontent.com/wiki/Pbatch/ClashRoyaleBuildABot/images/hog.gif)
+
+Hog 2.6 Cycle Bot by OwenKruse
+
 ## Contributors ✨
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
