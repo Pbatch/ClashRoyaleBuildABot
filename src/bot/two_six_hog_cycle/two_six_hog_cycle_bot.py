@@ -1,18 +1,17 @@
 import random
 import time
-from src.bot.TwoSixHogCycle.TwoSixHogCycleAction import BotAction
+
+from src.bot.two_six_hog_cycle.two_six_hog_cycle_action import TwoSixHogCycleAction
 from src.bot.bot import Bot
-from src.bot.standard.standard_action import StandardAction
 from src.data.constants import DISPLAY_WIDTH, SCREENSHOT_WIDTH, DISPLAY_HEIGHT, SCREENSHOT_HEIGHT
-from src.state.unit_detector import UnitDetector
 
 
-class RandomBot(Bot):
+class TwoSixHogCycle(Bot):
     def __init__(self, card_names, debug=True):
         preset_deck = {'hog_rider', 'the_log', 'fireball', 'ice_spirit', 'ice_golem', 'skeletons', 'cannon', 'musketeer'}
         if set(card_names) != preset_deck:
-            raise ValueError(f'You must use the preset deck with cards {preset_deck} for StandardBot')
-        super().__init__(card_names, BotAction, debug=debug)
+            raise ValueError(f'You must use the preset deck with cards {preset_deck} for TwoSixHogCycleBot')
+        super().__init__(card_names, TwoSixHogCycleAction, debug=debug)
 
     def _preprocess(self):
         """
@@ -41,8 +40,6 @@ class RandomBot(Bot):
                 random.shuffle(actions)
                 # Preprocessing
                 self._preprocess()
-
-            
                 # Get the best action
                 action = max(actions, key=lambda x: x.calculate_score(self.state))
                 # Skip the action if it doesn't score high enough
