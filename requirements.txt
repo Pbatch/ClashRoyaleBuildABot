@@ -1,5 +1,7 @@
-Pillow
-numpy
-onnxruntime
-scipy
-pure-python-adb
+flatbuffers==2.0
+numpy==1.23.0
+onnxruntime==1.11.1
+Pillow==9.1.1
+protobuf==4.21.1
+pure-python-adb==0.3.0.dev0
+scipy==1.8.1
