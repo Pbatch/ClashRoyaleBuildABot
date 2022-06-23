@@ -1,7 +1,7 @@
 import time
 
-from src.bot.action import Action
-from src.data.constants import (
+from clashroyalebuildabot.bot.action import Action
+from clashroyalebuildabot.data.constants import (
     ALLY_TILES,
     LEFT_PRINCESS_TILES,
     RIGHT_PRINCESS_TILES,
@@ -17,8 +17,8 @@ from src.data.constants import (
     TILE_INIT_Y,
     DISPLAY_HEIGHT
 )
-from src.screen import Screen
-from src.state.detector import Detector
+from clashroyalebuildabot.screen import Screen
+from clashroyalebuildabot.state.detector import Detector
 
 
 class Bot:

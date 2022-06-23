@@ -1,4 +1,4 @@
-from src.bot.action import Action
+from clashroyalebuildabot.bot.action import Action
 
 
 class PeteAction(Action):

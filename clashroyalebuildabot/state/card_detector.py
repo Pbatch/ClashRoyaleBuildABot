@@ -2,7 +2,7 @@ import os
 
 from PIL import Image
 import numpy as np
-from src.data.constants import CARD_CONFIG, DATA_DIR, MULTI_HASH_SCALE, MULTI_HASH_INTERCEPT, DECK_SIZE, HAND_SIZE
+from clashroyalebuildabot.data.constants import CARD_CONFIG, DATA_DIR, MULTI_HASH_SCALE, MULTI_HASH_INTERCEPT, DECK_SIZE, HAND_SIZE
 from scipy.optimize import linear_sum_assignment
 
 

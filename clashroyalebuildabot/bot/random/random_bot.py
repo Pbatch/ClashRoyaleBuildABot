@@ -1,4 +1,4 @@
-from src.bot.bot import Bot
+from clashroyalebuildabot.bot.bot import Bot
 import time
 import random
 
