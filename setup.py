@@ -23,7 +23,7 @@ setup(
     download_url='https://github.com/Pbatch/ClashRoyaleBuildABot/releases',
     install_requires=[
         "Pillow", "numpy", "scipy",
-        "onnxruntime", "pure-python-adb",
+        "onnxruntime", "ppadb",
     ],
     packages=find_packages(),
     python_requires='>=3.6',
