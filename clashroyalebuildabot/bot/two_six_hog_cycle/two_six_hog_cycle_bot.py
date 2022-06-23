@@ -1,9 +1,9 @@
 import random
 import time
 
-from src.bot.two_six_hog_cycle.two_six_hog_cycle_action import TwoSixHogCycleAction
-from src.bot.bot import Bot
-from src.data.constants import DISPLAY_WIDTH, SCREENSHOT_WIDTH, DISPLAY_HEIGHT, SCREENSHOT_HEIGHT
+from clashroyalebuildabot.bot.two_six_hog_cycle.two_six_hog_cycle_action import TwoSixHogCycleAction
+from clashroyalebuildabot.bot.bot import Bot
+from clashroyalebuildabot.data.constants import DISPLAY_WIDTH, SCREENSHOT_WIDTH, DISPLAY_HEIGHT, SCREENSHOT_HEIGHT
 
 
 class TwoSixHogCycle(Bot):

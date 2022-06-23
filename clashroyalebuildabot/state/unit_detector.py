@@ -2,8 +2,8 @@
 import numpy as np
 from PIL import Image
 
-from src.data.constants import UNITS, UNIT_Y_END, UNIT_Y_START, UNIT_SIZE, DATA_DIR
-from src.state.onnx_detector import OnnxDetector
+from clashroyalebuildabot.data.constants import UNITS, UNIT_Y_END, UNIT_Y_START, UNIT_SIZE, DATA_DIR
+from clashroyalebuildabot.state.onnx_detector import OnnxDetector
 
 
 class UnitDetector(OnnxDetector):

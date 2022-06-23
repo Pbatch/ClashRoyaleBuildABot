@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 from ppadb.client import Client
 
-from src.data.constants import SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT
+from clashroyalebuildabot.data.constants import SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT
 
 
 class Screen:

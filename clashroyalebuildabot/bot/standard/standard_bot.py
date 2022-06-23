@@ -1,9 +1,9 @@
 import random
 import time
 
-from src.bot.bot import Bot
-from src.bot.standard.standard_action import StandardAction
-from src.data.constants import DISPLAY_WIDTH, SCREENSHOT_WIDTH, DISPLAY_HEIGHT, SCREENSHOT_HEIGHT
+from clashroyalebuildabot.bot.bot import Bot
+from clashroyalebuildabot.bot.standard.standard_action import StandardAction
+from clashroyalebuildabot.data.constants import DISPLAY_WIDTH, SCREENSHOT_WIDTH, DISPLAY_HEIGHT, SCREENSHOT_HEIGHT
 
 
 class StandardBot(Bot):
