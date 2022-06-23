@@ -1,4 +1,4 @@
-from clashroyalebuildabot.bot.standard.standard_bot import StandardBot
+from clashroyalebuildabot.bot import StandardBot
 
 
 def main():
