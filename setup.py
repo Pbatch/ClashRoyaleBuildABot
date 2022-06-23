@@ -22,7 +22,7 @@ setup(
     url='https://github.com/Pbatch/ClashRoyaleBuildABot',
     download_url='https://github.com/Pbatch/ClashRoyaleBuildABot/releases',
     install_requires=[
-        "adb-shell>=0.4.0", "pure-python-adb>=0.3.0.dev0",
+        "pure-python-adb",
         "Pillow", "numpy", "scipy",
         "onnxruntime",
     ],
