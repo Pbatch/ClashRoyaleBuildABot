@@ -37,4 +37,3 @@ jobs:
         uses: pypa/gh-action-pypi-publish@master
         with:
           password: ${{ secrets.PYPI_API_TOKEN }} # MUST SET GITHUB REPO SECRET https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets
-          repository_url: https://test.pypi.org/legacy/ # REMOVE LINE IN PROD
