@@ -1,5 +1,5 @@
 # Exports for clashroyalebuildabot
-from .bot import PeteBot, RandomBot, StandardBot, TwoSixHogCycle
+from .bot import PeteBot, RandomBot, StandardBot, TwoSixHogCycle, Action, Bot
 from .data import constants
 from .screen import Screen
 from .state import (CardDetector, Detector, NumberDetector, OnnxDetector,
@@ -17,5 +17,7 @@ __all__ = [
     "NumberDetector",
     "UnitDetector",
     "CardDetector",
-    "Screen"
+    "Screen",
+    "Action",
+    "Bot"
 ]
