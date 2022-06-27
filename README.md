@@ -2,6 +2,7 @@
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
+[![PyPI version](https://badge.fury.io/py/ClashRoyaleBuildABot.svg)](https://badge.fury.io/py/ClashRoyaleBuildABot)
 
 Build your own bot to play Clash Royale
 
