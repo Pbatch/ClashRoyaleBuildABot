@@ -2,11 +2,11 @@ import os
 
 from PIL import ImageDraw, ImageFont
 
-from src.state.card_detector import CardDetector
-from src.state.number_detector import NumberDetector
-from src.state.unit_detector import UnitDetector
-from src.state.screen_detector import ScreenDetector
-from src.data.constants import DATA_DIR, SCREENSHOTS_DIR, CARD_CONFIG, DECK_SIZE
+from clashroyalebuildabot.state.card_detector import CardDetector
+from clashroyalebuildabot.state.number_detector import NumberDetector
+from clashroyalebuildabot.state.unit_detector import UnitDetector
+from clashroyalebuildabot.state.screen_detector import ScreenDetector
+from clashroyalebuildabot.data.constants import DATA_DIR, SCREENSHOTS_DIR, CARD_CONFIG, DECK_SIZE
 
 
 class Detector:

@@ -1,17 +1,17 @@
 import random
 import time
 
-from src.bot.two_six_hog_cycle.two_six_hog_cycle_action import TwoSixHogCycleAction
-from src.bot.bot import Bot
-from src.data.constants import DISPLAY_WIDTH, SCREENSHOT_WIDTH, DISPLAY_HEIGHT, SCREENSHOT_HEIGHT
+from clashroyalebuildabot.bot.bot import Bot
+from clashroyalebuildabot.bot.standard.standard_action import StandardAction
+from clashroyalebuildabot.data.constants import DISPLAY_WIDTH, SCREENSHOT_WIDTH, DISPLAY_HEIGHT, SCREENSHOT_HEIGHT
 
 
-class TwoSixHogCycle(Bot):
-    def __init__(self, card_names, debug=True):
-        preset_deck = {'hog_rider', 'the_log', 'fireball', 'ice_spirit', 'ice_golem', 'skeletons', 'cannon', 'musketeer'}
+class StandardBot(Bot):
+    def __init__(self, card_names, debug=False):
+        preset_deck = {'minions', 'archers', 'arrows', 'giant', 'minipekka', 'fireball', 'knight', 'musketeer'}
         if set(card_names) != preset_deck:
-            raise ValueError(f'You must use the preset deck with cards {preset_deck} for TwoSixHogCycleBot')
-        super().__init__(card_names, TwoSixHogCycleAction, debug=debug)
+            raise ValueError(f'You must use the preset deck with cards {preset_deck} for StandardBot')
+        super().__init__(card_names, StandardAction, debug=debug)
 
     def _preprocess(self):
         """
@@ -50,8 +50,3 @@ class TwoSixHogCycle(Bot):
                 # Log the result
                 print(f'Playing {action} with score {action.score} and sleeping for 1 second')
                 time.sleep(1.0)
-
-
-
-
-

@@ -1,7 +1,12 @@
-from src.bot.action import Action
+"""
+custom_action.py
+standard_action.py reimplemented as an import from a clashroyalebuildabot install
+"""
+
+from clashroyalebuildabot.bot import Action
 
 
-class StandardAction(Action):
+class CustomAction(Action):
     score = None
 
     @staticmethod
