@@ -53,6 +53,19 @@
         "code",
         "example"
       ]
+    },
+    {
+      "login": "marmig0404",
+      "name": "Martin Miglio",
+      "avatar_url": "https://avatars.githubusercontent.com/u/10036276?v=4",
+      "profile": "http://martinmiglio.dev/?utm_source=github_bio&utm_medium=Social",
+      "contributions": [
+        "code",
+        "doc",
+        "a11y",
+        "example",
+        "userTesting"
+      ]
     }
   ],
   "contributorsPerLine": 7,

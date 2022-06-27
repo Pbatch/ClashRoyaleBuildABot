@@ -1,6 +1,6 @@
 # Clash Royale Build-A-Bot
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-6-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 [![PyPI version](https://badge.fury.io/py/ClashRoyaleBuildABot.svg)](https://badge.fury.io/py/ClashRoyaleBuildABot)
 
@@ -62,6 +62,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/GavriloviciEduard"><img src="https://avatars.githubusercontent.com/u/33176335?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Gavrilovici Eduard</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=GavriloviciEduard" title="Documentation">📖</a> <a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=GavriloviciEduard" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/Nyantad"><img src="https://avatars.githubusercontent.com/u/68382673?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Nyantad</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/issues?q=author%3ANyantad" title="Bug reports">🐛</a></td>
     <td align="center"><a href="https://github.com/OwenKruse"><img src="https://avatars.githubusercontent.com/u/91492770?v=4?s=100" width="100px;" alt=""/><br /><sub><b>OwenKruse</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=OwenKruse" title="Documentation">📖</a> <a href="#data-OwenKruse" title="Data">🔣</a> <a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=OwenKruse" title="Code">💻</a> <a href="#example-OwenKruse" title="Examples">💡</a></td>
+    <td align="center"><a href="http://martinmiglio.dev/?utm_source=github_bio&utm_medium=Social"><img src="https://avatars.githubusercontent.com/u/10036276?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Martin Miglio</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=marmig0404" title="Code">💻</a> <a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=marmig0404" title="Documentation">📖</a> <a href="#a11y-marmig0404" title="Accessibility">️️️️♿️</a> <a href="#example-marmig0404" title="Examples">💡</a> <a href="#userTesting-marmig0404" title="User Testing">📓</a></td>
   </tr>
 </table>
 
