@@ -4,3 +4,5 @@ clashroyalebuildabot/data/screenshots
 .venv
 .vscode
 *.egg-info
+dist/
+build/
