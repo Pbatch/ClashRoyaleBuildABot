@@ -1,10 +1,11 @@
 import os
 from setuptools import setup, find_packages
 
+# define long description with readme text
 with open("README.md", "r", encoding="utf-8") as f:
     LONG_DESCRIPTION = f.read()
 
-# get github workflow env vars
+# get tag name for versioning for CI or dev for otherwise
 try:
     version = (os.environ['GIT_TAG_NAME']).replace('v', '')
 except KeyError:
@@ -27,6 +28,8 @@ setup(
         "onnxruntime",
     ],
     packages=find_packages(),
+    include_package_data=True,
+    package_data={'clashroyalebuildabot.data': ["images/*/*.png", "*.csv", "*.onnx"]},
     python_requires='>=3.6',
     zip_safe=False,
     classifiers=[
