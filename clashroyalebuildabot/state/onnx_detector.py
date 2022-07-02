@@ -43,7 +43,7 @@ class OnnxDetector:
 
         return keep
 
-    def nms(self, prediction, conf_thres=0.25, iou_thres=0.45):
+    def nms(self, prediction, conf_thres=0.35, iou_thres=0.45):
         """
         Runs Non-Maximum Suppression (NMS) on inference results
         """
