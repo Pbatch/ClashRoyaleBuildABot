@@ -1,25 +1,45 @@
+import os
+import random
 
 import numpy as np
 from PIL import Image
 
-from clashroyalebuildabot.data.constants import UNITS, UNIT_Y_END, UNIT_Y_START, UNIT_SIZE, DATA_DIR
+from clashroyalebuildabot.data.constants import UNITS, UNIT_Y_END, UNIT_Y_START, UNIT_SIZE, DATA_DIR, CARD_TO_UNITS
 from clashroyalebuildabot.state.onnx_detector import OnnxDetector
 
 
 class UnitDetector(OnnxDetector):
-    def __init__(self, model_path):
+    def __init__(self, model_path, card_names):
         super().__init__(model_path)
+        self.card_names = card_names
 
         self.card_to_info = self._set_card_to_info()
+        self.possible_ally_units = self._set_possible_ally_units()
 
     @staticmethod
     def _set_card_to_info():
         card_to_info = {}
-        with open(f'{DATA_DIR}/cards.csv') as f:
+        with open(os.path.join(DATA_DIR, 'cards.csv')) as f:
             for line in f:
                 name, _, _, type_, target, transport = line.strip().replace('"', '').split(',')
                 card_to_info[name] = {'type': type_, 'target': target, 'transport': transport}
         return card_to_info
+
+    def _set_possible_ally_units(self):
+        possible_ally_units = [name for name in self.card_names
+                               if self.card_to_info[name]['type'] == 'troop']
+        for name in self.card_names:
+            if name in CARD_TO_UNITS:
+                possible_ally_units.extend(CARD_TO_UNITS[name])
+        return set(possible_ally_units)
+
+    def _calculate_side(self, name):
+        if name not in self.possible_ally_units:
+            side = 'enemy'
+        else:
+            # TODO: Something with HP bars?
+            side = random.choice(['ally', 'enemy'])
+        return side
 
     @staticmethod
     def _preprocess(image):
@@ -38,21 +58,20 @@ class UnitDetector(OnnxDetector):
         pred[:, [1, 3]] *= UNIT_Y_END - UNIT_Y_START
         pred[:, [1, 3]] += UNIT_Y_START * height
 
-        clean_pred = {}
+        clean_pred = {'ally': {}, 'enemy': {}}
         for p in pred:
             name = UNITS[round(p[5])]
             info = {'bounding_box': [round(i) for i in p[:4]],
                     'confidence': p[4]}
-            if name in clean_pred:
-                clean_pred[name]['positions'].append(info)
-            else:
-                key = name.replace('ally_', '').replace('enemy_', '').replace('muskateer', 'musketeer')
+            side = self._calculate_side(name)
+            if name not in clean_pred[side]:
                 try:
-                    clean_pred[name] = self.card_to_info[key]
+                    clean_pred[side][name] = self.card_to_info[name]
                 except KeyError:
-                    print(f'Could not find metadata for key "{key}"')
-                    clean_pred[name] = {'type': '', 'target': '', 'transport': ''}
-                clean_pred[name]['positions'] = [info]
+                    print(f'Could not find metadata for key "{name}"')
+                    clean_pred[side][name] = {'type': '', 'target': '', 'transport': ''}
+                clean_pred[side][name]['positions'] = []
+            clean_pred[side][name]['positions'].append(info)
         return clean_pred
 
     def run(self, image):
