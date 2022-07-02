@@ -126,33 +126,20 @@ PRINCESS_HP = [1400, 1512, 1624, 1750, 1890, 2030, 2184, 2352, 2534, 2786, 3052,
 UNIT_SIZE = 416
 UNIT_Y_START = 0.05
 UNIT_Y_END = 0.80
-UNITS = [
-    "ally_archer",
-    "ally_brawler",
-    "ally_giant",
-    "ally_goblin_cage",
-    "ally_hungry_dragon",
-    "ally_knight",
-    "ally_minion",
-    "ally_minipekka",
-    "ally_musketeer",
-    "ally_prince",
-    "ally_valkyrie",
-    "enemy_archer",
-    "enemy_brawler",
-    "enemy_giant",
-    "enemy_goblin",
-    "enemy_goblin_cage",
-    "enemy_hungry_dragon",
-    "enemy_knight",
-    "enemy_minion",
-    "enemy_minipekka",
-    "enemy_muskateer",
-    "enemy_prince",
-    "enemy_skeleton",
-    "enemy_spear_goblin",
-    "enemy_valkyrie"
-]
+UNITS = ['archer',
+         'brawler',
+         'giant',
+         'goblin',
+         'goblin_cage',
+         'hungry_dragon',
+         'knight',
+         'minion',
+         'minipekka',
+         'musketeer',
+         'prince',
+         'skeleton',
+         'spear_goblin',
+         'valkyrie']
 
 # Multihash coefficients
 MULTI_HASH_SCALE = 0.355
