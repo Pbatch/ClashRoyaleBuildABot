@@ -48,10 +48,11 @@ class Detector:
                 d.rectangle(tuple(v['bounding_box']))
                 self._draw_text(d, v['bounding_box'], str(v['number']))
 
-            for k, v in state['units'].items():
-                for i in v['positions']:
-                    d.rectangle(tuple(i['bounding_box']))
-                    self._draw_text(d, i['bounding_box'], k)
+            for side in ['ally', 'enemy']:
+                for k, v in state['units'][side].items():
+                    for i in v['positions']:
+                        d.rectangle(tuple(i['bounding_box']))
+                        self._draw_text(d, i['bounding_box'], k)
 
             for card, position in zip(state['cards'], CARD_CONFIG):
                 d.rectangle(tuple(position))
