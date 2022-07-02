@@ -44,7 +44,7 @@ class StandardAction(Action):
         Play the knight in the center, vertically aligned with the troop
         """
         score = [0] if state['numbers']['elixir']['number'] != 10 else [0.5]
-        for k, v in state['units'].items():
+        for k, v in state['units']['enemy'].items():
             if k[:4] == 'ally':
                 continue
             for unit in v['positions']:
@@ -59,9 +59,7 @@ class StandardAction(Action):
         Only play minions on top of enemy units
         """
         score = [0] if state['numbers']['elixir']['number'] != 10 else [0.5]
-        for k, v in state['units'].items():
-            if k[:4] == 'ally':
-                continue
+        for k, v in state['units']['enemy'].items():
             for unit in v['positions']:
                 tile_x, tile_y = unit['tile_xy']
                 distance = self._distance(tile_x, tile_y, self.tile_x, self.tile_y)
@@ -74,14 +72,14 @@ class StandardAction(Action):
         Only play fireball if at least 3 units will be hit
         Try to hit as many units as possible
         """
-        return self._calculate_spell_score(state['units'], radius=2.5, min_to_hit=3)
+        return self._calculate_spell_score(state['units']['enemy'], radius=2.5, min_to_hit=3)
 
     def _calculate_arrows_score(self, state):
         """
         Only play arrows if at least 5 units will be hit
         Try to hit as many units as possible
         """
-        return self._calculate_spell_score(state['units'], radius=4, min_to_hit=5)
+        return self._calculate_spell_score(state['units']['enemy'], radius=4, min_to_hit=5)
 
     def _calculate_archers_score(self, state):
         """
@@ -89,9 +87,7 @@ class StandardAction(Action):
         Play the archers in the center, vertically aligned with the troop
         """
         score = [0] if state['numbers']['elixir']['number'] != 10 else [0.5]
-        for k, v in state['units'].items():
-            if k[:4] == 'ally':
-                continue
+        for k, v in state['units']['enemy'].items():
             for unit in v['positions']:
                 tile_x, tile_y = unit['tile_xy']
                 if self.tile_y < tile_y <= 14:
@@ -136,7 +132,7 @@ class StandardAction(Action):
         That should be just within her range
         """
         score = [0]
-        for k, v in state['units'].items():
+        for k, v in state['units']['enemy'].items():
             if k[:4] == 'ally':
                 continue
             for unit in v['positions']:
