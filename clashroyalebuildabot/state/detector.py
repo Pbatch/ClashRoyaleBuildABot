@@ -24,7 +24,7 @@ class Detector:
 
         self.card_detector = CardDetector(self.card_names)
         self.number_detector = NumberDetector(f'{DATA_DIR}/number.onnx')
-        self.unit_detector = UnitDetector(f'{DATA_DIR}/unit.onnx')
+        self.unit_detector = UnitDetector(f'{DATA_DIR}/unit.onnx', self.card_names)
         self.screen_detector = ScreenDetector()
 
     def _draw_text(self, d, bbox, text):
