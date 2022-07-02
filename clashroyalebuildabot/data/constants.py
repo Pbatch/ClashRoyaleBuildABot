@@ -157,3 +157,11 @@ UNITS = [
 # Multihash coefficients
 MULTI_HASH_SCALE = 0.355
 MULTI_HASH_INTERCEPT = 163
+
+# Cards to units
+CARD_TO_UNITS = {'goblin_cage': ['brawler'],
+                 'minions': ['minion'],
+                 'skeletons': ['skeleton'],
+                 'archers': ['archer'],
+                 'spear_goblins': ['spear_goblin'],
+                 'goblins': ['goblin']}
