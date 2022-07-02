@@ -26,11 +26,12 @@ class UnitDetector(OnnxDetector):
         return card_to_info
 
     def _set_possible_ally_units(self):
-        possible_ally_units = [name for name in self.card_names
-                               if self.card_to_info[name]['type'] == 'troop']
+        possible_ally_units = []
         for name in self.card_names:
             if name in CARD_TO_UNITS:
                 possible_ally_units.extend(CARD_TO_UNITS[name])
+            elif self.card_to_info[name]['type'] == 'troop':
+                possible_ally_units.append(name)
         return set(possible_ally_units)
 
     def _calculate_side(self, name):
