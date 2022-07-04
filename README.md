@@ -29,6 +29,10 @@ we can start to build bots that can make intelligent decisions.
 
 * [Learn](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/State) how the state is generated.
 
+## Releases
+
+* 1.1.0 - Moved to bigger Yolov5 model, predict 'ally/enemy' separated from predicting the unit (doubles training data + fewer classes to predict).
+
 ## Roadmap
 
 * Improve flaws of PeteBot (Placement, elixir management, etc.).
