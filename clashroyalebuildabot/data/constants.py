@@ -152,3 +152,6 @@ CARD_TO_UNITS = {'goblin_cage': ['brawler'],
                  'archers': ['archer'],
                  'spear_goblins': ['spear_goblin'],
                  'goblins': ['goblin']}
+
+# Side
+SIDE_SIZE = 16
