@@ -4,18 +4,20 @@ from PIL import ImageDraw, ImageFont
 
 from clashroyalebuildabot.state.card_detector import CardDetector
 from clashroyalebuildabot.state.number_detector import NumberDetector
+from clashroyalebuildabot.state.side_detector import SideDetector
 from clashroyalebuildabot.state.unit_detector import UnitDetector
 from clashroyalebuildabot.state.screen_detector import ScreenDetector
 from clashroyalebuildabot.data.constants import DATA_DIR, SCREENSHOTS_DIR, CARD_CONFIG, DECK_SIZE
 
 
 class Detector:
-    def __init__(self, card_names, debug=False):
+    def __init__(self, card_names, debug=False, min_conf=0.5):
         if len(card_names) != DECK_SIZE:
             raise ValueError(f'You must specify all {DECK_SIZE} of your cards')
 
         self.card_names = card_names
         self.debug = debug
+        self.min_conf = min_conf
 
         self.font = None
         if self.debug:
@@ -23,9 +25,10 @@ class Detector:
             self.font = ImageFont.load_default()
 
         self.card_detector = CardDetector(self.card_names)
-        self.number_detector = NumberDetector(f'{DATA_DIR}/number.onnx')
-        self.unit_detector = UnitDetector(f'{DATA_DIR}/unit.onnx', self.card_names)
+        self.number_detector = NumberDetector(os.path.join(DATA_DIR, 'number.onnx'))
+        self.unit_detector = UnitDetector(os.path.join(DATA_DIR, 'unit.onnx'), self.card_names)
         self.screen_detector = ScreenDetector()
+        self.side_detector = SideDetector(os.path.join(DATA_DIR, 'side.onnx'))
 
     def _draw_text(self, d, bbox, text):
         text_width, text_height = self.font.getsize(text)
@@ -51,8 +54,9 @@ class Detector:
             for side in ['ally', 'enemy']:
                 for k, v in state['units'][side].items():
                     for i in v['positions']:
-                        d.rectangle(tuple(i['bounding_box']))
-                        self._draw_text(d, i['bounding_box'], k)
+                        if i['confidence'] > self.min_conf:
+                            d.rectangle(tuple(i['bounding_box']))
+                            self._draw_text(d, i['bounding_box'], f'{side}_{k}')
 
             for card, position in zip(state['cards'], CARD_CONFIG):
                 d.rectangle(tuple(position))
