@@ -31,7 +31,9 @@ we can start to build bots that can make intelligent decisions.
 
 ## Releases
 
-* 1.1.0 - Moved to bigger Yolov5 model, predict 'ally/enemy' separated from predicting the unit (doubles training data + fewer classes to predict).
+* 1.1.0
+  * Moved to bigger Yolov5 model.
+  * Predict 'ally/enemy' separately from the unit (Doubles training data + fewer classes to predict).
 
 ## Roadmap
 
