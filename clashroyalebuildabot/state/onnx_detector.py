@@ -80,7 +80,7 @@ class OnnxDetector:
 
         return output
 
-    def _post_process(self, image):
+    def _post_process(self, pred):
         raise NotImplementedError
 
     def run(self, image):
