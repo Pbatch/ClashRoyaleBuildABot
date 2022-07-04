@@ -50,4 +50,4 @@ class StandardBot(Bot):
                 self.play_action(action)
                 # Log the result
                 print(f'Playing {action} with score {action.score} and sleeping for 1 second')
-                time.sleep(1.0)
+                time.sleep(0.5)

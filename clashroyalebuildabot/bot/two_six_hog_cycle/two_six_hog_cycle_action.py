@@ -9,9 +9,7 @@ class TwoSixHogCycleAction(Action):
         return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
 
     def _calculate_enemy_troops(self, state):
-        for k, v in state['units'].items():
-            if k[:4] == 'ally':
-                continue
+        for k, v in state['units']['enemy'].items():
             for unit in v['positions']:
                 tile_x, tile_y = unit['tile_xy']
                 if self.tile_y < tile_y <= 14:
@@ -26,9 +24,7 @@ class TwoSixHogCycleAction(Action):
         Place hog rider on the bridge as high up as possible
         Try to target the lowest hp tower
         """
-        for k, v in state['units'].items():
-            if k[:4] == 'ally':
-                continue
+        for k, v in state['units']['enemy'].items():
             for unit in v['positions']:
                 tile_x, tile_y = unit['tile_xy']
                 if self.tile_y < tile_y <= 14:
@@ -57,14 +53,15 @@ class TwoSixHogCycleAction(Action):
         """
 
         score = [0]
-        for k, v in state['units'].items():
-            for unit in v['positions']:
-                tile_x, tile_y = unit['tile_xy']
-                if v['transport'] == 'ground':
-                    if tile_y >= 10:
-                        if 8 < self.tile_x < 10:
-                            if self.tile_y == 10:
-                                score = [2]
+        for side in ['ally', 'enemy']:
+            for k, v in state['units'][side].items():
+                for unit in v['positions']:
+                    tile_x, tile_y = unit['tile_xy']
+                    if v['transport'] == 'ground':
+                        if tile_y >= 10:
+                            if 8 < self.tile_x < 10:
+                                if self.tile_y == 10:
+                                    score = [2]
         return score
 
     def _calculate_musketeer_score(self, state):
@@ -74,11 +71,12 @@ class TwoSixHogCycleAction(Action):
         That should be just within her range and not too close to the enemy
         """
         score = [0]
-        for k, v in state['units'].items():
-            for unit in v['positions']:
-                tile_x, tile_y = unit['tile_xy']
-                if v['transport'] == 'air' and self.tile_y == tile_y - 7:
-                    score = [2]
+        for side in ['ally', 'enemy']:
+            for k, v in state['units'][side].items():
+                for unit in v['positions']:
+                    tile_x, tile_y = unit['tile_xy']
+                    if v['transport'] == 'air' and self.tile_y == tile_y - 7:
+                        score = [2]
         return score
 
     def _calculate_ice_golem_score(self, state):
@@ -87,16 +85,17 @@ class TwoSixHogCycleAction(Action):
         arena one tile away from the enemy
         """
         score = [0]
-        for k, v in state['units'].items():
-            for unit in v['positions']:
-                tile_x, tile_y = unit['tile_xy']
-                if (18 >= tile_y >= 15) and (v['transport'] == 'ground'):
-                    if tile_x > 8:
-                        if self.tile_y == 14 and self.tile_x == 8:
-                            score = [2]
-                    if tile_x <= 8:
-                        if self.tile_y == 14 and self.tile_x == 9:
-                            score = [2]
+        for side in ['ally', 'enemy']:
+            for k, v in state['units'][side].items():
+                for unit in v['positions']:
+                    tile_x, tile_y = unit['tile_xy']
+                    if (18 >= tile_y >= 15) and (v['transport'] == 'ground'):
+                        if tile_x > 8:
+                            if self.tile_y == 14 and self.tile_x == 8:
+                                score = [2]
+                        if tile_x <= 8:
+                            if self.tile_y == 14 and self.tile_x == 9:
+                                score = [2]
 
         return score
 
@@ -106,16 +105,17 @@ class TwoSixHogCycleAction(Action):
         """
         score = [0] if state['numbers']['elixir']['number'] != 10 else [0.5]
         score = [0]
-        for k, v in state['units'].items():
-            for unit in v['positions']:
-                tile_x, tile_y = unit['tile_xy']
-                if (18 >= tile_y >= 15) and (v['transport'] == 'ground'):
-                    if tile_x > 8:
-                        if self.tile_y == 10 and self.tile_x == 8:
-                            score = [2]
-                    if tile_x <= 8:
-                        if self.tile_y == 10 and self.tile_x == 9:
-                            score = [2]
+        for side in ['ally', 'enemy']:
+            for k, v in state['units'][side].items():
+                for unit in v['positions']:
+                    tile_x, tile_y = unit['tile_xy']
+                    if (18 >= tile_y >= 15) and (v['transport'] == 'ground'):
+                        if tile_x > 8:
+                            if self.tile_y == 10 and self.tile_x == 8:
+                                score = [2]
+                        if tile_x <= 8:
+                            if self.tile_y == 10 and self.tile_x == 9:
+                                score = [2]
 
         return score
 
@@ -129,9 +129,7 @@ class TwoSixHogCycleAction(Action):
             C is the negative distance to the furthest unit
         """
         score = [0, 0, 0]
-        for k, v in units.items():
-            if k[:4] == 'ally':
-                continue
+        for k, v in units['enemy'].items():
             for unit in v['positions']:
                 tile_x, tile_y = unit['tile_xy']
                 # Assume the unit will move down a few spaces
@@ -155,9 +153,7 @@ class TwoSixHogCycleAction(Action):
         """
         units = state['units']
         score = [0]
-        for k, v in units.items():
-            if k[:4] == 'ally':
-                break
+        for k, v in units['enemy'].items():
             for unit in v['positions']:
                 tile_x, tile_y = unit['tile_xy']
                 if tile_y <= 8 and v['transport'] == 'ground':
@@ -172,10 +168,10 @@ class TwoSixHogCycleAction(Action):
         """
         units = state['units']
         score = [0]
-        for k, v in units.items():
+        for k, v in units['enemy'].items():
             for unit in v['positions']:
                 tile_x, tile_y = unit['tile_xy']
-                if  v['transport'] == 'air':
+                if v['transport'] == 'air':
                     if self.tile_y == tile_y - 4 and self.tile_x == tile_x:
                         score = [1]
                         return score

@@ -16,15 +16,16 @@ class PeteBot(Bot):
 
         Estimate the tile of each unit to be the bottom of their bounding box
         """
-        for k, v in self.state['units'].items():
-            for unit in v['positions']:
-                bbox = unit['bounding_box']
-                bbox[0] *= DISPLAY_WIDTH / SCREENSHOT_WIDTH
-                bbox[1] *= DISPLAY_HEIGHT / SCREENSHOT_HEIGHT
-                bbox[2] *= DISPLAY_WIDTH / SCREENSHOT_WIDTH
-                bbox[3] *= DISPLAY_HEIGHT / SCREENSHOT_HEIGHT
-                bbox_bottom = [((bbox[0] + bbox[2]) / 2), bbox[3]]
-                unit['tile_xy'] = self._get_nearest_tile(*bbox_bottom)
+        for side in ['ally', 'enemy']:
+            for k, v in self.state['units'][side].items():
+                for unit in v['positions']:
+                    bbox = unit['bounding_box']
+                    bbox[0] *= DISPLAY_WIDTH / SCREENSHOT_WIDTH
+                    bbox[1] *= DISPLAY_HEIGHT / SCREENSHOT_HEIGHT
+                    bbox[2] *= DISPLAY_WIDTH / SCREENSHOT_WIDTH
+                    bbox[3] *= DISPLAY_HEIGHT / SCREENSHOT_HEIGHT
+                    bbox_bottom = [((bbox[0] + bbox[2]) / 2), bbox[3]]
+                    unit['tile_xy'] = self._get_nearest_tile(*bbox_bottom)
 
     def run(self):
         while True:
