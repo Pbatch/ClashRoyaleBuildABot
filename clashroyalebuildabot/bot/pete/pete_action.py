@@ -12,15 +12,13 @@ class PeteAction(Action):
     def _calculate_building_score(self, units):
         score = [0, 0, 0]
 
-        n_enemies = sum([len(v)
-                         for k, v in units.items() if k[:5] == 'enemy'])
+        n_enemies = sum([len(v) for k, v in units['enemy'].items()])
+
         # Play defensively if the enemy has a unit in our half
         if n_enemies != 0:
             rhs = 0
             lhs = 0
-            for k, v in units.items():
-                if k[:4] == 'ally':
-                    continue
+            for k, v in units['enemy'].items():
                 for unit in v['positions']:
                     tile_x, tile_y = unit['tile_xy']
                     if tile_x > 8 and tile_y <= 17:
@@ -50,8 +48,7 @@ class PeteAction(Action):
         score = [0.5, 0, 0]
 
         # Play aggressively if the enemy has no units
-        n_enemies = sum([len(v)
-                         for k, v in units.items() if k[:5] == 'enemy'])
+        n_enemies = sum([len(v) for k, v in units['enemy'].items()])
         if self.target == 'buildings' and n_enemies == 0:
             score[0] = 1
 
@@ -59,9 +56,7 @@ class PeteAction(Action):
         elif n_enemies != 0:
             rhs = 0
             lhs = 0
-            for k, v in units.items():
-                if k[:4] == 'ally':
-                    continue
+            for k, v in units['enemy'].items():
                 for unit in v['positions']:
                     tile_x, tile_y = unit['tile_xy']
                     if tile_x > 8 and tile_y <= 17:
@@ -87,9 +82,7 @@ class PeteAction(Action):
             C is the negative distance to the furthest unit
         """
         score = [0, 0, 0]
-        for k, v in units.items():
-            if k[:4] == 'ally':
-                continue
+        for k, v in units['enemy'].items():
             for unit in v['positions']:
                 tile_x, tile_y = unit['tile_xy']
                 # Assume the unit will move down a space

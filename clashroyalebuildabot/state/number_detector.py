@@ -1,7 +1,7 @@
 import numpy as np
 from PIL import Image
 
-from clashroyalebuildabot.data.constants import NUMBER_CONFIG, ELIXIR_BOUNDING_BOX, KING_HP, PRINCESS_HP, KING_LEVEL_2_X, \
+from clashroyalebuildabot.data.constants import NUMBER_CONFIG, ELIXIR_BOUNDING_BOX, KING_HP, KING_LEVEL_2_X, \
     NUMBER_MIN_CONFIDENCE, NUMBER_HEIGHT, NUMBER_WIDTH
 from clashroyalebuildabot.state.onnx_detector import OnnxDetector
 
