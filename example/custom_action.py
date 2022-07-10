@@ -23,9 +23,7 @@ class CustomAction(Action):
             C is the negative distance to the furthest unit
         """
         score = [0, 0, 0]
-        for k, v in units.items():
-            if k[:4] == 'ally':
-                continue
+        for k, v in units['enemy'].items():
             for unit in v['positions']:
                 tile_x, tile_y = unit['tile_xy']
                 # Assume the unit will move down a few spaces
@@ -49,9 +47,7 @@ class CustomAction(Action):
         Play the knight in the center, vertically aligned with the troop
         """
         score = [0] if state['numbers']['elixir']['number'] != 10 else [0.5]
-        for k, v in state['units'].items():
-            if k[:4] == 'ally':
-                continue
+        for k, v in state['units']['enemy'].items():
             for unit in v['positions']:
                 tile_x, tile_y = unit['tile_xy']
                 if self.tile_y < tile_y <= 14 and v['transport'] == 'ground':
@@ -64,9 +60,7 @@ class CustomAction(Action):
         Only play minions on top of enemy units
         """
         score = [0] if state['numbers']['elixir']['number'] != 10 else [0.5]
-        for k, v in state['units'].items():
-            if k[:4] == 'ally':
-                continue
+        for k, v in state['units']['enemy'].items():
             for unit in v['positions']:
                 tile_x, tile_y = unit['tile_xy']
                 distance = self._distance(tile_x, tile_y, self.tile_x, self.tile_y)
@@ -94,9 +88,7 @@ class CustomAction(Action):
         Play the archers in the center, vertically aligned with the troop
         """
         score = [0] if state['numbers']['elixir']['number'] != 10 else [0.5]
-        for k, v in state['units'].items():
-            if k[:4] == 'ally':
-                continue
+        for k, v in state['units']['enemy'].items():
             for unit in v['positions']:
                 tile_x, tile_y = unit['tile_xy']
                 if self.tile_y < tile_y <= 14:
@@ -141,9 +133,7 @@ class CustomAction(Action):
         That should be just within her range
         """
         score = [0]
-        for k, v in state['units'].items():
-            if k[:4] == 'ally':
-                continue
+        for k, v in state['units']['enemy'].items():
             for unit in v['positions']:
                 tile_x, tile_y = unit['tile_xy']
                 distance = self._distance(tile_x, tile_y, self.tile_x, self.tile_y)
