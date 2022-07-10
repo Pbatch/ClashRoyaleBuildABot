@@ -66,6 +66,15 @@
         "example",
         "userTesting"
       ]
+    },
+    {
+      "login": "ankushsethi",
+      "name": "Ankush Sethi",
+      "avatar_url": "https://avatars.githubusercontent.com/u/22005886?v=4",
+      "profile": "https://github.com/ankushsethi",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
