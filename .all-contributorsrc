@@ -75,6 +75,16 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "adl212",
+      "name": "adl212",
+      "avatar_url": "https://avatars.githubusercontent.com/u/64753570?v=4",
+      "profile": "https://github.com/adl212",
+      "contributions": [
+        "bug",
+        "data"
+      ]
     }
   ],
   "contributorsPerLine": 7,
