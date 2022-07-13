@@ -20,7 +20,7 @@
 "dark_prince","..\images\cards\dark_prince.png",4,"troop","ground","ground"
 "electro_wizard","..\images\cards\electro_wizard.png",4,"troop","air/ground","ground"
 "elite_barbarians","..\images\cards\elite_barbarians.png",6,"troop","ground","ground"
-"elixir_collector","..\images\cards\elixir_collector.png",6,"building",,"ground
+"elixir_collector","..\images\cards\elixir_collector.png",6,"building",,"ground"
 "executioner","..\images\cards\executioner.png",5,"troop","air/ground","ground"
 "fireball","..\images\cards\fireball.png",4,"spell","air/ground",
 "fire_spirit","..\images\cards\fire_spirits.png",1,"troop","air/ground","ground"
