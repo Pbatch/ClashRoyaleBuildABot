@@ -7,6 +7,7 @@ Miscellaneous
 SRC_DIR = os.path.dirname(os.path.dirname(__file__))
 DATA_DIR = os.path.join(SRC_DIR, 'data')
 SCREENSHOTS_DIR = os.path.join(SRC_DIR, 'screenshots')
+LABELS_DIR = os.path.join(SRC_DIR, 'labels')
 
 """
 Click config
@@ -127,6 +128,7 @@ UNIT_SIZE = 416
 UNIT_Y_START = 0.05
 UNIT_Y_END = 0.80
 UNITS = ['archer',
+         'bomber',
          'brawler',
          'giant',
          'goblin',
@@ -139,6 +141,7 @@ UNITS = ['archer',
          'prince',
          'skeleton',
          'spear_goblin',
+         'tombstone',
          'valkyrie']
 
 # Multihash coefficients
