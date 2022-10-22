@@ -8,9 +8,14 @@ from clashroyalebuildabot.data.constants import SCREENSHOT_WIDTH, SCREENSHOT_HEI
 
 
 class Screen:
-    def __init__(self):
+    def __init__(self, device_name="localhost:5555"):
+        """Sets up the device screen
+
+        Args:
+            device_name (str, optional): The device's name in "adb devices". Defaults to "localhost:5555".
+        """
         self.client = Client(host='127.0.0.1', port=5037)
-        self.device = self.client.device('emulator-5554')
+        self.device = self.client.device(device_name)
 
     def take_screenshot(self):
         """
