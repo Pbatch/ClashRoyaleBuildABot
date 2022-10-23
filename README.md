@@ -1,6 +1,6 @@
 # Clash Royale Build-A-Bot
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-8-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-9-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 [![PyPI version](https://badge.fury.io/py/ClashRoyaleBuildABot.svg)](https://badge.fury.io/py/ClashRoyaleBuildABot)
 
@@ -62,18 +62,21 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
 <table>
-  <tr>
-    <td align="center"><a href="https://github.com/link-discord"><img src="https://avatars.githubusercontent.com/u/50463727?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Link</b></sub></a><br /><a href="#data-link-discord" title="Data">🔣</a></td>
-    <td align="center"><a href="http://www.pazder.ca"><img src="https://avatars.githubusercontent.com/u/17608446?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Emgimeer-Bazder</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/issues?q=author%3AEmgimeer-Bazder" title="Bug reports">🐛</a></td>
-    <td align="center"><a href="https://github.com/GavriloviciEduard"><img src="https://avatars.githubusercontent.com/u/33176335?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Gavrilovici Eduard</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=GavriloviciEduard" title="Documentation">📖</a> <a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=GavriloviciEduard" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/Nyantad"><img src="https://avatars.githubusercontent.com/u/68382673?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Nyantad</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/issues?q=author%3ANyantad" title="Bug reports">🐛</a></td>
-    <td align="center"><a href="https://github.com/OwenKruse"><img src="https://avatars.githubusercontent.com/u/91492770?v=4?s=100" width="100px;" alt=""/><br /><sub><b>OwenKruse</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=OwenKruse" title="Documentation">📖</a> <a href="#data-OwenKruse" title="Data">🔣</a> <a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=OwenKruse" title="Code">💻</a> <a href="#example-OwenKruse" title="Examples">💡</a></td>
-    <td align="center"><a href="http://martinmiglio.dev/?utm_source=github_bio&utm_medium=Social"><img src="https://avatars.githubusercontent.com/u/10036276?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Martin Miglio</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=marmig0404" title="Code">💻</a> <a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=marmig0404" title="Documentation">📖</a> <a href="#a11y-marmig0404" title="Accessibility">️️️️♿️</a> <a href="#example-marmig0404" title="Examples">💡</a> <a href="#userTesting-marmig0404" title="User Testing">📓</a></td>
-    <td align="center"><a href="https://github.com/ankushsethi"><img src="https://avatars.githubusercontent.com/u/22005886?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Ankush Sethi</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/issues?q=author%3Aankushsethi" title="Bug reports">🐛</a></td>
-  </tr>
-  <tr>
-    <td align="center"><a href="https://github.com/adl212"><img src="https://avatars.githubusercontent.com/u/64753570?v=4?s=100" width="100px;" alt=""/><br /><sub><b>adl212</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/issues?q=author%3Aadl212" title="Bug reports">🐛</a> <a href="#data-adl212" title="Data">🔣</a></td>
-  </tr>
+  <tbody>
+    <tr>
+      <td align="center"><a href="https://github.com/link-discord"><img src="https://avatars.githubusercontent.com/u/50463727?v=4?s=100" width="100px;" alt="Link"/><br /><sub><b>Link</b></sub></a><br /><a href="#data-link-discord" title="Data">🔣</a></td>
+      <td align="center"><a href="http://www.pazder.ca"><img src="https://avatars.githubusercontent.com/u/17608446?v=4?s=100" width="100px;" alt="Emgimeer-Bazder"/><br /><sub><b>Emgimeer-Bazder</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/issues?q=author%3AEmgimeer-Bazder" title="Bug reports">🐛</a></td>
+      <td align="center"><a href="https://github.com/GavriloviciEduard"><img src="https://avatars.githubusercontent.com/u/33176335?v=4?s=100" width="100px;" alt="Gavrilovici Eduard"/><br /><sub><b>Gavrilovici Eduard</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=GavriloviciEduard" title="Documentation">📖</a> <a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=GavriloviciEduard" title="Code">💻</a></td>
+      <td align="center"><a href="https://github.com/Nyantad"><img src="https://avatars.githubusercontent.com/u/68382673?v=4?s=100" width="100px;" alt="Nyantad"/><br /><sub><b>Nyantad</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/issues?q=author%3ANyantad" title="Bug reports">🐛</a></td>
+      <td align="center"><a href="https://github.com/OwenKruse"><img src="https://avatars.githubusercontent.com/u/91492770?v=4?s=100" width="100px;" alt="OwenKruse"/><br /><sub><b>OwenKruse</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=OwenKruse" title="Documentation">📖</a> <a href="#data-OwenKruse" title="Data">🔣</a> <a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=OwenKruse" title="Code">💻</a> <a href="#example-OwenKruse" title="Examples">💡</a></td>
+      <td align="center"><a href="http://martinmiglio.dev/?utm_source=github_bio&utm_medium=Social"><img src="https://avatars.githubusercontent.com/u/10036276?v=4?s=100" width="100px;" alt="Martin Miglio"/><br /><sub><b>Martin Miglio</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=marmig0404" title="Code">💻</a> <a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=marmig0404" title="Documentation">📖</a> <a href="#a11y-marmig0404" title="Accessibility">️️️️♿️</a> <a href="#example-marmig0404" title="Examples">💡</a> <a href="#userTesting-marmig0404" title="User Testing">📓</a></td>
+      <td align="center"><a href="https://github.com/ankushsethi"><img src="https://avatars.githubusercontent.com/u/22005886?v=4?s=100" width="100px;" alt="Ankush Sethi"/><br /><sub><b>Ankush Sethi</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/issues?q=author%3Aankushsethi" title="Bug reports">🐛</a></td>
+    </tr>
+    <tr>
+      <td align="center"><a href="https://github.com/adl212"><img src="https://avatars.githubusercontent.com/u/64753570?v=4?s=100" width="100px;" alt="adl212"/><br /><sub><b>adl212</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/issues?q=author%3Aadl212" title="Bug reports">🐛</a> <a href="#data-adl212" title="Data">🔣</a></td>
+      <td align="center"><a href="https://github.com/Chi-EEE"><img src="https://avatars.githubusercontent.com/u/73843190?v=4?s=100" width="100px;" alt="Chi Huu Huynh"/><br /><sub><b>Chi Huu Huynh</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=Chi-EEE" title="Code">💻</a></td>
+    </tr>
+  </tbody>
 </table>
 
 <!-- markdownlint-restore -->
