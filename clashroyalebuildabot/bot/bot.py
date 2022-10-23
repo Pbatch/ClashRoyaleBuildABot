@@ -15,23 +15,36 @@ from clashroyalebuildabot.data.constants import (
     SCREEN_CONFIG,
     TILE_INIT_X,
     TILE_INIT_Y,
-    DISPLAY_HEIGHT
+    DISPLAY_HEIGHT,
 )
 from clashroyalebuildabot.screen import Screen
 from clashroyalebuildabot.state.detector import Detector
 
 
 class Bot:
-    def __init__(self, card_names,
-                 action_class=Action,
-                 auto_start=True,
-                 debug=False):
+    def __init__(
+        self,
+        card_names,
+        action_class=Action,
+        auto_start=True,
+        debug=False,
+        device_name="localhost:5555",
+    ):
+        """This function sets up the bot
+
+        Args:
+            card_names (list[str]): List of your card names in snake_case
+            action_class (Action, optional): The action class used for deciding whether the bot places down a card. Defaults to Action.
+            auto_start (bool, optional): Whether to auto start a match. Defaults to True.
+            debug (bool, optional): Whether to display debug displays (e.g. Bounding Boxes). Defaults to False.
+            device_name (str, optional): The device's name in "adb devices". Defaults to "localhost:5555".
+        """
         self.card_names = card_names
         self.action_class = action_class
         self.auto_start = auto_start
         self.debug = debug
 
-        self.screen = Screen()
+        self.screen = Screen(device_name=device_name)
         self.detector = Detector(card_names, debug=self.debug)
         self.state = None
 
@@ -67,9 +80,9 @@ class Bot:
         Calculate which tiles we are allowed to play on
         """
         tiles = ALLY_TILES
-        if self.state['numbers']['left_enemy_princess_hp']['number'] == 0:
+        if self.state["numbers"]["left_enemy_princess_hp"]["number"] == 0:
             tiles += LEFT_PRINCESS_TILES
-        if self.state['numbers']['right_enemy_princess_hp']['number'] == 0:
+        if self.state["numbers"]["right_enemy_princess_hp"]["number"] == 0:
             tiles += RIGHT_PRINCESS_TILES
         return tiles
 
@@ -83,17 +96,20 @@ class Bot:
         # An action is a tuple (card_index, tile_x, tile_y)
         actions = []
         for i in range(4):
-            card = self.state['cards'][i + 1]
-            enough_elixir = int(self.state['numbers']['elixir']['number']) >= card['cost']
-            ready = card['ready']
-            not_blank = card['name'] != 'blank'
+            card = self.state["cards"][i + 1]
+            enough_elixir = (
+                int(self.state["numbers"]["elixir"]["number"]) >= card["cost"]
+            )
+            ready = card["ready"]
+            not_blank = card["name"] != "blank"
             if enough_elixir and ready and not_blank:
-                if card['type'] == 'spell':
+                if card["type"] == "spell":
                     tiles = all_tiles
                 else:
                     tiles = valid_tiles
-                actions.extend([self.action_class(i, x, y, *card.values())
-                                for (x, y) in tiles])
+                actions.extend(
+                    [self.action_class(i, x, y, *card.values()) for (x, y) in tiles]
+                )
 
         return actions
 
@@ -103,8 +119,10 @@ class Bot:
 
         # Try to click a button to get closer to starting a game
         if self.auto_start:
-            if self.state['screen'] != 'in_game':
-                self.screen.click(*SCREEN_CONFIG[self.state['screen']]['click_coordinates'])
+            if self.state["screen"] != "in_game":
+                self.screen.click(
+                    *SCREEN_CONFIG[self.state["screen"]]["click_coordinates"]
+                )
                 time.sleep(2)
 
     def play_action(self, action):

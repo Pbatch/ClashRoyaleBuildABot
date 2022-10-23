@@ -9,7 +9,7 @@ def main():
     card_names = ['minions', 'archers', 'arrows', 'giant',
                   'minipekka', 'fireball', 'knight', 'musketeer']
     # Define an instance of CustomBot
-    bot = CustomBot(card_names, debug=True)
+    bot = CustomBot(card_names, debug=True, device_name="localhost:5555")
     # and run!
     bot.run()
 
