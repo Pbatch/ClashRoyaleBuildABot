@@ -85,6 +85,15 @@
         "bug",
         "data"
       ]
+    },
+    {
+      "login": "Chi-EEE",
+      "name": "Chi Huu Huynh",
+      "avatar_url": "https://avatars.githubusercontent.com/u/73843190?v=4",
+      "profile": "https://github.com/Chi-EEE",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
@@ -92,5 +101,6 @@
   "projectOwner": "Pbatch",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "skipCi": true
+  "skipCi": true,
+  "commitConvention": "angular"
 }
