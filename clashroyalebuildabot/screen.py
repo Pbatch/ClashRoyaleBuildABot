@@ -1,37 +1,32 @@
 import io
+import subprocess
 
 import numpy as np
 from PIL import Image
-from ppadb.client import Client
 
 from clashroyalebuildabot.data.constants import SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT
 
 
 class Screen:
-    def __init__(self, device_name="localhost:5555"):
-        """Sets up the device screen
-
-        Args:
-            device_name (str, optional): The device's name in "adb devices". Defaults to "localhost:5555".
-        """
-        self.client = Client(host='127.0.0.1', port=5037)
-        self.device = self.client.device(device_name)
-
-    def take_screenshot(self):
+    @staticmethod
+    def take_screenshot():
         """
         Take a screenshot of the emulator
         """
-        screenshot = self.device.screencap()
-        screenshot = io.BytesIO(screenshot)
+        screenshot_bytes = subprocess.check_output(['adb', 'exec-out', 'screencap', '-p'])
+        if screenshot_bytes and len(screenshot_bytes) > 5 and screenshot_bytes[5] == 0x0d:
+            screenshot_bytes = screenshot_bytes.replace(b'\r\n', b'\n')
+        screenshot = io.BytesIO(screenshot_bytes)
         screenshot = Image.open(screenshot).convert('RGB')
         screenshot = screenshot.resize((SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT), Image.BILINEAR)
         return screenshot
 
-    def click(self, x, y):
+    @staticmethod
+    def click(x, y):
         """
         Click at the given (x, y) coordinate
         """
-        self.device.input_tap(x, y)
+        subprocess.run(['adb', 'shell', 'input', 'tap', str(x), str(y)])
 
 
 def main():

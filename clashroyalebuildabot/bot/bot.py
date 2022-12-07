@@ -27,8 +27,7 @@ class Bot:
         card_names,
         action_class=Action,
         auto_start=True,
-        debug=False,
-        device_name="localhost:5555",
+        debug=False
     ):
         """This function sets up the bot
 
@@ -37,14 +36,13 @@ class Bot:
             action_class (Action, optional): The action class used for deciding whether the bot places down a card. Defaults to Action.
             auto_start (bool, optional): Whether to auto start a match. Defaults to True.
             debug (bool, optional): Whether to display debug displays (e.g. Bounding Boxes). Defaults to False.
-            device_name (str, optional): The device's name in "adb devices". Defaults to "localhost:5555".
         """
         self.card_names = card_names
         self.action_class = action_class
         self.auto_start = auto_start
         self.debug = debug
 
-        self.screen = Screen(device_name=device_name)
+        self.screen = Screen()
         self.detector = Detector(card_names, debug=self.debug)
         self.state = None
 

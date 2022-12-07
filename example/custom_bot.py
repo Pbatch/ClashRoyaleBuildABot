@@ -12,11 +12,11 @@ from clashroyalebuildabot.data.constants import DISPLAY_WIDTH, SCREENSHOT_WIDTH,
 
 
 class CustomBot(Bot):
-    def __init__(self, card_names, debug=False, device_name="localhost:5555"):
+    def __init__(self, card_names, debug=False):
         preset_deck = {'minions', 'archers', 'arrows', 'giant', 'minipekka', 'fireball', 'knight', 'musketeer'}
         if set(card_names) != preset_deck:
             raise ValueError(f'You must use the preset deck with cards {preset_deck} for CustomBot')
-        super().__init__(card_names, CustomAction, debug=debug, device_name=device_name)
+        super().__init__(card_names, CustomAction, debug=debug)
 
     def _preprocess(self):
         """
