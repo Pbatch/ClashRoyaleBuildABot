@@ -94,6 +94,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "hexiro",
+      "name": "nathan lodge",
+      "avatar_url": "https://avatars.githubusercontent.com/u/42787085?v=4",
+      "profile": "https://hexiro.me",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
