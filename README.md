@@ -1,6 +1,6 @@
 # Clash Royale Build-A-Bot
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-9-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-10-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 [![PyPI version](https://badge.fury.io/py/ClashRoyaleBuildABot.svg)](https://badge.fury.io/py/ClashRoyaleBuildABot)
 
@@ -75,6 +75,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <tr>
       <td align="center"><a href="https://github.com/adl212"><img src="https://avatars.githubusercontent.com/u/64753570?v=4?s=100" width="100px;" alt="adl212"/><br /><sub><b>adl212</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/issues?q=author%3Aadl212" title="Bug reports">🐛</a> <a href="#data-adl212" title="Data">🔣</a></td>
       <td align="center"><a href="https://github.com/Chi-EEE"><img src="https://avatars.githubusercontent.com/u/73843190?v=4?s=100" width="100px;" alt="Chi Huu Huynh"/><br /><sub><b>Chi Huu Huynh</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=Chi-EEE" title="Code">💻</a></td>
+      <td align="center"><a href="https://hexiro.me"><img src="https://avatars.githubusercontent.com/u/42787085?v=4?s=100" width="100px;" alt="nathan lodge"/><br /><sub><b>nathan lodge</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/issues?q=author%3Ahexiro" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
 </table>
