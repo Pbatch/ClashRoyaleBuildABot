@@ -1,15 +1,15 @@
 """
 A CustomBot implementation through import
 """
-from random_bot import RandomBot # see custom_bot.py
+from custom_bot import CustomBot # see custom_bot.py
 
 
 def main():
     # Set required bot variables
-    card_names = ['monk', 'electro_giant', 'royal_recruits', 'royal_delivery',
-                  'hunter', 'electro_dragon', 'electro_spirit', 'fisherman']
+    card_names = ['minions', 'archers', 'arrows', 'giant',
+                  'minipekka', 'fireball', 'knight', 'musketeer']
     # Define an instance of CustomBot
-    bot = RandomBot(card_names, debug=True)
+    bot = CustomBot(card_names, debug=True)
     # and run!
     bot.run()
 
