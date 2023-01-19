@@ -9,6 +9,7 @@
 "barbarian_hut","..\images\cards\barbarian_hut.png","7","building","ground","ground"
 "barbarians","..\images\cards\barbarians.png","5","troop","ground","ground"
 "bats","..\images\cards\bats.png","2","troop","air/ground","air"
+"bat",,,"troop","air/ground","air"
 "battle_healer","..\images\cards\battle_healer.png","4","troop","ground","ground"
 "battle_ram","..\images\cards\battle_ram.png","4","troop","buildings","ground"
 "bomber","..\images\cards\bomber.png","2","troop","ground","ground"
