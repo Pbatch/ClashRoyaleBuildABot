@@ -12,7 +12,7 @@ Build your own bot to play Clash Royale
 
 We present an advanced state generator, which is accurate and returns a lot of information.
 It uses:
-* YOLOv5 to infer the units and numbers
+* YOLO to infer the units (v8) and numbers (v5)
 * Image hashes to detect the cards
 * A simple function of the pixels to deduce the elixir
 
@@ -30,7 +30,9 @@ we can start to build bots that can make intelligent decisions.
 * [Learn](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/State) how the state is generated.
 
 ## Releases
-
+* 1.2.0
+  * Replaced the Yolov5 unit model with a Yolov8 unit model.
+  * Retrained including extra data from Jurek Elliesen.
 * 1.1.0
   * Moved to bigger Yolov5 model.
   * Predict 'ally/enemy' separately from the unit (Doubles training data + fewer classes to predict).
