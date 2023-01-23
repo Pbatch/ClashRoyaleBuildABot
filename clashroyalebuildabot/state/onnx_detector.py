@@ -1,5 +1,5 @@
-import onnxruntime
 import numpy as np
+import onnxruntime
 
 
 class OnnxDetector:
@@ -43,22 +43,31 @@ class OnnxDetector:
 
         return keep
 
-    def nms(self, prediction, conf_thres=0.35, iou_thres=0.45):
+    def nms(self, prediction, conf_thres=0.35, iou_thres=0.45, yolov8=False):
         """
         Runs Non-Maximum Suppression (NMS) on inference results
         """
+        if yolov8:
+            prediction = prediction.transpose((0, 2, 1))
         output = [np.zeros((0, 6))] * len(prediction)
         for i in range(len(prediction)):
-            # Mask out predictions below the confidence threshold
-            mask = prediction[i, :, 4] > conf_thres
-            x = prediction[i][mask]
+            if yolov8:
+                x = prediction[i]
+            else:
+                # Mask out predictions below the confidence threshold
+                mask = prediction[i, :, 4] > conf_thres
+                x = prediction[i][mask]
 
-            if not x.shape[0]:
-                continue
+                if not x.shape[0]:
+                    continue
 
             # Calculate the best scores
-            # score = object confidence * class confidence
-            scores = x[:, 4:5] * x[:, 5:]
+            if yolov8:
+                # score = class confidence
+                scores = x[:, 4:]
+            else:
+                # score = object confidence * class confidence
+                scores = x[:, 4:5] * x[:, 5:]
             best_scores_idx = np.argmax(scores, axis=1).reshape(-1, 1)
             best_scores = np.take_along_axis(scores, best_scores_idx, axis=1)
 
@@ -76,8 +85,8 @@ class OnnxDetector:
 
             # Keep only the best class
             best = np.hstack([boxes[keep], best_scores[keep], best_scores_idx[keep]])
-            output[i] = best
 
+            output[i] = best
         return output
 
     def _post_process(self, pred):
