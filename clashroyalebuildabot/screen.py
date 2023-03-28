@@ -9,7 +9,10 @@ from clashroyalebuildabot.data.constants import SCREENSHOT_WIDTH, SCREENSHOT_HEI
 class Screen:
     def __init__(self):
         # Physical size: 720x1280 -> self.width = 720, self.height = 1280
-        window_size = subprocess.check_output(['adb', 'shell', 'wm', 'size'])
+        try:
+            window_size = subprocess.check_output(['adb', 'shell', 'wm', 'size'])
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(f"command '{e.cmd}' return with error (code {e.returncode}): {e.output}")
         window_size = window_size.decode('ascii').replace('Physical size: ', '')
         self.width, self.height = [int(i) for i in window_size.split('x')]
 
@@ -33,7 +36,6 @@ class Screen:
 def main():
     cls = Screen()
     screenshot = cls.take_screenshot()
-    print(np.array(screenshot).shape)
     screenshot.save('screen.jpg')
 
 
