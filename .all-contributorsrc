@@ -112,6 +112,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "HorridModz",
+      "name": "HorridModz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/105762560?v=4",
+      "profile": "https://gameguardian.net/forum/profile/1234241-horridmodz/",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
