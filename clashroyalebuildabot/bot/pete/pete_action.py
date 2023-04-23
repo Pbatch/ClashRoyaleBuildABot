@@ -36,7 +36,7 @@ class PeteAction(Action):
 
     def _calculate_troop_score(self, units):
         """
-        Calculate the score for a troop card (either fireball or arrows)
+        Calculate the score for a troop card
 
         The score is defined as [A, B, C]
             A is
