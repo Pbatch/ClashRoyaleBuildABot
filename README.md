@@ -1,6 +1,6 @@
 # Clash Royale Build-A-Bot
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-13-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-14-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 [![PyPI version](https://badge.fury.io/py/ClashRoyaleBuildABot.svg)](https://badge.fury.io/py/ClashRoyaleBuildABot)
 
@@ -81,6 +81,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="http://basscoder2808.github.io/"><img src="https://avatars.githubusercontent.com/u/65075935?v=4?s=100" width="100px;" alt="Vedant Jolly"/><br /><sub><b>Vedant Jolly</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/issues?q=author%3ABassCoder2808" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://gameguardian.net/forum/profile/1234241-horridmodz/"><img src="https://avatars.githubusercontent.com/u/105762560?v=4?s=100" width="100px;" alt="HorridModz"/><br /><sub><b>HorridModz</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=HorridModz" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/BjornGrylls"><img src="https://avatars.githubusercontent.com/u/35100000?v=4?s=100" width="100px;" alt="BjornGrylls"/><br /><sub><b>BjornGrylls</b></sub></a><br /><a href="#mentoring-BjornGrylls" title="Mentoring">🧑‍🏫</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/IIgorrrrr"><img src="https://avatars.githubusercontent.com/u/103566403?v=4?s=100" width="100px;" alt="Iiro Heinonen"/><br /><sub><b>Iiro Heinonen</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/issues?q=author%3AIIgorrrrr" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
 </table>
