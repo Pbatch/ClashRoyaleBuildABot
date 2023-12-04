@@ -32,7 +32,7 @@ class Detector:
         self.side_detector = SideDetector(os.path.join(DATA_DIR, 'side.onnx'))
 
     def _draw_text(self, d, bbox, text):
-        text_width, text_height = self.font.getsize(text)
+        _, _, text_width, text_height = self.font.getbbox(text)
         y_offset = 5
         x = (bbox[0] + bbox[2] - text_width) / 2
         y = bbox[1] - y_offset

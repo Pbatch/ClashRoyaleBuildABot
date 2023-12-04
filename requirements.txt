@@ -1,6 +1,6 @@
 flatbuffers==2.0
 numpy==1.23.0
 onnxruntime==1.12.1
-Pillow==9.1.1
+Pillow==10.1.0
 protobuf==4.21.1
 scipy==1.8.1
