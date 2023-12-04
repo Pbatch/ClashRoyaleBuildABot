@@ -139,6 +139,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "carlos-dubon",
+      "name": "Carlos Dubón",
+      "avatar_url": "https://avatars.githubusercontent.com/u/69093659?v=4",
+      "profile": "http://carlosdubon.dev",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
