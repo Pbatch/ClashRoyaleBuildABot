@@ -1,6 +1,6 @@
 # Clash Royale Build-A-Bot
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-15-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-16-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 [![PyPI version](https://badge.fury.io/py/ClashRoyaleBuildABot.svg)](https://badge.fury.io/py/ClashRoyaleBuildABot)
 
@@ -85,6 +85,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="http://carlosdubon.dev"><img src="https://avatars.githubusercontent.com/u/69093659?v=4?s=100" width="100px;" alt="Carlos Dubón"/><br /><sub><b>Carlos Dubón</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/issues?q=author%3Acarlos-dubon" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Leviaria"><img src="https://avatars.githubusercontent.com/u/113382526?v=4?s=100" width="100px;" alt="Leviaria"/><br /><sub><b>Leviaria</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=Leviaria" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
