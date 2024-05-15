@@ -6,6 +6,7 @@ Implementation of a custom bot for Clash Royale, based on clashroyalebuildabot.
 import random
 import time
 import os  # For file paths
+from datetime import datetime #for the time
 from clashroyalebuildabot.bot import Bot
 from custom_action import CustomAction
 from clashroyalebuildabot.data.constants import DISPLAY_WIDTH, SCREENSHOT_WIDTH, DISPLAY_HEIGHT, SCREENSHOT_HEIGHT
@@ -50,7 +51,7 @@ class CustomBot(Bot):
                     bbox[3] *= DISPLAY_HEIGHT / SCREENSHOT_HEIGHT
                     bbox_bottom = [((bbox[0] + bbox[2]) / 2), bbox[3]]
                     unit['tile_xy'] = self._get_nearest_tile(*bbox_bottom)
-                    
+
     def _click(self, x, y):
         """
         Clicks at the specified coordinates within the game window.
@@ -62,7 +63,6 @@ class CustomBot(Bot):
         """
         Starts the bot and runs it in a loop.
         """
-        print("Custom Bot is running...")
         while True:
             # Check for end of game screen and pause
             if self.end_of_game_clicked:
@@ -78,7 +78,7 @@ class CustomBot(Bot):
             # End of game detected, but no actions performed yet
             if self.state['screen'] == 'end_of_game':
                 self._click(*SCREEN_CONFIG['end_of_game']['click_coordinates'])
-                print("End of game detected, waiting for 10 seconds...")
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] [INFO] End of game detected, waiting for 10 seconds...")
                 self.pause_until = time.time() + 10  # Set pause for 10 seconds
                 self.end_of_game_clicked = True  # Mark the end of the game
                 time.sleep(2)  # Additional pause to ensure state is updated
@@ -88,7 +88,8 @@ class CustomBot(Bot):
             actions = self.get_actions()
 
             if not actions:  # No actions available
-                print("No actions available. Waiting for 1 second...")
+                if self.debug:  # Only print if debug is enabled
+                    print(f"[{datetime.now().strftime('%H:%M:%S')}] [DEBUG] No actions available. Waiting for 1 second...")
                 time.sleep(1.0)
                 continue
             # Perform actions only if in the game and not in the main menu
@@ -105,8 +106,8 @@ class CustomBot(Bot):
                 # Play the best action
                 self.play_action(action)
                 # Log the result
-                print(f'Playing {action} with score {action.score} and sleeping for 1 second')
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] [ACTION] Playing {action} with score {action.score} and sleeping for 1 second")
                 time.sleep(1.0)
             else:
-                print("In the main menu or no actions available. Waiting for 1 second...")
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] [INFO] In the main menu or no actions available. Waiting for 1 second...")
                 time.sleep(1.0)
