@@ -7,6 +7,8 @@ from clashroyalebuildabot.bot import Bot
 from custom_action import CustomAction
 from clashroyalebuildabot.data.constants import DISPLAY_WIDTH, SCREENSHOT_WIDTH, DISPLAY_HEIGHT, SCREENSHOT_HEIGHT
 from clashroyalebuildabot.data.constants import SCREEN_CONFIG
+from loguru import logger 
+from pathlib import Path
 
 class CustomBot(Bot):
     def __init__(self, card_names, debug=False):
@@ -16,7 +18,7 @@ class CustomBot(Bot):
         super().__init__(card_names, CustomAction, debug=debug)
         self.end_of_game_clicked = False
         self.pause_until = 0
-
+        
     def _preprocess(self):
         for side in ['ally', 'enemy']:
             for k, v in self.state['units'][side].items():
@@ -34,13 +36,12 @@ class CustomBot(Bot):
             if self.end_of_game_clicked:
                 if time.time() > self.pause_until:
                     if not any(action.name == "Battle" for action in self.get_actions()):
-                        print(f"[{datetime.now().strftime('%H:%M:%S')}] [INFO] Cant find Battle button force game restart.")
-
+                        logger.info("Cant find Battle button, force game restart.")  # Loguru logging
                         subprocess.run("adb shell am force-stop com.supercell.clashroyale", shell=True)
                         time.sleep(1)
                         subprocess.run("adb shell am start -n com.supercell.clashroyale/com.supercell.titan.GameApp", shell=True)
 
-                        print(f"[{datetime.now().strftime('%H:%M:%S')}] [INFO] Waiting 10 seconds...")
+                        logger.info("Waiting 10 seconds...")  # Loguru logging
                         time.sleep(10)
 
                     self.end_of_game_clicked = False
@@ -51,7 +52,7 @@ class CustomBot(Bot):
             self.set_state()
 
             if self.state['screen'] == 'end_of_game':
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] [INFO] End of game detected. Waiting 10 seconds for battle button...")
+                logger.info("End of game detected. Waiting 10 seconds for battle button...")  # Loguru logging
                 self.pause_until = time.time() + 10
                 self.end_of_game_clicked = True
                 time.sleep(10)
@@ -60,7 +61,7 @@ class CustomBot(Bot):
 
             if not actions:
                 if self.debug:
-                    print(f"[{datetime.now().strftime('%H:%M:%S')}] [DEBUG] No actions available. Waiting for 1 second...")
+                    logger.debug("No actions available. Waiting for 1 second...")  # Loguru logging (debug level)
                 time.sleep(1.0)
                 continue
             elif self.state['screen'] != 'lobby':
@@ -70,8 +71,8 @@ class CustomBot(Bot):
                 if action.score[0] == 0:
                     continue
                 self.play_action(action)
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] [ACTION] Playing {action} with score {action.score} and sleeping for 1 second")
+                logger.info(f"Playing {action} with score {action.score} and sleeping for 1 second") # Loguru logging
                 time.sleep(1.0)
             else:
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] [INFO] In the main menu or no actions available. Waiting for 1 second...")
+                logger.info("In the main menu or no actions available. Waiting for 1 second...")  # Loguru logging
                 time.sleep(1.0)
