@@ -5,3 +5,4 @@ Pillow==10.1.0
 protobuf==4.21.1
 scipy==1.8.1
 rich==13.7.1
+loguru==0.7.2
