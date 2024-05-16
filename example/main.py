@@ -6,10 +6,22 @@ from custom_bot import CustomBot
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
+from loguru import logger 
+from pathlib import Path
+from datetime import datetime
 
 ctypes.windll.kernel32.SetConsoleTitleW("Clash Royale Build-A-Bot")
 
 def main():
+    # Create logs directory if it doesn't exist
+    logs_dir = Path("clashroyalebuildabot/logs")
+    logs_dir.mkdir(parents=True, exist_ok=True)
+
+    # Configure Loguru
+    log_file_name = f"bot_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.log"
+    log_file_path = logs_dir / log_file_name
+    logger.add(log_file_path, rotation="10 MB", retention="1 month")
+
     console = Console()
     menu_options = [
         "Start (Default Config)",
@@ -35,11 +47,12 @@ def main():
 
 def handle_menu_selection(console, selected_option):
     if selected_option == 0:
-        console.clear()  # Clear the console when starting
-        print_title(console)  # Print only the title
+        console.clear() 
+        print_title(console)  
+        logger.info("Starting the bot")  
         start_bot()
     elif selected_option == 1:
-        info_text = Text("[INFO] Settings coming soon...")
+        info_text = Text("[INFO] Settings coming soon...") # Define info_text here
         console.print(Panel(info_text))
         time.sleep(2) 
     elif selected_option == 2:
@@ -101,7 +114,7 @@ def start_bot():
         bot = CustomBot(card_names, debug=False)
         bot.run()
     except ImportError:
-        print("Error: custom_bot.py not found. Make sure the file exists.")
+        logger.error("Error: custom_bot.py not found. Make sure the file exists.")  # Use logger.error
         sys.exit(1)
 
 
