@@ -15,16 +15,22 @@
 
 Welcome to Clash Royale Build-A-Bot! This project provides an advanced state generator that accurately returns detailed information using cutting-edge technologies. 
 
-### Features
+## Previews
 
-- **YOLO for Unit and Number Detection**
-  - Uses YOLO v8 for unit detection and YOLO v5 for number detection.
-- **Card Detection**
-  - Utilizes image hashes to identify cards.
-- **Elixir Calculation**
-  - Deduces elixir levels with a simple pixel function.
-
-With a powerful interpretation of the game state, you can start building bots that make intelligent decisions.
+<div align="center">
+    <table>
+        <tr>
+            <td align="center">
+                <img src="https://raw.githubusercontent.com/wiki/Pbatch/ClashRoyaleBuildABot/images/demo.gif" alt="Standard Bot">
+                <p><em>Standard Bot</em></p>
+            </td>
+            <td align="center">
+                <img src="https://raw.githubusercontent.com/wiki/Pbatch/ClashRoyaleBuildABot/images/hog.gif" alt="Hog 2.6 Cycle Bot">
+                <p><em>Hog 2.6 Cycle Bot by OwenKruse</em></p>
+            </td>
+        </tr>
+    </table>
+</div>
 
 ## Getting Started
 
@@ -36,6 +42,17 @@ To get started with building your Clash Royale bot, follow these steps:
    - Learn the basics with our [Bot Building Tutorial](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/Tutorial-(Basic)).
 3. **Understand State Generation**
    - Dive deeper into how the state is generated in our [State Guide](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/State).
+
+### Features
+
+- **YOLO for Unit and Number Detection**
+  - Uses YOLO v8 for unit detection and YOLO v5 for number detection.
+- **Card Detection**
+  - Utilizes image hashes to identify cards.
+- **Elixir Calculation**
+  - Deduces elixir levels with a simple pixel function.
+
+With a powerful interpretation of the game state, you can build bots that make intelligent decisions.
 
 ## Releases
 
@@ -61,23 +78,6 @@ Our future plans include:
 - Creating a leaderboard for the best bots developed with this repository.
 
 Have a great idea? Contribute and see it in action!
-
-## Previews
-
-<div align="center">
-    <table>
-        <tr>
-            <td align="center">
-                <img src="https://raw.githubusercontent.com/wiki/Pbatch/ClashRoyaleBuildABot/images/demo.gif" alt="Standard Bot">
-                <p><em>Standard Bot</em></p>
-            </td>
-            <td align="center">
-                <img src="https://raw.githubusercontent.com/wiki/Pbatch/ClashRoyaleBuildABot/images/hog.gif" alt="Hog 2.6 Cycle Bot">
-                <p><em>Hog 2.6 Cycle Bot by OwenKruse</em></p>
-            </td>
-        </tr>
-    </table>
-</div>
 
 ## Contributors ✨
 
