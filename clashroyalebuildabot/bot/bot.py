@@ -31,7 +31,7 @@ class Bot:
         self.debug = debug
 
         self.screen = Screen()
-        self.detector = Detector(card_names, debug=self.debug) 
+        self.detector = Detector(card_names, debug=self.debug)
         self.state = None
 
     @staticmethod
@@ -94,16 +94,9 @@ class Bot:
                     )
                     time.sleep(2)
 
-        except subprocess.CalledProcessError as e:
-            logger.error(f"ADB command failed: {e.cmd}")
-            logger.error(f"Error code: {e.returncode}")
-            if e.stderr:
-                logger.error(f"Stderr: {e.stderr.decode('utf-8')}")  # Decode if necessary
-
-            if e.returncode == 4294967295:  
-                logger.critical("ADB connection lost unexpectedly. Check Bluestacks.")
-                logger.critical("Exiting bot due to ADB connection loss.")
-                raise SystemExit()
+        except Exception as e:  # Catch any exception from take_screenshot
+            logger.error(f"Error occurred while taking screenshot: {e}")
+            # You might want to add additional error handling or recovery logic here
 
     def play_action(self, action):
         card_centre = self._get_card_centre(action.index)
