@@ -43,17 +43,6 @@ To get started with building your Clash Royale bot, follow these steps:
 3. **Understand State Generation**
    - Dive deeper into how the state is generated in our [State Guide](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/State).
 
-### Features
-
-- **YOLO for Unit and Number Detection**
-  - Uses YOLO v8 for unit detection and YOLO v5 for number detection.
-- **Card Detection**
-  - Utilizes image hashes to identify cards.
-- **Elixir Calculation**
-  - Deduces elixir levels with a simple pixel function.
-
-With a powerful interpretation of the game state, you can build bots that make intelligent decisions.
-
 ## Releases
 
 ### Latest Updates
