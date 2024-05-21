@@ -1,26 +1,34 @@
 """
 custom_action.py
-standard_action.py reimplemented as an import from a clashroyalebuildabot install
+
+Implementation of custom actions for the Clash Royale Bot.
 """
 
 from clashroyalebuildabot.bot import Action
 
 
 class CustomAction(Action):
-    score = None
+    """
+    A custom action for the Clash Royale Bot.
+    """
+
+    score = None  # Placeholder for calculated action score
 
     @staticmethod
     def _distance(x1, y1, x2, y2):
+        """
+        Calculates the distance between two points.
+        """
         return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
 
     def _calculate_spell_score(self, units, radius, min_to_hit):
         """
-        Calculate the score for a spell card (either fireball or arrows)
+        Calculates the score for a spell card (fireball or arrows).
 
-        The score is defined as [A, B, C]
-            A is 1 if we'll hit `min_to_hit` or more units, 0 otherwise
-            B is the number of units we hit
-            C is the negative distance to the furthest unit
+        The score is a list [A, B, C]:
+            A: 1 if the spell hits at least `min_to_hit` units, 0 otherwise
+            B: Number of units hit by the spell
+            C: Negative distance to the furthest unit hit
         """
         score = [0, 0, 0]
         for k, v in units['enemy'].items():
@@ -41,23 +49,28 @@ class CustomAction(Action):
 
         return score
 
-    def _calculate_knight_score(self, state):
+    def _calculate_unit_score(self, state, tile_x_conditions, score_if_met):
         """
-        Only play the knight if a ground troop is on our side of the battlefield
-        Play the knight in the center, vertically aligned with the troop
+        Calculates the score for a unit card based on given conditions.
         """
         score = [0] if state['numbers']['elixir']['number'] != 10 else [0.5]
         for k, v in state['units']['enemy'].items():
             for unit in v['positions']:
                 tile_x, tile_y = unit['tile_xy']
-                if self.tile_y < tile_y <= 14 and v['transport'] == 'ground':
-                    if tile_x > 8 and self.tile_x == 9 or tile_x <= 8 and self.tile_x == 8:
-                        score = [1, self.tile_y - tile_y]
+                if self.tile_y < tile_y <= 14 and any(condition(tile_x) for condition in tile_x_conditions):
+                    score = score_if_met(self.tile_y, tile_y)
         return score
+
+    def _calculate_knight_score(self, state):
+        """
+        Calculates the score for the Knight card.
+        """
+        return self._calculate_unit_score(state, [lambda x: x > 8 and self.tile_x == 9, lambda x: x <= 8 and self.tile_x == 8],
+                                          lambda my_y, enemy_y: [1, my_y - enemy_y])
 
     def _calculate_minions_score(self, state):
         """
-        Only play minions on top of enemy units
+        Only play minions on top of enemy units.
         """
         score = [0] if state['numbers']['elixir']['number'] != 10 else [0.5]
         for k, v in state['units']['enemy'].items():
@@ -70,37 +83,30 @@ class CustomAction(Action):
 
     def _calculate_fireball_score(self, state):
         """
-        Only play fireball if at least 3 units will be hit
-        Try to hit as many units as possible
+        Only play fireball if at least 3 units will be hit.
+        Try to hit as many units as possible.
         """
         return self._calculate_spell_score(state['units'], radius=2.5, min_to_hit=3)
 
     def _calculate_arrows_score(self, state):
         """
-        Only play arrows if at least 5 units will be hit
-        Try to hit as many units as possible
+        Only play arrows if at least 5 units will be hit.
+        Try to hit as many units as possible.
         """
         return self._calculate_spell_score(state['units'], radius=4, min_to_hit=5)
 
     def _calculate_archers_score(self, state):
         """
-        Only play the archers if there is a troop on our side of the battlefield
-        Play the archers in the center, vertically aligned with the troop
+        Calculates the score for the Archers card.
         """
-        score = [0] if state['numbers']['elixir']['number'] != 10 else [0.5]
-        for k, v in state['units']['enemy'].items():
-            for unit in v['positions']:
-                tile_x, tile_y = unit['tile_xy']
-                if self.tile_y < tile_y <= 14:
-                    if tile_x > 8 and self.tile_x == 10 or tile_x <= 8 and self.tile_x == 7:
-                        score = [1, self.tile_y - tile_y]
-        return score
+        return self._calculate_unit_score(state, [lambda x: x > 8 and self.tile_x == 10, lambda x: x <= 8 and self.tile_x == 7],
+                                          lambda my_y, enemy_y: [1, my_y - enemy_y])
 
     def _calculate_giant_score(self, state):
         """
-        Only place the giant when at 10 elixir
-        Place it as high up as possible
-        Try to target the lowest hp tower
+        Only place the giant when at 10 elixir.
+        Place it as high up as possible.
+        Try to target the lowest HP tower.
         """
         score = [0]
         left_hp, right_hp = [state['numbers'][f'{direction}_enemy_princess_hp']['number']
@@ -115,8 +121,8 @@ class CustomAction(Action):
 
     def _calculate_minipekka_score(self, state):
         """
-        Place minipekka on the bridge as high up as possible
-        Try to target the lowest hp tower
+        Place minipekka on the bridge as high up as possible.
+        Try to target the lowest HP tower.
         """
         left_hp, right_hp = [state['numbers'][f'{direction}_enemy_princess_hp']['number']
                              for direction in ['left', 'right']]
@@ -129,8 +135,8 @@ class CustomAction(Action):
 
     def _calculate_musketeer_score(self, state):
         """
-        Place musketeer at 5-6 tiles away from enemies
-        That should be just within her range
+        Place musketeer at 5-6 tiles away from enemies.
+        That should be just within her range.
         """
         score = [0]
         for k, v in state['units']['enemy'].items():
