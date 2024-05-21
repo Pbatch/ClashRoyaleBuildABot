@@ -1,64 +1,78 @@
+<div align="center">
+
 # Clash Royale Build-A-Bot
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+
+![ClashRoyaleBuildABot](https://github.com/Pbatch/ClashRoyaleBuildABot/assets/113382526/de3cc4c3-d9f9-479f-a610-0976dbf1a833)
+
+**Build your own bot to play Clash Royale**
+
 [![All Contributors](https://img.shields.io/badge/all_contributors-16-orange.svg?style=flat-square)](#contributors-)
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
 [![PyPI version](https://badge.fury.io/py/ClashRoyaleBuildABot.svg)](https://badge.fury.io/py/ClashRoyaleBuildABot)
 
-Build your own bot to play Clash Royale
-
-![demo](https://raw.githubusercontent.com/wiki/Pbatch/ClashRoyaleBuildABot/images/demo.gif)
+</div>
 
 ## Description
 
-We present an advanced state generator, which is accurate and returns a lot of information.
-It uses:
-* YOLO to infer the units (v8) and numbers (v5)
-* Image hashes to detect the cards
-* A simple function of the pixels to deduce the elixir
+Welcome to Clash Royale Build-A-Bot! This project provides an advanced state generator that accurately returns detailed information using cutting-edge technologies. 
 
-![detector](https://raw.githubusercontent.com/wiki/Pbatch/ClashRoyaleBuildABot/images/demo.jpg)
+## Previews
 
-With a more powerful interpretation of the state,
-we can start to build bots that can make intelligent decisions.
+<div align="center">
+    <table>
+        <tr>
+            <td align="center">
+                <img src="https://raw.githubusercontent.com/wiki/Pbatch/ClashRoyaleBuildABot/images/demo.gif" alt="Standard Bot">
+                <p><em>Standard Bot</em></p>
+            </td>
+            <td align="center">
+                <img src="https://raw.githubusercontent.com/wiki/Pbatch/ClashRoyaleBuildABot/images/hog.gif" alt="Hog 2.6 Cycle Bot">
+                <p><em>Hog 2.6 Cycle Bot by OwenKruse</em></p>
+            </td>
+        </tr>
+    </table>
+</div>
 
 ## Getting Started
 
-* [Setup](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/Setup) your environment and the emulator.
+To get started with building your Clash Royale bot, follow these steps:
 
-* [Try](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/Tutorial-(Basic)) the basic bot building tutorial.
-
-* [Learn](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/State) how the state is generated.
+1. **Setup Your Environment**
+   - Follow our [Setup Guide](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/Setup) to prepare your environment and emulator.
+2. **Try the Basic Bot Tutorial**
+   - Learn the basics with our [Bot Building Tutorial](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/Tutorial-(Basic)).
+3. **Understand State Generation**
+   - Dive deeper into how the state is generated in our [State Guide](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/State).
 
 ## Releases
-* 1.2.0
-  * Replaced the Yolov5 unit model with a Yolov8 unit model.
-  * Retrained including extra data from Jurek Elliesen.
-* 1.1.0
-  * Moved to bigger Yolov5 model.
-  * Predict 'ally/enemy' separately from the unit (Doubles training data + fewer classes to predict).
+
+### Latest Updates
+
+- **1.2.0**
+  - Replaced the YOLOv5 unit model with a YOLOv8 unit model.
+  - Included extra data from Jurek Elliesen for retraining.
+- **1.1.0**
+  - Switched to a larger YOLOv5 model.
+  - Separated 'ally/enemy' prediction from unit detection, improving accuracy and efficiency.
 
 ## Roadmap
 
-* Improve flaws of PeteBot (Placement, elixir management, etc.).
-* Label more images, of more diverse cards, so that more decks can be played.
-* Add a layer that operates on the object detection output to produce more reliable unit predictions. 
-(I.e. Tracking units over time).
-* Add a basic Q-learning tutorial.
-* Add a basic imitation learning tutorial.
-* Publish the YOLOv5 training notebook.
-* Add the ability to open chests and upgrade cards.
-* Publish a leaderboard of the best bots made with the repo.
-* ... Your next big idea?
+Our future plans include:
 
-## Community Creations
+- Enhancing PeteBot's performance (e.g., placement and elixir management).
+- Labeling more images of diverse cards to support a wider variety of decks.
+- Adding a tracking layer to improve unit predictions over time.
+- Publishing tutorials on Q-learning and imitation learning.
+- Releasing the YOLOv5 training notebook.
+- Implementing chest opening and card upgrading features.
+- Creating a leaderboard for the best bots developed with this repository.
 
-![Hog2.6Cycle](https://raw.githubusercontent.com/wiki/Pbatch/ClashRoyaleBuildABot/images/hog.gif)
-
-Hog 2.6 Cycle Bot by OwenKruse
+Have a great idea? Contribute and see it in action!
 
 ## Contributors ✨
 
-Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+A big thank you to these wonderful contributors! ([emoji key](https://allcontributors.org/docs/en/emoji-key))
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind are welcome!
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
