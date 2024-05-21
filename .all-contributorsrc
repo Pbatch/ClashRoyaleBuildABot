@@ -155,7 +155,9 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/113382526?v=4",
       "profile": "https://github.com/Leviaria",
       "contributions": [
-        "code"
+        "code",
+        "example",
+        "tutorial"
       ]
     }
   ],
