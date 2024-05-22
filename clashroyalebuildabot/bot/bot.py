@@ -1,4 +1,6 @@
 import time
+import subprocess
+from loguru import logger
 
 from clashroyalebuildabot.bot.action import Action
 from clashroyalebuildabot.data.constants import (
@@ -22,21 +24,7 @@ from clashroyalebuildabot.state.detector import Detector
 
 
 class Bot:
-    def __init__(
-        self,
-        card_names,
-        action_class=Action,
-        auto_start=True,
-        debug=False
-    ):
-        """This function sets up the bot
-
-        Args:
-            card_names (list[str]): List of your card names in snake_case
-            action_class (Action, optional): The action class used for deciding whether the bot places down a card. Defaults to Action.
-            auto_start (bool, optional): Whether to auto start a match. Defaults to True.
-            debug (bool, optional): Whether to display debug displays (e.g. Bounding Boxes). Defaults to False.
-        """
+    def __init__(self, card_names, action_class=Action, auto_start=True, debug=False):
         self.card_names = card_names
         self.action_class = action_class
         self.auto_start = auto_start
@@ -48,35 +36,23 @@ class Bot:
 
     @staticmethod
     def _get_nearest_tile(x, y):
-        """
-        Get the nearest tile to (x, y)
-        """
         tile_x = round(((x - TILE_INIT_X) / TILE_WIDTH) - 0.5)
         tile_y = round(((DISPLAY_HEIGHT - TILE_INIT_Y - y) / TILE_HEIGHT) - 0.5)
         return tile_x, tile_y
 
     @staticmethod
     def _get_tile_centre(tile_x, tile_y):
-        """
-        Get the (x, y) coordinate of the centre of a tile
-        """
         x = TILE_INIT_X + (tile_x + 0.5) * TILE_WIDTH
         y = DISPLAY_HEIGHT - TILE_INIT_Y - (tile_y + 0.5) * TILE_HEIGHT
         return x, y
 
     @staticmethod
     def _get_card_centre(card_n):
-        """
-        Get the (x, y) coordinate of the centre of card_n
-        """
         x = DISPLAY_CARD_INIT_X + DISPLAY_CARD_WIDTH / 2 + card_n * DISPLAY_CARD_DELTA_X
         y = DISPLAY_CARD_Y + DISPLAY_CARD_HEIGHT / 2
         return x, y
 
     def _get_valid_tiles(self):
-        """
-        Calculate which tiles we are allowed to play on
-        """
         tiles = ALLY_TILES
         if self.state["numbers"]["left_enemy_princess_hp"]["number"] == 0:
             tiles += LEFT_PRINCESS_TILES
@@ -90,14 +66,10 @@ class Bot:
         all_tiles = ALLY_TILES + LEFT_PRINCESS_TILES + RIGHT_PRINCESS_TILES
         valid_tiles = self._get_valid_tiles()
 
-        # Compute the list of playable actions
-        # An action is a tuple (card_index, tile_x, tile_y)
         actions = []
         for i in range(4):
             card = self.state["cards"][i + 1]
-            enough_elixir = (
-                int(self.state["numbers"]["elixir"]["number"]) >= card["cost"]
-            )
+            enough_elixir = int(self.state["numbers"]["elixir"]["number"]) >= card["cost"]
             ready = card["ready"]
             not_blank = card["name"] != "blank"
             if enough_elixir and ready and not_blank:
@@ -112,16 +84,19 @@ class Bot:
         return actions
 
     def set_state(self):
-        screenshot = self.screen.take_screenshot()
-        self.state = self.detector.run(screenshot)
+        try:
+            screenshot = self.screen.take_screenshot()
+            self.state = self.detector.run(screenshot)
+            if self.auto_start:
+                if self.state["screen"] != "in_game":
+                    self.screen.click(
+                        *SCREEN_CONFIG[self.state["screen"]]["click_coordinates"]
+                    )
+                    time.sleep(2)
 
-        # Try to click a button to get closer to starting a game
-        if self.auto_start:
-            if self.state["screen"] != "in_game":
-                self.screen.click(
-                    *SCREEN_CONFIG[self.state["screen"]]["click_coordinates"]
-                )
-                time.sleep(2)
+        except Exception as e:  # Catch any exception from take_screenshot
+            logger.error(f"Error occurred while taking screenshot: {e}")
+            # You might want to add additional error handling or recovery logic here
 
     def play_action(self, action):
         card_centre = self._get_card_centre(action.index)
