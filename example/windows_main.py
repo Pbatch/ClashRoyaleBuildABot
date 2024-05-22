@@ -34,14 +34,16 @@ def main():
 
     while True:
         key = msvcrt.getch()
-        if key == b'\xe0':
+        if key == b"\xe0":
             key = msvcrt.getch()
-            if key == b'H':
+            if key == b"H":
                 selected_option = (selected_option - 1) % len(menu_options)
-            elif key == b'P':
+            elif key == b"P":
                 selected_option = (selected_option + 1) % len(menu_options)
-        elif key == b'\r':
-            handle_menu_selection(console, selected_option)  # Pass console here
+        elif key == b"\r":
+            handle_menu_selection(
+                console, selected_option
+            )  # Pass console here
 
         update_menu(console, menu_options, selected_option)
         time.sleep(0.1)
@@ -54,7 +56,9 @@ def handle_menu_selection(console, selected_option):
         logger.info("Starting the bot")
         start_bot()
     elif selected_option == 1:
-        info_text = Text("[INFO] Settings coming soon...")  # Define info_text here
+        info_text = Text(
+            "[INFO] Settings coming soon..."
+        )  # Define info_text here
         console.print(Panel(info_text))
         time.sleep(2)
     elif selected_option == 2:
@@ -80,20 +84,28 @@ def print_menu(console, menu_options, selected_option):
 def print_title(console):
     # ASCII Crown
     crown_art = r"""
-             _.+._    
-           (^\/^\/^)  
+             _.+._
+           (^\/^\/^)
             \@*@*@/
             {_____}
     """
     crown_text = Text(crown_art, style="#FDDC5C")  # Darker gray for the crown
 
     # Community Edition text (optional darkening)
-    community_text = Text("     - Community Edition -", style="#cccccc")  # Slightly darker gray
+    community_text = Text(
+        "     - Community Edition -", style="#cccccc"
+    )  # Slightly darker gray
 
     # Version text with link and color
-    link_text = Text.from_markup("[link=https://github.com/Pbatch]@Pbatch[/link]", style="#4287f5")  # Blue link
-    version_text = Text(f") version 1.2.1", style="#999999")  # Lighter gray for version
-    version_line = Text.assemble("by Pbatch (", link_text, version_text, style="#999999")
+    link_text = Text.from_markup(
+        "[link=https://github.com/Pbatch]@Pbatch[/link]", style="#4287f5"
+    )  # Blue link
+    version_text = Text(
+        ") version 1.2.1", style="#999999"
+    )  # Lighter gray for version
+    version_line = Text.assemble(
+        "by Pbatch (", link_text, version_text, style="#999999"
+    )
 
     # Combine crown, community edition, and version text
     combined_text = Text.assemble(
@@ -104,7 +116,7 @@ def print_title(console):
         "\n",
         "  ",  # Space before version
         version_line,
-        "\n\n"  # Two empty lines for better spacing
+        "\n\n",  # Two empty lines for better spacing
     )
 
     # Print the combined text
@@ -113,12 +125,22 @@ def print_title(console):
 
 def start_bot():
     try:
-        card_names = ['minions', 'archers', 'arrows', 'giant',
-                      'minipekka', 'fireball', 'knight', 'musketeer']
+        card_names = [
+            "minions",
+            "archers",
+            "arrows",
+            "giant",
+            "minipekka",
+            "fireball",
+            "knight",
+            "musketeer",
+        ]
         bot = CustomBot(card_names, debug=False)
         bot.run()
     except ImportError:
-        logger.error("Error: custom_bot.py not found. Make sure the file exists.")  # Use logger.error
+        logger.error(
+            "Error: custom_bot.py not found. Make sure the file exists."
+        )  # Use logger.error
         sys.exit(1)
 
 
@@ -132,5 +154,5 @@ def update_menu(console, menu_options, selected_option):
     print_menu(console, menu_options, selected_option)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

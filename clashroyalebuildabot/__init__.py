@@ -2,8 +2,14 @@
 from .bot import PeteBot, RandomBot, StandardBot, TwoSixHogCycle, Action, Bot
 from .data import constants
 from .screen import Screen
-from .state import (CardDetector, Detector, NumberDetector, OnnxDetector,
-                    ScreenDetector, UnitDetector)
+from .state import (
+    CardDetector,
+    Detector,
+    NumberDetector,
+    OnnxDetector,
+    ScreenDetector,
+    UnitDetector,
+)
 
 __all__ = [
     "StandardBot",
@@ -19,5 +25,5 @@ __all__ = [
     "CardDetector",
     "Screen",
     "Action",
-    "Bot"
+    "Bot",
 ]

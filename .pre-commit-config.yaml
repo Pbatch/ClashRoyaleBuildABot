@@ -1,0 +1,31 @@
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.6.0
+  hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+      - id: check-merge-conflict
+      - id: check-shebang-scripts-are-executable
+      - id: check-symlinks
+      - id: check-yaml
+      - id: debug-statements
+      - id: destroyed-symlinks
+      - id: end-of-file-fixer
+        files: \.(py|sh|rst|yml|yaml)$
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+        files: \.(py|sh|rst|yml|yaml)$
+-   repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+    - id: black
+      language_version: python3.8
+-   repo: https://github.com/PyCQA/flake8
+    rev: 5.0.4
+    hooks:
+    - id: flake8
+ci:
+    autofix_prs: true
+    autoupdate_commit_msg: '[pre-commit.ci] autoupdate'
+    autoupdate_schedule: monthly

@@ -2,7 +2,7 @@ from clashroyalebuildabot.bot.action import Action
 
 
 class PeteAction(Action):
-    RADII = {'fireball': 2.5, 'arrows': 4}
+    RADII = {"fireball": 2.5, "arrows": 4}
     score = None
 
     @staticmethod
@@ -12,15 +12,15 @@ class PeteAction(Action):
     def _calculate_building_score(self, units):
         score = [0, 0, 0]
 
-        n_enemies = sum([len(v) for k, v in units['enemy'].items()])
+        n_enemies = sum([len(v) for k, v in units["enemy"].items()])
 
         # Play defensively if the enemy has a unit in our half
         if n_enemies != 0:
             rhs = 0
             lhs = 0
-            for k, v in units['enemy'].items():
-                for unit in v['positions']:
-                    tile_x, tile_y = unit['tile_xy']
+            for k, v in units["enemy"].items():
+                for unit in v["positions"]:
+                    tile_x, tile_y = unit["tile_xy"]
                     if tile_x > 8 and tile_y <= 17:
                         rhs += 1
                     elif tile_x <= 8 and tile_y <= 17:
@@ -48,17 +48,17 @@ class PeteAction(Action):
         score = [0.5, 0, 0]
 
         # Play aggressively if the enemy has no units
-        n_enemies = sum([len(v) for k, v in units['enemy'].items()])
-        if self.target == 'buildings' and n_enemies == 0:
+        n_enemies = sum([len(v) for k, v in units["enemy"].items()])
+        if self.target == "buildings" and n_enemies == 0:
             score[0] = 1
 
         # Play defensively if the enemy has a unit in our half
         elif n_enemies != 0:
             rhs = 0
             lhs = 0
-            for k, v in units['enemy'].items():
-                for unit in v['positions']:
-                    tile_x, tile_y = unit['tile_xy']
+            for k, v in units["enemy"].items():
+                for unit in v["positions"]:
+                    tile_x, tile_y = unit["tile_xy"]
                     if tile_x > 8 and tile_y <= 17:
                         rhs += 1
                     elif tile_x <= 8 and tile_y <= 17:
@@ -82,14 +82,16 @@ class PeteAction(Action):
             C is the negative distance to the furthest unit
         """
         score = [0, 0, 0]
-        for k, v in units['enemy'].items():
-            for unit in v['positions']:
-                tile_x, tile_y = unit['tile_xy']
+        for k, v in units["enemy"].items():
+            for unit in v["positions"]:
+                tile_x, tile_y = unit["tile_xy"]
                 # Assume the unit will move down a space
                 tile_y -= 1
 
                 # Add 1 to the score if the spell will hit the unit
-                distance = self._distance(tile_x, tile_y, self.tile_x, self.tile_y)
+                distance = self._distance(
+                    tile_x, tile_y, self.tile_x, self.tile_y
+                )
                 if distance <= self.RADII[self.name] - 1:
                     score[1] += 1
                     score[2] = min(score[2], -distance)
@@ -101,13 +103,13 @@ class PeteAction(Action):
         return score
 
     def calculate_score(self, units):
-        if self.type == 'spell':
+        if self.type == "spell":
             score = self._calculate_spell_score(units)
-        elif self.type == 'troop':
+        elif self.type == "troop":
             score = self._calculate_troop_score(units)
-        elif self.type == 'building':
+        elif self.type == "building":
             score = self._calculate_building_score(units)
         else:
-            raise ValueError(f'Scoring for type {self.type} is not supported')
+            raise ValueError(f"Scoring for type {self.type} is not supported")
         self.score = score
         return score
