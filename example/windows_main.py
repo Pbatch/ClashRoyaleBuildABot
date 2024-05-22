@@ -9,11 +9,13 @@ from rich.text import Text
 from loguru import logger
 from pathlib import Path
 from datetime import datetime
+from clashroyalebuildabot.state.error_handler import adb_fix
 
 ctypes.windll.kernel32.SetConsoleTitleW("Clash Royale Build-A-Bot")
 
 
 def main():
+    adb_fix()
     # Create logs directory if it doesn't exist
     logs_dir = Path("clashroyalebuildabot/logs")
     logs_dir.mkdir(parents=True, exist_ok=True)
