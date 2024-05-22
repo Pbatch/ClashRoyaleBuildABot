@@ -5,11 +5,12 @@ from .random import RandomBot
 from .standard import StandardBot
 from .action import Action
 from .bot import Bot
+
 __all__ = [
     "TwoSixHogCycle",
     "PeteBot",
     "RandomBot",
     "StandardBot",
     "Action",
-    "Bot"
+    "Bot",
 ]

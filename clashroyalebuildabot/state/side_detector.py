@@ -14,7 +14,7 @@ class SideDetector(OnnxDetector):
         return image
 
     def _post_process(self, pred):
-        return ('ally', 'enemy')[np.argmax(pred[0])]
+        return ("ally", "enemy")[np.argmax(pred[0])]
 
     def run(self, image):
         # Preprocessing

@@ -24,7 +24,9 @@ from clashroyalebuildabot.state.detector import Detector
 
 
 class Bot:
-    def __init__(self, card_names, action_class=Action, auto_start=True, debug=False):
+    def __init__(
+        self, card_names, action_class=Action, auto_start=True, debug=False
+    ):
         self.card_names = card_names
         self.action_class = action_class
         self.auto_start = auto_start
@@ -37,7 +39,9 @@ class Bot:
     @staticmethod
     def _get_nearest_tile(x, y):
         tile_x = round(((x - TILE_INIT_X) / TILE_WIDTH) - 0.5)
-        tile_y = round(((DISPLAY_HEIGHT - TILE_INIT_Y - y) / TILE_HEIGHT) - 0.5)
+        tile_y = round(
+            ((DISPLAY_HEIGHT - TILE_INIT_Y - y) / TILE_HEIGHT) - 0.5
+        )
         return tile_x, tile_y
 
     @staticmethod
@@ -48,7 +52,11 @@ class Bot:
 
     @staticmethod
     def _get_card_centre(card_n):
-        x = DISPLAY_CARD_INIT_X + DISPLAY_CARD_WIDTH / 2 + card_n * DISPLAY_CARD_DELTA_X
+        x = (
+            DISPLAY_CARD_INIT_X
+            + DISPLAY_CARD_WIDTH / 2
+            + card_n * DISPLAY_CARD_DELTA_X
+        )
         y = DISPLAY_CARD_Y + DISPLAY_CARD_HEIGHT / 2
         return x, y
 
@@ -69,7 +77,9 @@ class Bot:
         actions = []
         for i in range(4):
             card = self.state["cards"][i + 1]
-            enough_elixir = int(self.state["numbers"]["elixir"]["number"]) >= card["cost"]
+            enough_elixir = (
+                int(self.state["numbers"]["elixir"]["number"]) >= card["cost"]
+            )
             ready = card["ready"]
             not_blank = card["name"] != "blank"
             if enough_elixir and ready and not_blank:
@@ -78,7 +88,10 @@ class Bot:
                 else:
                     tiles = valid_tiles
                 actions.extend(
-                    [self.action_class(i, x, y, *card.values()) for (x, y) in tiles]
+                    [
+                        self.action_class(i, x, y, *card.values())
+                        for (x, y) in tiles
+                    ]
                 )
 
         return actions
@@ -90,7 +103,9 @@ class Bot:
             if self.auto_start:
                 if self.state["screen"] != "in_game":
                     self.screen.click(
-                        *SCREEN_CONFIG[self.state["screen"]]["click_coordinates"]
+                        *SCREEN_CONFIG[self.state["screen"]][
+                            "click_coordinates"
+                        ]
                     )
                     time.sleep(2)
 

@@ -6,8 +6,9 @@ class OnnxDetector:
     def __init__(self, model_path):
         self.model_path = model_path
 
-        self.sess = onnxruntime.InferenceSession(self.model_path,
-                                                 providers=['CPUExecutionProvider'])
+        self.sess = onnxruntime.InferenceSession(
+            self.model_path, providers=["CPUExecutionProvider"]
+        )
         self.output_name = self.sess.get_outputs()[0].name
         self.input_name = self.sess.get_inputs()[0].name
 
@@ -85,7 +86,9 @@ class OnnxDetector:
             keep = self._nms(boxes, np.ravel(best_scores), iou_thres)
 
             # Keep only the best class
-            best = np.hstack([boxes[keep], best_scores[keep], best_scores_idx[keep]])
+            best = np.hstack(
+                [boxes[keep], best_scores[keep], best_scores_idx[keep]]
+            )
 
             output[i] = best
         return output

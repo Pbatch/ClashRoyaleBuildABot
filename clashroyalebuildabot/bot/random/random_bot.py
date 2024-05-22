@@ -16,5 +16,5 @@ class RandomBot(Bot):
                 # Play the given action
                 self.play_action(action)
                 # Log the result
-                print(f'Playing {action}')
+                print(f"Playing {action}")
             time.sleep(3)

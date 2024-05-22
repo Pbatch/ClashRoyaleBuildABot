@@ -3,14 +3,30 @@ import time
 
 from clashroyalebuildabot.bot.bot import Bot
 from clashroyalebuildabot.bot.standard.standard_action import StandardAction
-from clashroyalebuildabot.data.constants import DISPLAY_WIDTH, SCREENSHOT_WIDTH, DISPLAY_HEIGHT, SCREENSHOT_HEIGHT
+from clashroyalebuildabot.data.constants import (
+    DISPLAY_WIDTH,
+    SCREENSHOT_WIDTH,
+    DISPLAY_HEIGHT,
+    SCREENSHOT_HEIGHT,
+)
 
 
 class StandardBot(Bot):
     def __init__(self, card_names, debug=False):
-        preset_deck = {'minions', 'archers', 'arrows', 'giant', 'minipekka', 'fireball', 'knight', 'musketeer'}
+        preset_deck = {
+            "minions",
+            "archers",
+            "arrows",
+            "giant",
+            "minipekka",
+            "fireball",
+            "knight",
+            "musketeer",
+        }
         if set(card_names) != preset_deck:
-            raise ValueError(f'You must use the preset deck with cards {preset_deck} for StandardBot')
+            raise ValueError(
+                f"You must use the preset deck with cards {preset_deck} for StandardBot"
+            )
         super().__init__(card_names, StandardAction, debug=debug)
 
     def _preprocess(self):
@@ -19,16 +35,16 @@ class StandardBot(Bot):
 
         Estimate the tile of each unit to be the bottom of their bounding box
         """
-        for side in ['ally', 'enemy']:
-            for k, v in self.state['units'][side].items():
-                for unit in v['positions']:
-                    bbox = unit['bounding_box']
+        for side in ["ally", "enemy"]:
+            for k, v in self.state["units"][side].items():
+                for unit in v["positions"]:
+                    bbox = unit["bounding_box"]
                     bbox[0] *= DISPLAY_WIDTH / SCREENSHOT_WIDTH
                     bbox[1] *= DISPLAY_HEIGHT / SCREENSHOT_HEIGHT
                     bbox[2] *= DISPLAY_WIDTH / SCREENSHOT_WIDTH
                     bbox[3] *= DISPLAY_HEIGHT / SCREENSHOT_HEIGHT
                     bbox_bottom = [((bbox[0] + bbox[2]) / 2), bbox[3]]
-                    unit['tile_xy'] = self._get_nearest_tile(*bbox_bottom)
+                    unit["tile_xy"] = self._get_nearest_tile(*bbox_bottom)
 
     def run(self):
         while True:
@@ -42,12 +58,16 @@ class StandardBot(Bot):
                 # Preprocessing
                 self._preprocess()
                 # Get the best action
-                action = max(actions, key=lambda x: x.calculate_score(self.state))
+                action = max(
+                    actions, key=lambda x: x.calculate_score(self.state)
+                )
                 # Skip the action if it doesn't score high enough
                 if action.score[0] == 0:
                     continue
                 # Play the best action
                 self.play_action(action)
                 # Log the result
-                print(f'Playing {action} with score {action.score} and sleeping for 1 second')
+                print(
+                    f"Playing {action} with score {action.score} and sleeping for 1 second"
+                )
                 time.sleep(0.5)
