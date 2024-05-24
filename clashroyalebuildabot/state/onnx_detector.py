@@ -45,29 +45,16 @@ class OnnxDetector:
 
         return keep
 
-    def nms(self, prediction, conf_thres=0.35, iou_thres=0.45, yolov8=False):
+    def nms(self, prediction, conf_thres=0.35, iou_thres=0.45):
         """
         Runs Non-Maximum Suppression (NMS) on inference results
         """
         output = [np.zeros((0, 6))] * len(prediction)
         for i in range(len(prediction)):
-            if yolov8:
-                x = prediction[i]
-            else:
-                # Mask out predictions below the confidence threshold
-                mask = prediction[i, :, 4] > conf_thres
-                x = prediction[i][mask]
-
-                if not x.shape[0]:
-                    continue
+            x = prediction[i]
 
             # Calculate the best scores
-            if yolov8:
-                # score = class confidence
-                scores = x[:, 4:]
-            else:
-                # score = object confidence * class confidence
-                scores = x[:, 4:5] * x[:, 5:]
+            scores = x[:, 4:]
             best_scores_idx = np.argmax(scores, axis=1).reshape(-1, 1)
             best_scores = np.take_along_axis(scores, best_scores_idx, axis=1)
 
