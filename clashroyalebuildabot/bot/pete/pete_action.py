@@ -1,8 +1,9 @@
 from clashroyalebuildabot.bot.action import Action
+from clashroyalebuildabot.data.cards import Cards
 
 
 class PeteAction(Action):
-    RADII = {"fireball": 2.5, "arrows": 4}
+    RADII = {Cards.FIREBALL: 2.5, Cards.ARROWS: 4}
     score = None
 
     @staticmethod

@@ -4,6 +4,7 @@ import os
 import subprocess
 from datetime import datetime
 from clashroyalebuildabot.bot import Bot
+from clashroyalebuildabot.data.cards import Cards
 from custom_action import CustomAction
 from clashroyalebuildabot.data.constants import (
     DISPLAY_WIDTH,
@@ -19,14 +20,14 @@ from pathlib import Path
 class CustomBot(Bot):
     def __init__(self, card_names, debug=False):
         preset_deck = {
-            "minions",
-            "archers",
-            "arrows",
-            "giant",
-            "minipekka",
-            "fireball",
-            "knight",
-            "musketeer",
+            Cards.MINIONS,
+            Cards.ARCHERS,
+            Cards.ARROWS,
+            Cards.GIANT,
+            Cards.MINIPEKKA,
+            Cards.FIREBALL,
+            Cards.KNIGHT,
+            Cards.MUSKETEER,
         }
         if set(card_names) != preset_deck:
             raise ValueError(

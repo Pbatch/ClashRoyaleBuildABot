@@ -1,5 +1,8 @@
 import os
 
+from clashroyalebuildabot.data.cards import Cards
+from clashroyalebuildabot.data.units import Units
+
 """
 Miscellaneous
 """
@@ -234,22 +237,25 @@ UNIT_SIZE = 416
 UNIT_Y_START = 0.05
 UNIT_Y_END = 0.80
 UNITS = [
-    "archer",
-    "bomber",
-    "brawler",
-    "giant",
-    "goblin",
-    "goblin_cage",
-    "hungry_dragon",
-    "knight",
-    "minion",
-    "minipekka",
-    "musketeer",
-    "prince",
-    "skeleton",
-    "spear_goblin",
-    "tombstone",
-    "valkyrie",
+    Units.ARCHER,
+    Units.BOMBER,
+    Units.BRAWLER,
+    Units.GIANT,
+    Units.GOBLIN,
+    Units.GOBLIN_CAGE,
+    Units.GOBLIN_HUT,
+    Units.HUNGRY_DRAGON,
+    Units.HUNTER,
+    Units.KNIGHT,
+    Units.MINION,
+    Units.MINIPEKKA,
+    Units.MUSKETEER,
+    Units.PRINCE,
+    Units.SKELETON,
+    Units.SPEAR_GOBLIN,
+    Units.TOMBSTONE,
+    Units.VALKYRIE,
+    Units.WALL_BREAKER,
 ]
 
 # Multihash coefficients
@@ -258,12 +264,12 @@ MULTI_HASH_INTERCEPT = 163
 
 # Cards to units
 CARD_TO_UNITS = {
-    "goblin_cage": ["brawler"],
-    "minions": ["minion"],
-    "skeletons": ["skeleton"],
-    "archers": ["archer"],
-    "spear_goblins": ["spear_goblin"],
-    "goblins": ["goblin"],
+    Cards.GOBLIN_CAGE: [Units.BRAWLER],
+    Cards.MINIONS: [Units.MINION],
+    Cards.SKELETONS: [Units.SKELETON],
+    Cards.ARCHERS: [Units.ARCHER],
+    Cards.SPEAR_GOBLINS: [Units.SPEAR_GOBLIN],
+    Cards.GOBLINS: [Units.GOBLIN],
 }
 
 # Side

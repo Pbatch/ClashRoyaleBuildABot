@@ -5,6 +5,7 @@ from clashroyalebuildabot.bot.two_six_hog_cycle.two_six_hog_cycle_action import 
     TwoSixHogCycleAction,
 )
 from clashroyalebuildabot.bot.bot import Bot
+from clashroyalebuildabot.data.cards import Cards
 from clashroyalebuildabot.data.constants import (
     DISPLAY_WIDTH,
     SCREENSHOT_WIDTH,
@@ -16,14 +17,14 @@ from clashroyalebuildabot.data.constants import (
 class TwoSixHogCycle(Bot):
     def __init__(self, card_names, debug=True):
         preset_deck = {
-            "hog_rider",
-            "the_log",
-            "fireball",
-            "ice_spirit",
-            "ice_golem",
-            "skeletons",
-            "cannon",
-            "musketeer",
+            Cards.HOG_RIDER,
+            Cards.THE_LOG,
+            Cards.FIREBALL,
+            Cards.ICE_SPIRIT,
+            Cards.ICE_GOLEM,
+            Cards.SKELETONS,
+            Cards.CANNON,
+            Cards.MUSKETEER,
         }
         if set(card_names) != preset_deck:
             raise ValueError(

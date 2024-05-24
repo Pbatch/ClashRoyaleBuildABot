@@ -6,7 +6,8 @@ from clashroyalebuildabot.state.onnx_detector import OnnxDetector
 
 
 class SideDetector(OnnxDetector):
-    def _preprocess(self, image):
+    @staticmethod
+    def _preprocess(image):
         image = image.resize((SIDE_SIZE, SIDE_SIZE), Image.BICUBIC)
         image = np.array(image, dtype=np.float32)
         image = image / 255
@@ -21,7 +22,7 @@ class SideDetector(OnnxDetector):
         image = self._preprocess(image)
 
         # Inference
-        pred = self.sess.run([self.output_name], {self.input_name: image})[0]
+        pred = self._infer(image)
 
         # Postprocessing
         side = self._post_process(pred)

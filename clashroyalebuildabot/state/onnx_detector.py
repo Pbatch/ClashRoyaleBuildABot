@@ -49,8 +49,6 @@ class OnnxDetector:
         """
         Runs Non-Maximum Suppression (NMS) on inference results
         """
-        if yolov8:
-            prediction = prediction.transpose((0, 2, 1))
         output = [np.zeros((0, 6))] * len(prediction)
         for i in range(len(prediction)):
             if yolov8:
@@ -92,6 +90,9 @@ class OnnxDetector:
 
             output[i] = best
         return output
+
+    def _infer(self, x):
+        return self.sess.run([self.output_name], {self.input_name: x})[0]
 
     def _post_process(self, pred):
         raise NotImplementedError

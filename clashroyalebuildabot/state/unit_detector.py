@@ -113,9 +113,7 @@ class UnitDetector(OnnxDetector):
         np_image = self._preprocess(image)
 
         # Inference
-        pred = self.sess.run([self.output_name], {self.input_name: np_image})[
-            0
-        ]
+        pred = self._infer(np_image.astype(np.float16)).astype(np.float32)
 
         # Forced post-processing
         pred = np.array(self.nms(pred, yolov8=True)[0])

@@ -1,4 +1,5 @@
 from clashroyalebuildabot.bot.action import Action
+from clashroyalebuildabot.data.cards import Cards
 
 
 class TwoSixHogCycleAction(Action):
@@ -181,7 +182,6 @@ class TwoSixHogCycleAction(Action):
         Play the fireball card if it will hit flying units
         """
         units = state["units"]
-        score = [0]
         for k, v in units["enemy"].items():
             for unit in v["positions"]:
                 tile_x, tile_y = unit["tile_xy"]
@@ -195,14 +195,14 @@ class TwoSixHogCycleAction(Action):
 
     def calculate_score(self, state):
         name_to_score = {
-            "hog_rider": self._calculate_hog_rider_score,
-            "ice_golem": self._calculate_ice_golem_score,
-            "fireball": self._calculate_fireball_score,
-            "ice_spirit": self._calculate_ice_spirit_score,
-            "the_log": self._calculate_log_score,
-            "musketeer": self._calculate_musketeer_score,
-            "cannon": self._calculate_cannon_score,
-            "skeletons": self._calculate_ice_spirit_score,
+            Cards.HOG_RIDER: self._calculate_hog_rider_score,
+            Cards.ICE_GOLEM: self._calculate_ice_golem_score,
+            Cards.FIREBALL: self._calculate_fireball_score,
+            Cards.ICE_SPIRIT: self._calculate_ice_spirit_score,
+            Cards.THE_LOG: self._calculate_log_score,
+            Cards.MUSKETEER: self._calculate_musketeer_score,
+            Cards.CANNON: self._calculate_cannon_score,
+            Cards.SKELETONS: self._calculate_ice_spirit_score,
         }
 
         score_function = name_to_score[self.name]

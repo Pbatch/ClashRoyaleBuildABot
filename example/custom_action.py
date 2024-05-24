@@ -5,6 +5,7 @@ Implementation of custom actions for the Clash Royale Bot.
 """
 
 from clashroyalebuildabot.bot import Action
+from clashroyalebuildabot.data.cards import Cards
 
 
 class CustomAction(Action):
@@ -179,14 +180,14 @@ class CustomAction(Action):
 
     def calculate_score(self, state):
         name_to_score = {
-            "knight": self._calculate_knight_score,
-            "minions": self._calculate_minions_score,
-            "fireball": self._calculate_fireball_score,
-            "giant": self._calculate_giant_score,
-            "minipekka": self._calculate_minipekka_score,
-            "musketeer": self._calculate_musketeer_score,
-            "arrows": self._calculate_arrows_score,
-            "archers": self._calculate_archers_score,
+            Cards.KNIGHT: self._calculate_knight_score,
+            Cards.MINIONS: self._calculate_minions_score,
+            Cards.FIREBALL: self._calculate_fireball_score,
+            Cards.GIANT: self._calculate_giant_score,
+            Cards.MINIPEKKA: self._calculate_minipekka_score,
+            Cards.MUSKETEER: self._calculate_musketeer_score,
+            Cards.ARROWS: self._calculate_arrows_score,
+            Cards.ARCHERS: self._calculate_archers_score,
         }
         score_function = name_to_score[self.name]
         score = score_function(state)
