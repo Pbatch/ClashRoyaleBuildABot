@@ -114,7 +114,7 @@ class NumberDetector(OnnxDetector):
             crops[i] = self._preprocess(crop)
 
         # Inference
-        pred = self.sess.run([self.output_name], {self.input_name: crops})[0]
+        pred = self._infer(crops.astype(np.float16)).astype(np.float32)
 
         # Forced post-processing
         pred = self.nms(pred)

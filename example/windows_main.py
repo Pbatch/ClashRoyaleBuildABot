@@ -2,6 +2,8 @@ import sys
 import ctypes
 import msvcrt
 import time
+
+from clashroyalebuildabot.data.cards import Cards
 from custom_bot import CustomBot
 from rich.console import Console
 from rich.panel import Panel
@@ -128,14 +130,14 @@ def print_title(console):
 def start_bot():
     try:
         card_names = [
-            "minions",
-            "archers",
-            "arrows",
-            "giant",
-            "minipekka",
-            "fireball",
-            "knight",
-            "musketeer",
+            Cards.MINIONS,
+            Cards.ARCHERS,
+            Cards.ARROWS,
+            Cards.GIANT,
+            Cards.MINIPEKKA,
+            Cards.FIREBALL,
+            Cards.KNIGHT,
+            Cards.MUSKETEER,
         ]
         bot = CustomBot(card_names, debug=False)
         bot.run()

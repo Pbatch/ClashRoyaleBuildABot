@@ -116,7 +116,7 @@ class UnitDetector(OnnxDetector):
         pred = self._infer(np_image.astype(np.float16)).astype(np.float32)
 
         # Forced post-processing
-        pred = np.array(self.nms(pred, yolov8=True)[0])
+        pred = np.array(self.nms(pred)[0])
         pred[:, [0, 2]] *= width / UNIT_SIZE
         pred[:, [1, 3]] *= height / UNIT_SIZE
 
