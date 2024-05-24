@@ -3,6 +3,7 @@ import time
 
 from clashroyalebuildabot.bot.bot import Bot
 from clashroyalebuildabot.bot.standard.standard_action import StandardAction
+from clashroyalebuildabot.data.cards import Cards
 from clashroyalebuildabot.data.constants import (
     DISPLAY_WIDTH,
     SCREENSHOT_WIDTH,
@@ -14,14 +15,14 @@ from clashroyalebuildabot.data.constants import (
 class StandardBot(Bot):
     def __init__(self, card_names, debug=False):
         preset_deck = {
-            "minions",
-            "archers",
-            "arrows",
-            "giant",
-            "minipekka",
-            "fireball",
-            "knight",
-            "musketeer",
+            Cards.MINIONS,
+            Cards.ARCHERS,
+            Cards.ARROWS,
+            Cards.GIANT,
+            Cards.MINIPEKKA,
+            Cards.FIREBALL,
+            Cards.KNIGHT,
+            Cards.MUSKETEER,
         }
         if set(card_names) != preset_deck:
             raise ValueError(

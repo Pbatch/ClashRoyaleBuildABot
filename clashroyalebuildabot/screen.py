@@ -1,5 +1,5 @@
 import subprocess
-import numpy as np
+
 from PIL import Image
 from loguru import logger
 

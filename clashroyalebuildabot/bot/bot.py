@@ -1,5 +1,5 @@
 import time
-import subprocess
+
 from loguru import logger
 
 from clashroyalebuildabot.bot.action import Action
