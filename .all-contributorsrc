@@ -160,6 +160,15 @@
         "tutorial",
         "doc"
       ]
+    },
+    {
+      "login": "nikita9091239",
+      "name": "nikita9091239",
+      "avatar_url": "https://avatars.githubusercontent.com/u/83181206?v=4",
+      "profile": "https://github.com/nikita9091239",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
