@@ -17,6 +17,7 @@ __all__ = [
     "PeteBot",
     "TwoSixHogCycle",
     "constants",
+    "cards",
     "Detector",
     "OnnxDetector",
     "ScreenDetector",
