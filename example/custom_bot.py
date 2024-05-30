@@ -1,20 +1,18 @@
 import random
-import time
-import os
 import subprocess
-from datetime import datetime
+import time
+
+from loguru import logger
+
 from clashroyalebuildabot.bot import Bot
 from clashroyalebuildabot.data.cards import Cards
-from custom_action import CustomAction
 from clashroyalebuildabot.data.constants import (
     DISPLAY_WIDTH,
     SCREENSHOT_WIDTH,
     DISPLAY_HEIGHT,
     SCREENSHOT_HEIGHT,
 )
-from clashroyalebuildabot.data.constants import SCREEN_CONFIG
-from loguru import logger
-from pathlib import Path
+from custom_action import CustomAction
 
 
 class CustomBot(Bot):
