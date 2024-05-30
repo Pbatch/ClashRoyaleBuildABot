@@ -1,6 +1,6 @@
 # Exports for clashroyalebuildabot
 from .bot import PeteBot, RandomBot, StandardBot, TwoSixHogCycle, Action, Bot
-from .data import constants
+from .data import constants, cards
 from .screen import Screen
 from .state import (
     CardDetector,
