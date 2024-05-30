@@ -1,17 +1,18 @@
-import sys
 import ctypes
 import msvcrt
+import sys
 import time
+from datetime import datetime
+from pathlib import Path
 
-from clashroyalebuildabot.data.cards import Cards
-from custom_bot import CustomBot
+from loguru import logger
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
-from loguru import logger
-from pathlib import Path
-from datetime import datetime
+
+from clashroyalebuildabot.data.cards import Cards
 from clashroyalebuildabot.state.error_handler import adb_fix
+from custom_bot import CustomBot
 
 ctypes.windll.kernel32.SetConsoleTitleW("Clash Royale Build-A-Bot")
 
