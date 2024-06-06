@@ -1,7 +1,5 @@
 import os
-
 from PIL import ImageDraw, ImageFont
-
 from clashroyalebuildabot.data.constants import (
     DATA_DIR,
     SCREENSHOTS_DIR,
@@ -15,7 +13,6 @@ from clashroyalebuildabot.state.screen_detector import ScreenDetector
 from clashroyalebuildabot.state.side_detector import SideDetector
 from clashroyalebuildabot.state.unit_detector import UnitDetector
 
-
 class Detector:
     def __init__(self, card_names, debug=False, min_conf=0.5):
         if len(card_names) != DECK_SIZE:
@@ -25,19 +22,14 @@ class Detector:
         self.debug = debug
         self.min_conf = min_conf
 
-        self.font = None
         if self.debug:
             os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
             os.makedirs(LABELS_DIR, exist_ok=True)
             self.font = ImageFont.load_default()
 
         self.card_detector = CardDetector(self.card_names)
-        self.number_detector = NumberDetector(
-            os.path.join(DATA_DIR, "number.onnx")
-        )
-        self.unit_detector = UnitDetector(
-            os.path.join(DATA_DIR, "unit.onnx"), self.card_names
-        )
+        self.number_detector = NumberDetector(os.path.join(DATA_DIR, "number.onnx"))
+        self.unit_detector = UnitDetector(os.path.join(DATA_DIR, "unit.onnx"), self.card_names)
         self.screen_detector = ScreenDetector()
         self.side_detector = SideDetector(os.path.join(DATA_DIR, "side.onnx"))
 
@@ -79,8 +71,6 @@ class Detector:
                 for unit_name, v in state["units"][side].items():
                     for i in v["positions"]:
                         bbox = i["bounding_box"]
-                        # Save the bboxes in the YOLOv5 format (unit_id, center_x, center_y, width, height)
-                        # where center_x, center_y, width, height are scaled to 0-1
                         yolov5_bbox = [
                             (bbox[0] + bbox[2]) / (2 * width),
                             (bbox[1] + bbox[3]) / (2 * height),
@@ -97,14 +87,10 @@ class Detector:
             n_screenshots = len(os.listdir(SCREENSHOTS_DIR))
             n_labels = len(os.listdir(LABELS_DIR))
             basename = max(n_labels, n_screenshots) + 1
-            image_save_path = os.path.join(SCREENSHOTS_DIR, f"{basename}.jpg")
-            image.save(image_save_path)
+            image.save(os.path.join(SCREENSHOTS_DIR, f"{basename}.jpg"))
 
-            label_save_path = os.path.join(LABELS_DIR, f"{basename}.txt")
-            with open(label_save_path, "w") as f:
-                label_string = "\n".join(
-                    [" ".join(map(str, label)) for label in labels]
-                )
+            with open(os.path.join(LABELS_DIR, f"{basename}.txt"), "w") as f:
+                label_string = "\n".join([" ".join(map(str, label)) for label in labels])
                 f.write(label_string)
 
         return state
