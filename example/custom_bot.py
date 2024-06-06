@@ -34,16 +34,18 @@ class CustomBot(Bot):
         super().__init__(card_names, CustomAction, debug=debug)
         self.end_of_game_clicked = False
         self.pause_until = 0
+        self.scale_x = DISPLAY_WIDTH / SCREENSHOT_WIDTH
+        self.scale_y = DISPLAY_HEIGHT / SCREENSHOT_HEIGHT
 
     def _preprocess(self):
         for side in ["ally", "enemy"]:
             for k, v in self.state["units"][side].items():
                 for unit in v["positions"]:
                     bbox = unit["bounding_box"]
-                    bbox[0] *= DISPLAY_WIDTH / SCREENSHOT_WIDTH
-                    bbox[1] *= DISPLAY_HEIGHT / SCREENSHOT_HEIGHT
-                    bbox[2] *= DISPLAY_WIDTH / SCREENSHOT_WIDTH
-                    bbox[3] *= DISPLAY_HEIGHT / SCREENSHOT_HEIGHT
+                    bbox[0] *= self.scale_x
+                    bbox[1] *= self.scale_y
+                    bbox[2] *= self.scale_x
+                    bbox[3] *= self.scale_y
                     bbox_bottom = [((bbox[0] + bbox[2]) / 2), bbox[3]]
                     unit["tile_xy"] = self._get_nearest_tile(*bbox_bottom)
 
@@ -52,13 +54,8 @@ class CustomBot(Bot):
             while True:
                 if self.end_of_game_clicked:
                     if time.time() > self.pause_until:
-                        if not any(
-                            action.name == "Battle"
-                            for action in self.get_actions()
-                        ):
-                            logger.info(
-                                "Can't find Battle button, force game restart."
-                            )
+                        if not any(action.name == "Battle" for action in self.get_actions()):
+                            logger.info("Can't find Battle button, force game restart.")
                             subprocess.run(
                                 "adb shell am force-stop com.supercell.clashroyale",
                                 shell=True,
@@ -80,9 +77,7 @@ class CustomBot(Bot):
                 self.set_state()
 
                 if self.state["screen"] == "end_of_game":
-                    logger.info(
-                        "End of game detected. Waiting 10 seconds for battle button..."
-                    )
+                    logger.info("End of game detected. Waiting 10 seconds for battle button...")
                     self.pause_until = time.time() + 10
                     self.end_of_game_clicked = True
                     time.sleep(10)
@@ -91,31 +86,22 @@ class CustomBot(Bot):
 
                 if not actions:
                     if self.debug:
-                        logger.debug(
-                            "No actions available. Waiting for 1 second..."
-                        )
+                        logger.debug("No actions available. Waiting for 1 second...")
                     time.sleep(1.0)
                     continue
-                elif self.state["screen"] != "lobby":
+
+                if self.state["screen"] != "lobby":
                     random.shuffle(actions)
                     self._preprocess()
-                    action = max(
-                        actions, key=lambda x: x.calculate_score(self.state)
-                    )
+                    action = max(actions, key=lambda x: x.calculate_score(self.state))
                     if action.score[0] == 0:
                         continue
                     self.play_action(action)
-                    logger.info(
-                        f"Playing {action} with score {action.score} and sleeping for 1 second"
-                    )
+                    logger.info(f"Playing {action} with score {action.score} and sleeping for 1 second")
                     time.sleep(1.0)
                 else:
-                    logger.info(
-                        "In the main menu or no actions available. Waiting for 1 second..."
-                    )
+                    logger.info("In the main menu or no actions available. Waiting for 1 second...")
                     time.sleep(1.0)
 
         except KeyboardInterrupt:
-            logger.info(
-                "KeyboardInterrupt detected. Exiting bot gracefully."
-            )  # Log the interruption
+            logger.info("KeyboardInterrupt detected. Exiting bot gracefully.")
