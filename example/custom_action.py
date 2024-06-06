@@ -11,18 +11,15 @@ class CustomAction(Action):
 
     def _calculate_spell_score(self, units, radius, min_to_hit):
         enemy_units = (unit for v in units["enemy"].values() for unit in v["positions"])
-        scores = [
-            (
-                1 if self._distance(unit["tile_xy"][0], unit["tile_xy"][1] - 2, self.tile_x, self.tile_y) <= radius - 1 else 0,
-                unit
-            )
-            for unit in enemy_units
-        ]
-        hit_units = sum(score[0] for score in scores)
-        max_distance = min(
-            (-self._distance(unit["tile_xy"][0], unit["tile_xy"][1] - 2, self.tile_x, self.tile_y)) for _, unit in scores
-        ) if scores else float('inf')
+        hit_units = 0
+        max_distance = float('inf')
 
+        for unit in enemy_units:
+            distance = self._distance(unit["tile_xy"][0], unit["tile_xy"][1] - 2, self.tile_x, self.tile_y)
+            if distance <= radius - 1:
+                hit_units += 1
+                max_distance = min(max_distance, -distance)
+        
         return [1 if hit_units >= min_to_hit else 0, hit_units, max_distance]
 
     def _calculate_unit_score(self, state, tile_x_conditions, score_if_met):
@@ -44,9 +41,8 @@ class CustomAction(Action):
         score = [0.5] if state["numbers"]["elixir"]["number"] == 10 else [0]
         for unit in (unit for v in state["units"]["enemy"].values() for unit in v["positions"]):
             tile_x, tile_y = unit["tile_xy"]
-            distance = self._distance(tile_x, tile_y, self.tile_x, self.tile_y)
-            if distance < 1:
-                score = [1, -distance]
+            if self._distance(tile_x, tile_y, self.tile_x, self.tile_y) < 1:
+                score = [1, -self._distance(tile_x, tile_y, self.tile_x, self.tile_y)]
         return score
 
     def _calculate_fireball_score(self, state):
@@ -74,23 +70,18 @@ class CustomAction(Action):
 
     def _calculate_minipekka_score(self, state):
         left_hp, right_hp = (state["numbers"][f"{direction}_enemy_princess_hp"]["number"] for direction in ["left", "right"])
-        score = [0]
-        if self.tile_x == 3:
-            score = [1, self.tile_y, left_hp != -1, left_hp <= right_hp]
-        elif self.tile_x == 14:
-            score = [1, self.tile_y, right_hp != -1, right_hp <= left_hp]
-        return score
+        if self.tile_x in [3, 14]:
+            return [1, self.tile_y, left_hp != -1, left_hp <= right_hp] if self.tile_x == 3 else [1, self.tile_y, right_hp != -1, right_hp <= left_hp]
+        return [0]
 
     def _calculate_musketeer_score(self, state):
-        score = [0]
         for unit in (unit for v in state["units"]["enemy"].values() for unit in v["positions"]):
-            tile_x, tile_y = unit["tile_xy"]
-            distance = self._distance(tile_x, tile_y, self.tile_x, self.tile_y)
+            distance = self._distance(unit["tile_xy"][0], unit["tile_xy"][1], self.tile_x, self.tile_y)
             if 5 < distance < 6:
-                score = [1]
+                return [1]
             elif distance < 5:
-                score = [0]
-        return score
+                return [0]
+        return [0]
 
     def calculate_score(self, state):
         name_to_score = {
@@ -103,6 +94,6 @@ class CustomAction(Action):
             Cards.ARROWS: self._calculate_arrows_score,
             Cards.ARCHERS: self._calculate_archers_score,
         }
-        score_function = name_to_score[self.name]
-        self.score = score_function(state)
+        score_function = name_to_score.get(self.name)
+        self.score = score_function(state) if score_function else [0]
         return self.score
