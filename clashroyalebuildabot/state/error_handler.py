@@ -1,23 +1,15 @@
-# error_handler.py
-
 import subprocess
 from loguru import logger
 
-
 def adb_fix():
     try:
-        # List all adb devices
         result = subprocess.run(
             ["adb", "devices"], capture_output=True, text=True, check=True
         )
-        devices = result.stdout.strip().splitlines()[1:]  # Skip the header
+        devices = result.stdout.strip().splitlines()[1:]
 
-        # Filter out unauthorized devices and empty lines
-        devices = [
-            line.split()[0] for line in devices if "unauthorized" not in line
-        ]
+        devices = [line.split()[0] for line in devices if "unauthorized" not in line]
 
-        # Log the current connected devices
         logger.debug(f"Connected ADB devices: {devices}")
 
         if len(devices) == 1:
