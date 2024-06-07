@@ -54,7 +54,10 @@ class CustomBot(Bot):
             while True:
                 if self.end_of_game_clicked:
                     if time.time() > self.pause_until:
-                        if not any(action.name == "Battle" for action in self.get_actions()):
+                        self.set_state()
+                        actions = self.get_actions()
+                        logger.info(f"Actions after end of game: {actions}")
+                        if self.state["screen"] != "lobby":
                             logger.info("Can't find Battle button, force game restart.")
                             subprocess.run(
                                 "adb shell am force-stop com.supercell.clashroyale",
@@ -65,22 +68,24 @@ class CustomBot(Bot):
                                 "adb shell am start -n com.supercell.clashroyale/com.supercell.titan.GameApp",
                                 shell=True,
                             )
-
                             logger.info("Waiting 10 seconds...")
                             time.sleep(10)
-
+                        else:
+                            logger.debug("Lobby detected, resuming normal operation.")
                         self.end_of_game_clicked = False
                     else:
                         time.sleep(1.0)
                         continue
 
                 self.set_state()
+                logger.debug(f"Current screen state: {self.state['screen']}")
 
                 if self.state["screen"] == "end_of_game":
                     logger.info("End of game detected. Waiting 10 seconds for battle button...")
                     self.pause_until = time.time() + 10
                     self.end_of_game_clicked = True
                     time.sleep(10)
+                    continue  # skip further processing in this loop iteration
 
                 actions = self.get_actions()
 
@@ -105,3 +110,4 @@ class CustomBot(Bot):
 
         except KeyboardInterrupt:
             logger.info("KeyboardInterrupt detected. Exiting bot gracefully.")
+
