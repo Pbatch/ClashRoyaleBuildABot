@@ -1,5 +1,5 @@
 import os
-
+from loguru import logger
 from clashroyalebuildabot.data.cards import Cards
 from clashroyalebuildabot.data.units import Units
 
@@ -41,6 +41,10 @@ SCREEN_CONFIG = {
         "click_coordinates": (360, 1125),
     },
 }
+
+# Log click coordinates for screen configurations
+for screen, config in SCREEN_CONFIG.items():
+    logger.info(f"Screen: {screen}, Click coordinates: {config['click_coordinates']}")
 
 # Playable tiles
 TILE_HEIGHT = 27.6
