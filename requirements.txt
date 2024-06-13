@@ -1,8 +1,8 @@
 flatbuffers==2.0
-numpy==1.23.0
-onnxruntime==1.12.1
+numpy==1.24.2
+onnxruntime==1.18.0
 Pillow==10.1.0
 protobuf==4.21.1
-scipy==1.8.1
+scipy==1.13.1
 rich==13.7.1
 loguru==0.7.2
