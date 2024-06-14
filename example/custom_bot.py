@@ -58,7 +58,9 @@ class CustomBot(Bot):
                         actions = self.get_actions()
                         logger.info(f"Actions after end of game: {actions}")
                         if self.state["screen"] != "lobby":
-                            logger.info("Can't find Battle button, force game restart.")
+                            logger.info(
+                                "Can't find Battle button, force game restart."
+                            )
                             subprocess.run(
                                 "adb shell am force-stop com.supercell.clashroyale",
                                 shell=True,
@@ -71,7 +73,9 @@ class CustomBot(Bot):
                             logger.info("Waiting 10 seconds...")
                             time.sleep(10)
                         else:
-                            logger.debug("Lobby detected, resuming normal operation.")
+                            logger.debug(
+                                "Lobby detected, resuming normal operation."
+                            )
                         self.end_of_game_clicked = False
                     else:
                         time.sleep(1.0)
@@ -81,7 +85,9 @@ class CustomBot(Bot):
                 logger.debug(f"Current screen state: {self.state['screen']}")
 
                 if self.state["screen"] == "end_of_game":
-                    logger.info("End of game detected. Waiting 10 seconds for battle button...")
+                    logger.info(
+                        "End of game detected. Waiting 10 seconds for battle button..."
+                    )
                     self.pause_until = time.time() + 10
                     self.end_of_game_clicked = True
                     time.sleep(10)
@@ -91,23 +97,30 @@ class CustomBot(Bot):
 
                 if not actions:
                     if self.debug:
-                        logger.debug("No actions available. Waiting for 1 second...")
+                        logger.debug(
+                            "No actions available. Waiting for 1 second..."
+                        )
                     time.sleep(1.0)
                     continue
 
                 if self.state["screen"] != "lobby":
                     random.shuffle(actions)
                     self._preprocess()
-                    action = max(actions, key=lambda x: x.calculate_score(self.state))
+                    action = max(
+                        actions, key=lambda x: x.calculate_score(self.state)
+                    )
                     if action.score[0] == 0:
                         continue
                     self.play_action(action)
-                    logger.info(f"Playing {action} with score {action.score} and sleeping for 1 second")
+                    logger.info(
+                        f"Playing {action} with score {action.score} and sleeping for 1 second"
+                    )
                     time.sleep(1.0)
                 else:
-                    logger.info("In the main menu or no actions available. Waiting for 1 second...")
+                    logger.info(
+                        "In the main menu or no actions available. Waiting for 1 second..."
+                    )
                     time.sleep(1.0)
 
         except KeyboardInterrupt:
             logger.info("KeyboardInterrupt detected. Exiting bot gracefully.")
-

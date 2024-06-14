@@ -20,8 +20,11 @@ from clashroyalebuildabot.data.constants import (
 from clashroyalebuildabot.screen import Screen
 from clashroyalebuildabot.state.detector import Detector
 
+
 class Bot:
-    def __init__(self, card_names, action_class=Action, auto_start=True, debug=False):
+    def __init__(
+        self, card_names, action_class=Action, auto_start=True, debug=False
+    ):
         self.card_names = card_names
         self.action_class = action_class
         self.auto_start = auto_start
@@ -33,7 +36,9 @@ class Bot:
     @staticmethod
     def _get_nearest_tile(x, y):
         tile_x = round(((x - TILE_INIT_X) / TILE_WIDTH) - 0.5)
-        tile_y = round(((DISPLAY_HEIGHT - TILE_INIT_Y - y) / TILE_HEIGHT) - 0.5)
+        tile_y = round(
+            ((DISPLAY_HEIGHT - TILE_INIT_Y - y) / TILE_HEIGHT) - 0.5
+        )
         return tile_x, tile_y
 
     @staticmethod
@@ -44,7 +49,11 @@ class Bot:
 
     @staticmethod
     def _get_card_centre(card_n):
-        x = DISPLAY_CARD_INIT_X + DISPLAY_CARD_WIDTH / 2 + card_n * DISPLAY_CARD_DELTA_X
+        x = (
+            DISPLAY_CARD_INIT_X
+            + DISPLAY_CARD_WIDTH / 2
+            + card_n * DISPLAY_CARD_DELTA_X
+        )
         y = DISPLAY_CARD_Y + DISPLAY_CARD_HEIGHT / 2
         return x, y
 
@@ -65,10 +74,18 @@ class Bot:
 
         for i in range(4):
             card = self.state["cards"][i + 1]
-            if (int(self.state["numbers"]["elixir"]["number"]) >= card["cost"] and 
-                card["ready"] and card["name"] != "blank"):
+            if (
+                int(self.state["numbers"]["elixir"]["number"]) >= card["cost"]
+                and card["ready"]
+                and card["name"] != "blank"
+            ):
                 tiles = all_tiles if card["type"] == "spell" else valid_tiles
-                actions.extend([self.action_class(i, x, y, *card.values()) for (x, y) in tiles])
+                actions.extend(
+                    [
+                        self.action_class(i, x, y, *card.values())
+                        for (x, y) in tiles
+                    ]
+                )
 
         return actions
 
@@ -77,7 +94,9 @@ class Bot:
             screenshot = self.screen.take_screenshot()
             self.state = self.detector.run(screenshot)
             if self.auto_start and self.state["screen"] != "in_game":
-                self.screen.click(*SCREEN_CONFIG[self.state["screen"]]["click_coordinates"])
+                self.screen.click(
+                    *SCREEN_CONFIG[self.state["screen"]]["click_coordinates"]
+                )
                 time.sleep(2)
         except Exception as e:
             logger.error(f"Error occurred while taking screenshot: {e}")

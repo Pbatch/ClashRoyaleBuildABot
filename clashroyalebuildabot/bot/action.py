@@ -1,5 +1,7 @@
 class Action:
-    def __init__(self, index, tile_x, tile_y, name, cost, type_, target, ready):
+    def __init__(
+        self, index, tile_x, tile_y, name, cost, type_, target, ready
+    ):
         self.index = index
         self.tile_x = tile_x
         self.tile_y = tile_y
