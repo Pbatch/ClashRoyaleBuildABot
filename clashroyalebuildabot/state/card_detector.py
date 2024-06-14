@@ -11,6 +11,7 @@ from clashroyalebuildabot.data.constants import (
 )
 from scipy.optimize import linear_sum_assignment
 
+
 class CardDetector:
     def __init__(self, card_names, hash_size=8, grey_std_threshold=5):
         self.card_names = card_names
@@ -19,41 +20,71 @@ class CardDetector:
         self.cards, self.card_hashes = self._calculate_cards_and_card_hashes()
 
     def _calculate_multi_hash(self, image):
-        gray_image = np.array(image.resize((self.hash_size, self.hash_size), Image.BILINEAR).convert("L"), dtype=np.float32).ravel()
+        gray_image = self._calculate_hash(image)
         light_image = MULTI_HASH_SCALE * gray_image + MULTI_HASH_INTERCEPT
         dark_image = (gray_image - MULTI_HASH_INTERCEPT) / MULTI_HASH_SCALE
-        multi_hash = np.vstack([gray_image, light_image, dark_image]).astype(np.float32)
+        multi_hash = np.vstack([gray_image, light_image, dark_image]).astype(
+            np.float32
+        )
         return multi_hash
 
     def _calculate_hash(self, image):
-        return np.array(image.resize((self.hash_size, self.hash_size), Image.BILINEAR).convert("L"), dtype=np.float32).ravel()
+        return np.array(
+            image.resize(
+                (self.hash_size, self.hash_size), Image.BILINEAR
+            ).convert("L"),
+            dtype=np.float32,
+        ).ravel()
 
     def _calculate_cards_and_card_hashes(self):
         cards = []
-        card_hashes = np.zeros((DECK_SIZE + 1, 3, self.hash_size * self.hash_size, HAND_SIZE), dtype=np.float32)
+        card_hashes = np.zeros(
+            (DECK_SIZE + 1, 3, self.hash_size * self.hash_size, HAND_SIZE),
+            dtype=np.float32,
+        )
         i = 0
-        with open(f"{DATA_DIR}/cards.csv") as f:
+        with open(os.path.join(DATA_DIR, "cards.csv")) as f:
             for line in f:
-                name, _, cost, type_, target, _ = line.strip().replace('"', "").split(",")
+                name, _, cost, type_, target, _ = (
+                    line.strip().replace('"', "").split(",")
+                )
                 if name in self.card_names:
-                    path = os.path.join(DATA_DIR, "images", "cards", f"{name}.png")
+                    path = os.path.join(
+                        DATA_DIR, "images", "cards", f"{name}.jpg"
+                    )
                     card = Image.open(path)
                     multi_hash = self._calculate_multi_hash(card)
-                    card_hashes[i] = np.tile(np.expand_dims(multi_hash, axis=2), (1, 1, HAND_SIZE))
-                    cards.append({"name": name, "cost": int(cost), "type": type_, "target": target})
+                    card_hashes[i] = np.tile(
+                        np.expand_dims(multi_hash, axis=2), (1, 1, HAND_SIZE)
+                    )
+                    cards.append(
+                        {
+                            "name": name,
+                            "cost": int(cost),
+                            "type": type_,
+                            "target": target,
+                        }
+                    )
                     i += 1
-        path = os.path.join(DATA_DIR, "images", "cards", "blank.png")
+        path = os.path.join(DATA_DIR, "images", "cards", "blank.jpg")
         card = Image.open(path)
         multi_hash = self._calculate_multi_hash(card)
-        card_hashes[-1] = np.tile(np.expand_dims(multi_hash, axis=2), (1, 1, HAND_SIZE))
-        cards.append({"name": "blank", "cost": 11, "type": "n/a", "target": "n/a"})
+        card_hashes[-1] = np.tile(
+            np.expand_dims(multi_hash, axis=2), (1, 1, HAND_SIZE)
+        )
+        cards.append(
+            {"name": "blank", "cost": 11, "type": "n/a", "target": "n/a"}
+        )
         return cards, card_hashes
 
     def _detect_cards(self, image):
-        hash_diffs = np.zeros((DECK_SIZE + 1, HAND_SIZE), dtype=np.float32)
         crops = [image.crop(position) for position in CARD_CONFIG]
-        crop_hashes = np.array([self._calculate_hash(crop) for crop in crops]).T
-        hash_diffs = np.mean(np.amin(np.abs(crop_hashes - self.card_hashes), axis=1), axis=1).T
+        crop_hashes = np.array(
+            [self._calculate_hash(crop) for crop in crops]
+        ).T
+        hash_diffs = np.mean(
+            np.amin(np.abs(crop_hashes - self.card_hashes), axis=1), axis=1
+        ).T
         _, idx = linear_sum_assignment(hash_diffs)
         cards = [self.cards[i] for i in idx]
         return cards, crops
