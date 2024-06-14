@@ -28,9 +28,7 @@ class CustomBot(Bot):
             Cards.MUSKETEER,
         }
         if set(card_names) != preset_deck:
-            raise ValueError(
-                f"You must use the preset deck with cards {preset_deck} for CustomBot"
-            )
+            raise ValueError(f"CustomBot must use cards: {preset_deck}")
         super().__init__(card_names, CustomAction, debug=debug)
         self.end_of_game_clicked = False
         self.pause_until = 0
@@ -49,78 +47,78 @@ class CustomBot(Bot):
                     bbox_bottom = [((bbox[0] + bbox[2]) / 2), bbox[3]]
                     unit["tile_xy"] = self._get_nearest_tile(*bbox_bottom)
 
+    def _end_of_game(self):
+        if time.time() >= self.pause_until:
+            time.sleep(1)
+            return
+
+        self.set_state()
+        actions = self.get_actions()
+        logger.info(f"Actions after end of game: {actions}")
+
+        if self.state["screen"] == "lobby":
+            logger.debug("Lobby detected, resuming normal operation.")
+            return
+
+        logger.info("Can't find Battle button, force game restart.")
+        subprocess.run(
+            "adb shell am force-stop com.supercell.clashroyale",
+            shell=True,
+        )
+        time.sleep(1)
+        subprocess.run(
+            "adb shell am start -n com.supercell.clashroyale/com.supercell.titan.GameApp",
+            shell=True,
+        )
+        logger.info("Waiting 10 seconds.")
+        time.sleep(10)
+        self.end_of_game_clicked = False
+
+    def step(self):
+        if self.end_of_game_clicked:
+            self._end_of_game()
+
+        old_screen = self.state["screen"] if self.state is not None else None
+        self.set_state()
+        new_screen = self.state["screen"]
+        if new_screen != old_screen:
+            logger.debug(f"New screen state: {new_screen}")
+
+        if new_screen == "end_of_game":
+            logger.info(
+                "End of game detected. Waiting 10 seconds for battle button"
+            )
+            self.pause_until = time.time() + 10
+            self.end_of_game_clicked = True
+            time.sleep(10)
+            return
+        elif new_screen == "lobby":
+            logger.info("In the main menu. Waiting for 1 second")
+            time.sleep(1)
+            return
+
+        actions = self.get_actions()
+        if not actions:
+            if self.debug:
+                logger.debug("No actions available. Waiting for 1 second")
+            time.sleep(1)
+            return
+
+        random.shuffle(actions)
+        self._preprocess()
+        action = max(actions, key=lambda x: x.calculate_score(self.state))
+        if action.score[0] == 0:
+            return
+
+        self.play_action(action)
+        logger.info(
+            f"Playing {action} with score {action.score}. Waiting for 1 second"
+        )
+        time.sleep(1)
+
     def run(self):
         try:
             while True:
-                if self.end_of_game_clicked:
-                    if time.time() > self.pause_until:
-                        self.set_state()
-                        actions = self.get_actions()
-                        logger.info(f"Actions after end of game: {actions}")
-                        if self.state["screen"] != "lobby":
-                            logger.info(
-                                "Can't find Battle button, force game restart."
-                            )
-                            subprocess.run(
-                                "adb shell am force-stop com.supercell.clashroyale",
-                                shell=True,
-                            )
-                            time.sleep(1)
-                            subprocess.run(
-                                "adb shell am start -n com.supercell.clashroyale/com.supercell.titan.GameApp",
-                                shell=True,
-                            )
-                            logger.info("Waiting 10 seconds...")
-                            time.sleep(10)
-                        else:
-                            logger.debug(
-                                "Lobby detected, resuming normal operation."
-                            )
-                        self.end_of_game_clicked = False
-                    else:
-                        time.sleep(1.0)
-                        continue
-
-                self.set_state()
-                logger.debug(f"Current screen state: {self.state['screen']}")
-
-                if self.state["screen"] == "end_of_game":
-                    logger.info(
-                        "End of game detected. Waiting 10 seconds for battle button..."
-                    )
-                    self.pause_until = time.time() + 10
-                    self.end_of_game_clicked = True
-                    time.sleep(10)
-                    continue  # skip further processing in this loop iteration
-
-                actions = self.get_actions()
-
-                if not actions:
-                    if self.debug:
-                        logger.debug(
-                            "No actions available. Waiting for 1 second..."
-                        )
-                    time.sleep(1.0)
-                    continue
-
-                if self.state["screen"] != "lobby":
-                    random.shuffle(actions)
-                    self._preprocess()
-                    action = max(
-                        actions, key=lambda x: x.calculate_score(self.state)
-                    )
-                    if action.score[0] == 0:
-                        continue
-                    self.play_action(action)
-                    logger.info(
-                        f"Playing {action} with score {action.score} and sleeping for 1 second"
-                    )
-                    time.sleep(1.0)
-                else:
-                    logger.info(
-                        "In the main menu or no actions available. Waiting for 1 second..."
-                    )
-                    time.sleep(1.0)
-
+                self.step()
         except KeyboardInterrupt:
-            logger.info("KeyboardInterrupt detected. Exiting bot gracefully.")
+            logger.info("KeyboardInterrupt detected. Exiting bot gracefully")
