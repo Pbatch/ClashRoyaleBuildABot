@@ -35,7 +35,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     package_data={
-        "clashroyalebuildabot.data": ["images/*/*.png", "*.csv", "*.onnx"]
+        "clashroyalebuildabot.data": ["images/*/*.jpg", "*.csv", "*.onnx"]
     },
     python_requires=">=3.6",
     zip_safe=False,

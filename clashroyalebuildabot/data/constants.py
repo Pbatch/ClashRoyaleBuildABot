@@ -44,7 +44,9 @@ SCREEN_CONFIG = {
 
 # Log click coordinates for screen configurations
 for screen, config in SCREEN_CONFIG.items():
-    logger.info(f"Screen: {screen}, Click coordinates: {config['click_coordinates']}")
+    logger.info(
+        f"Screen: {screen}, Click coordinates: {config['click_coordinates']}"
+    )
 
 # Playable tiles
 TILE_HEIGHT = 27.6
@@ -81,13 +83,13 @@ Detector config
 # Cards
 HAND_SIZE = 5
 DECK_SIZE = 8
-CARD_Y = 545
-CARD_INIT_X = 87
-CARD_WIDTH = 55
-CARD_HEIGHT = 65
+CARD_Y = 543
+CARD_INIT_X = 84
+CARD_WIDTH = 61
+CARD_HEIGHT = 73
 CARD_DELTA_X = 69
 CARD_CONFIG = [
-    (19, 605, 51, 645),
+    (21, 609, 47, 642),
     (CARD_INIT_X, CARD_Y, CARD_INIT_X + CARD_WIDTH, CARD_Y + CARD_HEIGHT),
     (
         CARD_INIT_X + CARD_DELTA_X,
