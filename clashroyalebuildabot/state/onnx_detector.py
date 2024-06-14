@@ -1,5 +1,6 @@
 import numpy as np
 import onnxruntime
+from PIL import ImageOps
 
 
 class OnnxDetector:
@@ -10,7 +11,10 @@ class OnnxDetector:
             providers=["CPUExecutionProvider", "CUDAExecutionProvider"],
         )
         self.output_name = self.sess.get_outputs()[0].name
-        self.input_name = self.sess.get_inputs()[0].name
+
+        input_ = self.sess.get_inputs()[0]
+        self.input_name = input_.name
+        self.model_height, self.model_width = input_.shape[2:]
 
     @staticmethod
     def _xywh_to_xyxy(boxes):
@@ -39,6 +43,37 @@ class OnnxDetector:
             inds = np.where(ovr <= thresh)[0]
             order = order[inds + 1]
         return keep
+
+    def resize(self, x):
+        min_size = min(self.model_width, self.model_height)
+        x = ImageOps.contain(x, (min_size, min_size))
+        return x
+
+    def pad(self, x):
+        height, width = x.shape[:2]
+        dx = self.model_width - width
+        dy = self.model_height - height
+        pad_right = dx // 2
+        pad_left = dx - pad_right
+        pad_bottom = dy // 2
+        pad_top = dy - pad_bottom
+        padding = [pad_left, pad_right, pad_top, pad_bottom]
+        x = np.pad(
+            x,
+            ((pad_top, pad_bottom), (pad_left, pad_right), (0, 0)),
+            mode="constant",
+            constant_values=114,
+        )
+        return x, padding
+
+    def fix_bboxes(self, x, width, height, padding):
+        x[:, [0, 2]] -= padding[0]
+        x[:, [1, 3]] -= padding[2]
+        x[..., [0, 2]] *= width / (self.model_width - padding[0] - padding[1])
+        x[..., [1, 3]] *= height / (
+            self.model_height - padding[2] - padding[3]
+        )
+        return x
 
     def nms(self, prediction, conf_thres=0.35, iou_thres=0.45):
         output = [np.zeros((0, 6))] * len(prediction)

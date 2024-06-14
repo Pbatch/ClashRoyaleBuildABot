@@ -239,7 +239,6 @@ PRINCESS_HP = [
 ]
 
 # Units
-UNIT_SIZE = 416
 UNIT_Y_START = 0.05
 UNIT_Y_END = 0.80
 UNITS = [

@@ -1,13 +1,13 @@
 import os
+
 import numpy as np
-from PIL import Image
+
 from clashroyalebuildabot.data.constants import (
     UNITS,
-    UNIT_Y_END,
-    UNIT_Y_START,
-    UNIT_SIZE,
     DATA_DIR,
     CARD_TO_UNITS,
+    UNIT_Y_START,
+    UNIT_Y_END,
 )
 from clashroyalebuildabot.state.onnx_detector import OnnxDetector
 from clashroyalebuildabot.state.side_detector import SideDetector
@@ -53,8 +53,7 @@ class UnitDetector(OnnxDetector):
             side = self.side_detector.run(crop)
         return side
 
-    @staticmethod
-    def _preprocess(image):
+    def _preprocess(self, image):
         image = image.crop(
             (
                 0,
@@ -63,10 +62,12 @@ class UnitDetector(OnnxDetector):
                 UNIT_Y_END * image.height,
             )
         )
-        image = image.resize((UNIT_SIZE, UNIT_SIZE), Image.BICUBIC)
+        image = self.resize(image)
         image = np.array(image, dtype=np.float32)
+        image, padding = self.pad(image)
         image = np.expand_dims(image.transpose(2, 0, 1), axis=0)
-        return image / 255
+        image /= 255
+        return image, padding
 
     def _post_process(self, pred, **kwargs):
         height, image = kwargs["height"], kwargs["image"]
@@ -88,11 +89,10 @@ class UnitDetector(OnnxDetector):
 
     def run(self, image):
         height, width = image.height, image.width
-        np_image = self._preprocess(image)
+        np_image, padding = self._preprocess(image)
         pred = self._infer(np_image.astype(np.float16)).astype(np.float32)
         pred = np.array(self.nms(pred)[0])
-        pred[:, [0, 2]] *= width / UNIT_SIZE
-        pred[:, [1, 3]] *= height / UNIT_SIZE
+        pred = self.fix_bboxes(pred, width, height, padding)
         return self._post_process(
-            pred, width=width, height=height, image=image
+            pred, height=height, image=image, padding=padding
         )
