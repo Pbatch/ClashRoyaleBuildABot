@@ -6,7 +6,8 @@ class OnnxDetector:
     def __init__(self, model_path):
         self.model_path = model_path
         self.sess = onnxruntime.InferenceSession(
-            self.model_path, providers=["CPUExecutionProvider"]
+            self.model_path,
+            providers=["CPUExecutionProvider", "CUDAExecutionProvider"],
         )
         self.output_name = self.sess.get_outputs()[0].name
         self.input_name = self.sess.get_inputs()[0].name
