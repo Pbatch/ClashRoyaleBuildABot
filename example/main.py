@@ -9,6 +9,7 @@ from clashroyalebuildabot.state.error_handler import adb_fix
 
 start_time = datetime.now()
 
+
 def update_terminal_title():
     while True:
         elapsed_time = datetime.now() - start_time
@@ -18,6 +19,7 @@ def update_terminal_title():
         sys.stdout.write(f"\x1b]2;{formatted_time} | BuildABot\x07")
         sys.stdout.flush()
         time.sleep(1)
+
 
 def main():
     adb_fix()
@@ -33,6 +35,7 @@ def main():
     ]
     bot = CustomBot(card_names, debug=False)
     bot.run()
+
 
 if __name__ == "__main__":
     title_thread = threading.Thread(target=update_terminal_title, daemon=True)

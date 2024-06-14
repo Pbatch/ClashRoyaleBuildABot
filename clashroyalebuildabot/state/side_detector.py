@@ -3,6 +3,7 @@ from PIL import Image
 from clashroyalebuildabot.data.constants import SIDE_SIZE
 from clashroyalebuildabot.state.onnx_detector import OnnxDetector
 
+
 class SideDetector(OnnxDetector):
     @staticmethod
     def _preprocess(image):

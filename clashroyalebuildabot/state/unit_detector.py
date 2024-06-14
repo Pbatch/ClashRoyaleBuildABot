@@ -12,6 +12,7 @@ from clashroyalebuildabot.data.constants import (
 from clashroyalebuildabot.state.onnx_detector import OnnxDetector
 from clashroyalebuildabot.state.side_detector import SideDetector
 
+
 class UnitDetector(OnnxDetector):
     def __init__(self, model_path, card_names):
         super().__init__(model_path)
@@ -25,8 +26,14 @@ class UnitDetector(OnnxDetector):
         card_to_info = {}
         with open(os.path.join(DATA_DIR, "cards.csv")) as f:
             for line in f:
-                name, _, _, type_, target, transport = line.strip().replace('"', "").split(",")
-                card_to_info[name] = {"type": type_, "target": target, "transport": transport}
+                name, _, _, type_, target, transport = (
+                    line.strip().replace('"', "").split(",")
+                )
+                card_to_info[name] = {
+                    "type": type_,
+                    "target": target,
+                    "transport": transport,
+                }
         return card_to_info
 
     def _set_possible_ally_units(self):
@@ -48,7 +55,14 @@ class UnitDetector(OnnxDetector):
 
     @staticmethod
     def _preprocess(image):
-        image = image.crop((0, UNIT_Y_START * image.height, image.width, UNIT_Y_END * image.height))
+        image = image.crop(
+            (
+                0,
+                UNIT_Y_START * image.height,
+                image.width,
+                UNIT_Y_END * image.height,
+            )
+        )
         image = image.resize((UNIT_SIZE, UNIT_SIZE), Image.BICUBIC)
         image = np.array(image, dtype=np.float32)
         image = np.expand_dims(image.transpose(2, 0, 1), axis=0)
@@ -65,7 +79,9 @@ class UnitDetector(OnnxDetector):
             info = {"bounding_box": bbox, "confidence": p[4]}
             side = self._calculate_side(image, bbox, name)
             if name not in clean_pred[side]:
-                clean_pred[side][name] = self.card_to_info.get(name, {"type": "", "target": "", "transport": ""})
+                clean_pred[side][name] = self.card_to_info.get(
+                    name, {"type": "", "target": "", "transport": ""}
+                )
                 clean_pred[side][name]["positions"] = []
             clean_pred[side][name]["positions"].append(info)
         return clean_pred
@@ -77,4 +93,6 @@ class UnitDetector(OnnxDetector):
         pred = np.array(self.nms(pred)[0])
         pred[:, [0, 2]] *= width / UNIT_SIZE
         pred[:, [1, 3]] *= height / UNIT_SIZE
-        return self._post_process(pred, width=width, height=height, image=image)
+        return self._post_process(
+            pred, width=width, height=height, image=image
+        )

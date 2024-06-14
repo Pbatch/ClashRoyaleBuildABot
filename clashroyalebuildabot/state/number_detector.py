@@ -11,6 +11,7 @@ from clashroyalebuildabot.data.constants import (
 )
 from clashroyalebuildabot.state.onnx_detector import OnnxDetector
 
+
 class NumberDetector(OnnxDetector):
     @staticmethod
     def _calculate_elixir(image):
@@ -24,18 +25,26 @@ class NumberDetector(OnnxDetector):
     def _clean_king_levels(pred):
         for side in ["ally", "enemy"]:
             vals = [pred[f"{side}_king_level{s}"] for s in ["", "_2"]]
-            pred[f"{side}_king_level"] = max(vals, key=lambda x: np.prod(x["confidence"]))
+            pred[f"{side}_king_level"] = max(
+                vals, key=lambda x: np.prod(x["confidence"])
+            )
             del pred[f"{side}_king_level_2"]
         return pred
 
     @staticmethod
     def _clean_king_hp(pred):
         for side in ["ally", "enemy"]:
-            valid_bounding_box = pred[f"{side}_king_level"]["bounding_box"][0] == KING_LEVEL_2_X
+            valid_bounding_box = (
+                pred[f"{side}_king_level"]["bounding_box"][0] == KING_LEVEL_2_X
+            )
             valid_king_level = pred[f"{side}_king_level"]["number"] <= 14
             if valid_bounding_box and valid_king_level:
-                pred[f"{side}_king_hp"]["number"] = KING_HP[pred[f"{side}_king_level"]["number"] - 1]
-                pred[f"{side}_king_hp"]["confidence"] = pred[f"{side}_king_level"]["confidence"]
+                pred[f"{side}_king_hp"]["number"] = KING_HP[
+                    pred[f"{side}_king_level"]["number"] - 1
+                ]
+                pred[f"{side}_king_hp"]["confidence"] = pred[
+                    f"{side}_king_level"
+                ]["confidence"]
         return pred
 
     @staticmethod
@@ -44,7 +53,9 @@ class NumberDetector(OnnxDetector):
         pred.sort(key=lambda x: x[0])
         confidence = [p[4] for p in pred]
         number = "".join([str(int(p[5])) for p in pred])
-        return confidence if confidence else [-1], int(number) if number else -1
+        return confidence if confidence else [-1], (
+            int(number) if number else -1
+        )
 
     def _post_process(self, pred, **kwargs):
         clean_pred = {}
@@ -66,14 +77,19 @@ class NumberDetector(OnnxDetector):
         gray = np.dot(image[:, :, :3], [0.2125, 0.7154, 0.0721])
         for i in range(3):
             image[:, :, i] = gray
-        padded_image = 114 * np.ones((NUMBER_WIDTH, NUMBER_WIDTH, 3), dtype=np.float32)
+        padded_image = 114 * np.ones(
+            (NUMBER_WIDTH, NUMBER_WIDTH, 3), dtype=np.float32
+        )
         top = (NUMBER_WIDTH - NUMBER_HEIGHT) // 2
-        padded_image[top:top + NUMBER_HEIGHT, :, :] = image
+        padded_image[top : top + NUMBER_HEIGHT, :, :] = image
         padded_image = padded_image / 255
         return np.expand_dims(padded_image.transpose(2, 0, 1), axis=0)
 
     def run(self, image):
-        crops = np.empty((len(NUMBER_CONFIG), 3, NUMBER_WIDTH, NUMBER_WIDTH), dtype=np.float32)
+        crops = np.empty(
+            (len(NUMBER_CONFIG), 3, NUMBER_WIDTH, NUMBER_WIDTH),
+            dtype=np.float32,
+        )
         for i, (_, bounding_box) in enumerate(NUMBER_CONFIG):
             crop = image.crop(bounding_box)
             crops[i] = self._preprocess(crop)

@@ -1,6 +1,7 @@
 import subprocess
 from loguru import logger
 
+
 def adb_fix():
     try:
         result = subprocess.run(
@@ -8,7 +9,9 @@ def adb_fix():
         )
         devices = result.stdout.strip().splitlines()[1:]
 
-        devices = [line.split()[0] for line in devices if "unauthorized" not in line]
+        devices = [
+            line.split()[0] for line in devices if "unauthorized" not in line
+        ]
 
         logger.debug(f"Connected ADB devices: {devices}")
 

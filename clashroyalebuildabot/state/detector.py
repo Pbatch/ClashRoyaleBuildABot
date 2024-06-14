@@ -13,6 +13,7 @@ from clashroyalebuildabot.state.screen_detector import ScreenDetector
 from clashroyalebuildabot.state.side_detector import SideDetector
 from clashroyalebuildabot.state.unit_detector import UnitDetector
 
+
 class Detector:
     def __init__(self, card_names, debug=False, min_conf=0.5):
         if len(card_names) != DECK_SIZE:
@@ -28,8 +29,12 @@ class Detector:
             self.font = ImageFont.load_default()
 
         self.card_detector = CardDetector(self.card_names)
-        self.number_detector = NumberDetector(os.path.join(DATA_DIR, "number.onnx"))
-        self.unit_detector = UnitDetector(os.path.join(DATA_DIR, "unit.onnx"), self.card_names)
+        self.number_detector = NumberDetector(
+            os.path.join(DATA_DIR, "number.onnx")
+        )
+        self.unit_detector = UnitDetector(
+            os.path.join(DATA_DIR, "unit.onnx"), self.card_names
+        )
         self.screen_detector = ScreenDetector()
         self.side_detector = SideDetector(os.path.join(DATA_DIR, "side.onnx"))
 
@@ -90,7 +95,9 @@ class Detector:
             image.save(os.path.join(SCREENSHOTS_DIR, f"{basename}.jpg"))
 
             with open(os.path.join(LABELS_DIR, f"{basename}.txt"), "w") as f:
-                label_string = "\n".join([" ".join(map(str, label)) for label in labels])
+                label_string = "\n".join(
+                    [" ".join(map(str, label)) for label in labels]
+                )
                 f.write(label_string)
 
         return state
