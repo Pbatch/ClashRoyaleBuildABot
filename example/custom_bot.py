@@ -108,6 +108,7 @@ class CustomBot(Bot):
         self._preprocess()
         action = max(actions, key=lambda x: x.calculate_score(self.state))
         if action.score[0] == 0:
+            time.sleep(1)
             return
 
         self.play_action(action)
