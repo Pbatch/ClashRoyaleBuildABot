@@ -30,10 +30,10 @@ class Detector:
 
         self.card_detector = CardDetector(self.card_names)
         self.number_detector = NumberDetector(
-            os.path.join(DATA_DIR, "number.onnx")
+            os.path.join(DATA_DIR, "numbers_S_128x32.onnx")
         )
         self.unit_detector = UnitDetector(
-            os.path.join(DATA_DIR, "unit.onnx"), self.card_names
+            os.path.join(DATA_DIR, "units_S_480x352.onnx"), self.card_names
         )
         self.screen_detector = ScreenDetector()
         self.side_detector = SideDetector(os.path.join(DATA_DIR, "side.onnx"))
