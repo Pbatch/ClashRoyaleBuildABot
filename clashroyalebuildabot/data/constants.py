@@ -112,8 +112,8 @@ CARD_CONFIG = [
 ]
 
 # Numbers
-_W = 28
-_H = 7
+NUMBER_WIDTH = 32
+NUMBER_HEIGHT = 8
 KING_HP_X = 188
 LEFT_PRINCESS_HP_X = 74
 RIGHT_PRINCESS_HP_X = 266
@@ -122,87 +122,52 @@ ENEMY_PRINCESS_HP_Y = 95
 ALLY_KING_LEVEL_Y = 487
 ENEMY_KING_LEVEL_Y = 19
 KING_LEVEL_X = 134
-KING_LEVEL_2_X = KING_LEVEL_X + _W
+KING_LEVEL_2_X = KING_LEVEL_X + NUMBER_WIDTH
 ELIXIR_BOUNDING_BOX = (100, 628, 350, 643)
 NUMBER_CONFIG = [
     [
         "enemy_king_level",
-        (
-            KING_LEVEL_X,
-            ENEMY_KING_LEVEL_Y,
-            KING_LEVEL_X + _W,
-            ENEMY_KING_LEVEL_Y + _H,
-        ),
+        KING_LEVEL_X,
+        ENEMY_KING_LEVEL_Y,
     ],
     [
         "enemy_king_level_2",
-        (
-            KING_LEVEL_2_X,
-            ENEMY_KING_LEVEL_Y,
-            KING_LEVEL_2_X + _W,
-            ENEMY_KING_LEVEL_Y + _H,
-        ),
+        KING_LEVEL_2_X,
+        ENEMY_KING_LEVEL_Y,
     ],
     [
         "ally_king_level",
-        (
-            KING_LEVEL_X,
-            ALLY_KING_LEVEL_Y,
-            KING_LEVEL_X + _W,
-            ALLY_KING_LEVEL_Y + _H,
-        ),
+        KING_LEVEL_X,
+        ALLY_KING_LEVEL_Y,
     ],
     [
         "ally_king_level_2",
-        (
-            KING_LEVEL_2_X,
-            ALLY_KING_LEVEL_Y,
-            KING_LEVEL_2_X + _W,
-            ALLY_KING_LEVEL_Y + _H,
-        ),
+        KING_LEVEL_2_X,
+        ALLY_KING_LEVEL_Y,
     ],
-    ["enemy_king_hp", (KING_HP_X, 15, 188 + _W, 15 + _H)],
-    ["ally_king_hp", (KING_HP_X, 495, 188 + _W, 495 + _H)],
+    ["enemy_king_hp", KING_HP_X, 15],
+    ["ally_king_hp", KING_HP_X, 495],
     [
         "right_ally_princess_hp",
-        (
-            RIGHT_PRINCESS_HP_X,
-            ALLY_PRINCESS_HP_Y,
-            RIGHT_PRINCESS_HP_X + _W,
-            ALLY_PRINCESS_HP_Y + _H,
-        ),
+        RIGHT_PRINCESS_HP_X,
+        ALLY_PRINCESS_HP_Y,
     ],
     [
         "left_ally_princess_hp",
-        (
-            LEFT_PRINCESS_HP_X,
-            ALLY_PRINCESS_HP_Y,
-            LEFT_PRINCESS_HP_X + _W,
-            ALLY_PRINCESS_HP_Y + _H,
-        ),
+        LEFT_PRINCESS_HP_X,
+        ALLY_PRINCESS_HP_Y,
     ],
     [
         "right_enemy_princess_hp",
-        (
-            RIGHT_PRINCESS_HP_X,
-            ENEMY_PRINCESS_HP_Y,
-            RIGHT_PRINCESS_HP_X + _W,
-            ENEMY_PRINCESS_HP_Y + _H,
-        ),
+        RIGHT_PRINCESS_HP_X,
+        ENEMY_PRINCESS_HP_Y,
     ],
     [
         "left_enemy_princess_hp",
-        (
-            LEFT_PRINCESS_HP_X,
-            ENEMY_PRINCESS_HP_Y,
-            LEFT_PRINCESS_HP_X + _W,
-            ENEMY_PRINCESS_HP_Y + _H,
-        ),
+        LEFT_PRINCESS_HP_X,
+        ENEMY_PRINCESS_HP_Y,
     ],
 ]
-NUMBER_HEIGHT = 16
-NUMBER_WIDTH = 64
-NUMBER_MIN_CONFIDENCE = 0.5
 
 # HP
 KING_HP = [

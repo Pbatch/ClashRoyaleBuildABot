@@ -1,11 +1,10 @@
 import numpy as np
-from PIL import Image
+
 from clashroyalebuildabot.data.constants import (
     NUMBER_CONFIG,
     ELIXIR_BOUNDING_BOX,
     KING_HP,
     KING_LEVEL_2_X,
-    NUMBER_MIN_CONFIDENCE,
     NUMBER_HEIGHT,
     NUMBER_WIDTH,
 )
@@ -13,6 +12,8 @@ from clashroyalebuildabot.state.onnx_detector import OnnxDetector
 
 
 class NumberDetector(OnnxDetector):
+    MIN_CONF = 0.5
+
     @staticmethod
     def _calculate_elixir(image):
         crop = image.crop(ELIXIR_BOUNDING_BOX)
@@ -47,9 +48,8 @@ class NumberDetector(OnnxDetector):
                 ]["confidence"]
         return pred
 
-    @staticmethod
-    def _calculate_confidence_and_number(pred):
-        pred = [p for p in pred.tolist() if p[4] > NUMBER_MIN_CONFIDENCE][:4]
+    def _calculate_confidence_and_number(self, pred):
+        pred = [p for p in pred.tolist() if p[4] > self.MIN_CONF][:4]
         pred.sort(key=lambda x: x[0])
         confidence = [p[4] for p in pred]
         number = "".join([str(int(p[5])) for p in pred])
@@ -59,10 +59,10 @@ class NumberDetector(OnnxDetector):
 
     def _post_process(self, pred, **kwargs):
         clean_pred = {}
-        for p, (name, bounding_box) in zip(pred, NUMBER_CONFIG):
+        for p, (name, x, y) in zip(pred, NUMBER_CONFIG):
             confidence, number = self._calculate_confidence_and_number(p)
             clean_pred[name] = {
-                "bounding_box": bounding_box,
+                "bounding_box": [x, y, x + NUMBER_WIDTH, y + NUMBER_HEIGHT],
                 "confidence": confidence,
                 "number": number,
             }
@@ -72,30 +72,31 @@ class NumberDetector(OnnxDetector):
         return clean_pred
 
     def _preprocess(self, image):
-        image = image.resize((NUMBER_WIDTH, NUMBER_HEIGHT), Image.BICUBIC)
+        image = self.resize(image)
         image = np.array(image, dtype=np.float32)
-        gray = np.dot(image[:, :, :3], [0.2125, 0.7154, 0.0721])
-        for i in range(3):
-            image[:, :, i] = gray
-        padded_image = 114 * np.ones(
-            (NUMBER_WIDTH, NUMBER_WIDTH, 3), dtype=np.float32
-        )
-        top = (NUMBER_WIDTH - NUMBER_HEIGHT) // 2
-        padded_image[top : top + NUMBER_HEIGHT, :, :] = image
-        padded_image = padded_image / 255
-        return np.expand_dims(padded_image.transpose(2, 0, 1), axis=0)
+        image, padding = self.pad(image)
+        image = image.transpose(2, 0, 1)
+        image /= 255
+        return image, padding
 
     def run(self, image):
-        crops = np.empty(
-            (len(NUMBER_CONFIG), 3, NUMBER_WIDTH, NUMBER_WIDTH),
-            dtype=np.float32,
-        )
-        for i, (_, bounding_box) in enumerate(NUMBER_CONFIG):
-            crop = image.crop(bounding_box)
-            crops[i] = self._preprocess(crop)
-        pred = self._infer(crops.astype(np.float16)).astype(np.float32)
-        pred = self.nms(pred)
-        pred = self._post_process(pred)
+        crops = []
+        paddings = []
+        for i, (_, x, y) in enumerate(NUMBER_CONFIG):
+            crop = image.crop([x, y, x + NUMBER_WIDTH, y + NUMBER_HEIGHT])
+            crop, padding = self._preprocess(crop)
+            crops.append(crop)
+            paddings.append(padding)
+
+        crops = np.array(crops, dtype=np.float16)
+        preds = self._infer(crops).astype(np.float32)
+
+        for i, padding in enumerate(paddings):
+            preds[i] = self.fix_bboxes(
+                preds[i], NUMBER_WIDTH, NUMBER_HEIGHT, padding
+            )
+
+        pred = self._post_process(preds)
         pred["elixir"] = {
             "bounding_box": ELIXIR_BOUNDING_BOX,
             "confidence": 1.0,
