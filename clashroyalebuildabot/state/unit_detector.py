@@ -14,6 +14,8 @@ from clashroyalebuildabot.state.side_detector import SideDetector
 
 
 class UnitDetector(OnnxDetector):
+    MIN_CONF = 0.3
+
     def __init__(self, model_path, card_names):
         super().__init__(model_path)
         self.card_names = card_names
@@ -90,8 +92,8 @@ class UnitDetector(OnnxDetector):
     def run(self, image):
         height, width = image.height, image.width
         np_image, padding = self._preprocess(image)
-        pred = self._infer(np_image.astype(np.float16)).astype(np.float32)
-        pred = np.array(self.nms(pred)[0])
+        pred = self._infer(np_image.astype(np.float16)).astype(np.float32)[0]
+        pred = pred[pred[:, 4] > self.MIN_CONF]
         pred = self.fix_bboxes(pred, width, height, padding)
         return self._post_process(
             pred, height=height, image=image, padding=padding
