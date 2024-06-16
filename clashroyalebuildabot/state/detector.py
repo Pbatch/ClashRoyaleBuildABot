@@ -13,13 +13,12 @@ from clashroyalebuildabot.state.unit_detector import UnitDetector
 
 
 class Detector:
-    def __init__(self, card_names, debug=False, min_conf=0.5):
+    def __init__(self, card_names, debug=False):
         if len(card_names) != DECK_SIZE:
             raise ValueError(f"You must specify all {DECK_SIZE} of your cards")
 
         self.card_names = card_names
         self.debug = debug
-        self.min_conf = min_conf
 
         self.card_detector = CardDetector(self.card_names)
         self.number_detector = NumberDetector(
