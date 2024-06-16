@@ -49,13 +49,15 @@ To get started with building your Clash Royale bot, follow these steps:
 
 ### Latest Updates
 
-- **1.2.0**
-  - Replaced the YOLOv5 unit model with a YOLOv8 unit model.
-  - Included extra data from Jurek Elliesen for retraining.
-- **1.1.0**
-  - Switched to a larger YOLOv5 model.
-  - Separated 'ally/enemy' prediction from unit detection, improving accuracy and efficiency.
+- **1.3.0**
+  - Added synthetic data to unit training.
+  - Update README.md.
 
+- **1.2.1**
+  - Fixed an ONNX bug and a Pillow bug.
+  - Allowed CPU execution provider for ONNX runtime.
+  - Updated debug code to use new Pillow functionality.
+    
 ## Roadmap
 
 Our future plans include:
