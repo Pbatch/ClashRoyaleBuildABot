@@ -34,6 +34,23 @@ class Debugger:
         os.makedirs(LABELS_DIR, exist_ok=True)
         self.font = ImageFont.load_default()
 
+    @staticmethod
+    def _write_label(image, state, basename):
+        labels = []
+        for side in ["ally", "enemy"]:
+            for unit_name, v in state["units"][side].items():
+                for i in v["positions"]:
+                    bbox = i["bounding_box"]
+                    xc = (bbox[0] + bbox[2]) / (2 * image.width)
+                    yc = (bbox[1] + bbox[3]) / (2 * image.height)
+                    w = (bbox[2] - bbox[0]) / image.width
+                    h = (bbox[3] - bbox[1]) / image.height
+                    label = f"{unit_name} {xc} {yc} {w} {h}"
+                    labels.append(label)
+
+        with open(os.path.join(LABELS_DIR, f"{basename}.txt"), "w") as f:
+            f.write("\n".join(labels))
+
     def _draw_text(self, d, bbox, text, rgba=(0, 0, 0, 255)):
         text_width, text_height = d.textbbox((0, 0), text, font=self.font)[2:]
         text_bbox = (
@@ -66,23 +83,6 @@ class Debugger:
             self._draw_text(d, position, card["name"])
 
         image.save(os.path.join(SCREENSHOTS_DIR, f"{basename}.png"))
-
-    @staticmethod
-    def _write_label(image, state, basename):
-        labels = []
-        for side in ["ally", "enemy"]:
-            for unit_name, v in state["units"][side].items():
-                for i in v["positions"]:
-                    bbox = i["bounding_box"]
-                    xc = (bbox[0] + bbox[2]) / (2 * image.width)
-                    yc = (bbox[1] + bbox[3]) / (2 * image.height)
-                    w = (bbox[2] - bbox[0]) / image.width
-                    h = (bbox[3] - bbox[1]) / image.height
-                    label = f"{unit_name} {xc} {yc} {w} {h}"
-                    labels.append(label)
-
-        with open(os.path.join(LABELS_DIR, f"{basename}.txt"), "w") as f:
-            f.write("\n".join(labels))
 
     def run(self, image, state):
         n_screenshots = len(os.listdir(SCREENSHOTS_DIR))
