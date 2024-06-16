@@ -75,7 +75,7 @@ Have a great idea? Contribute and see it in action!
 | Name | Description | Link |
 | :---: | :---: | :---: |
 | units.tar.gz | Units in Yolov5 format | https://drive.google.com/file/d/1TsJtJ5u0NP6wb7KOF5qAbBrMuVtn7eBr/view?usp=sharing |
-| numbers.tar.gz | Numbers (grayscale) in Yolov5 format | https://drive.google.com/file/d/1nsKOIdvvBMr_HveioFjv67Ti9sJh8ECM/view?usp=sharing |
+| numbers.tar.gz | Numbers in Yolov5 format | https://drive.google.com/file/d/1nsKOIdvvBMr_HveioFjv67Ti9sJh8ECM/view?usp=sharing |
 
 ## Contributors ✨
 
