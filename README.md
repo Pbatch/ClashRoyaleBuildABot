@@ -9,6 +9,8 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-16-orange.svg?style=flat-square)](#contributors-)
 [![PyPI version](https://badge.fury.io/py/ClashRoyaleBuildABot.svg)](https://badge.fury.io/py/ClashRoyaleBuildABot)
 
+[Join our Discord Server](https://discord.gg/K4UfbsfcMa)
+
 </div>
 
 ## Description
