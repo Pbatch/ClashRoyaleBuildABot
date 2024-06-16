@@ -47,26 +47,3 @@ class Detector:
             self.debugger.run(image, state)
 
         return state
-
-
-def main():
-    from clashroyalebuildabot.data.constants import Cards
-    from PIL import Image
-
-    card_names = [
-        Cards.MINIONS,
-        Cards.ARCHERS,
-        Cards.ARROWS,
-        Cards.GIANT,
-        Cards.MINIPEKKA,
-        Cards.FIREBALL,
-        Cards.KNIGHT,
-        Cards.MUSKETEER,
-    ]
-    detector = Detector(card_names, debug=True)
-    image = Image.open("test.jpg")
-    detector.run(image)
-
-
-if __name__ == "__main__":
-    main()
