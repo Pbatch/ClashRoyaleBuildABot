@@ -5,6 +5,7 @@ from .screen_detector import ScreenDetector
 from .number_detector import NumberDetector
 from .unit_detector import UnitDetector
 from .card_detector import CardDetector
+from .debugger import Debugger
 
 __all__ = [
     "Detector",
@@ -13,4 +14,5 @@ __all__ = [
     "NumberDetector",
     "UnitDetector",
     "CardDetector",
+    "Debugger",
 ]
