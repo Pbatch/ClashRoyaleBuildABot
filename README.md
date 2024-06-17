@@ -6,10 +6,9 @@
 
 **Build your own bot to play Clash Royale**
 
-[![All Contributors](https://img.shields.io/badge/all_contributors-16-orange.svg?style=flat-square)](#contributors-)
-[![PyPI version](https://badge.fury.io/py/ClashRoyaleBuildABot.svg)](https://badge.fury.io/py/ClashRoyaleBuildABot)
-
-[Join our Discord Server](https://discord.gg/K4UfbsfcMa)
+[![Discord](https://img.shields.io/badge/Discord-007bff?logo=discord&logoColor=white&style=flat&round=edge)](https://discord.gg/K4UfbsfcMa)
+![Python Version](https://img.shields.io/badge/python-3.12.4-007bff?style=flat&logo=python&logoColor=white&round=edge)
+[![All Contributors](https://img.shields.io/badge/all_contributors-17-007bff?style=flat&round=edge)](#contributors-)
 
 </div>
 
