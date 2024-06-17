@@ -5,7 +5,6 @@ from datetime import datetime
 
 from clashroyalebuildabot.data.cards import Cards
 from clashroyalebuildabot.bot.example.custom_bot import CustomBot
-from clashroyalebuildabot.state.error_handler import adb_fix
 
 start_time = datetime.now()
 
@@ -22,7 +21,6 @@ def update_terminal_title():
 
 
 def main():
-    adb_fix()
     card_names = [
         Cards.MINIONS,
         Cards.ARCHERS,
