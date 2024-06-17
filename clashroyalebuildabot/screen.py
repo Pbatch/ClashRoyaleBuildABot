@@ -1,48 +1,40 @@
-import subprocess
+import yaml
+import os
 from PIL import Image
 from loguru import logger
+from adb_shell.adb_device import AdbDeviceTcp
 from clashroyalebuildabot.data.constants import (
     SCREENSHOT_WIDTH,
     SCREENSHOT_HEIGHT,
 )
 
-
 class Screen:
     def __init__(self):
+        config_path = os.path.join(os.path.dirname(__file__), 'config', 'config.yml')
+        with open(config_path, 'r') as file:
+            config = yaml.safe_load(file)
+        
+        adb_config = config['adb']
+        device_ip = adb_config['ip']
+        device_port = adb_config['port']
+        
+        self.device = AdbDeviceTcp(device_ip, device_port)
+        
         try:
-            window_size = subprocess.check_output(
-                ["adb", "shell", "wm", "size"]
-            )
-            window_size = window_size.decode("ascii").replace(
-                "Physical size: ", ""
-            )
+            self.device.connect()
+            window_size = self.device.shell("wm size")
+            window_size = window_size.replace("Physical size: ", "")
             self.size = tuple([int(i) for i in window_size.split("x")])
-        except subprocess.CalledProcessError as e:
-            error_output = e.stderr.decode("utf-8") if e.stderr else ""
-            if "no devices/emulators found" in error_output:
-                logger.critical(
-                    "No Android devices or emulators found. Please connect a device or start an emulator."
-                )
-            elif "more than one device/emulator" in error_output:
-                logger.critical(
-                    "Multiple devices/emulators found. Please specify a target device using the -s option."
-                )
-            else:
-                logger.error(f"Error getting screen size: {e}")
+        except Exception as e:
+            logger.critical(f"Error getting screen size: {e}")
             logger.critical("Exiting due to device connection error.")
             raise SystemExit()
 
-    @staticmethod
-    def click(x, y):
-        subprocess.run(["adb", "shell", "input", "tap", str(x), str(y)])
+    def click(self, x, y):
+        self.device.shell(f"input tap {x} {y}")
 
     def _take_screenshot(self):
-        screenshot_bytes = subprocess.run(
-            ["adb", "exec-out", "screencap"],
-            check=True,
-            capture_output=True,
-            timeout=10,
-        ).stdout
+        screenshot_bytes = self.device.shell("screencap", decode=False)
         logger.debug("Screenshot captured successfully.")
 
         image = None
@@ -80,11 +72,8 @@ class Screen:
         logger.debug("Starting to take screenshot...")
         try:
             image = self._take_screenshot()
-        except subprocess.CalledProcessError as e:
-            logger.error(f"ADB command failed: {e.cmd}")
-            logger.error(f"Error code: {e.returncode}")
-            if e.stderr:
-                logger.error(f"Stderr: {e.stderr.decode('utf-8')}")
+        except Exception as e:
+            logger.error(f"ADB command failed: {e}")
             raise
 
         return image
