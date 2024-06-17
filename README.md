@@ -1,14 +1,15 @@
 <div align="center"> 
 
-# Clash Royale Build-A-Bot
-Welcome to Clash Royale Build-A-Bot! This project provides an advanced state generator that accurately returns detailed information using cutting-edge technologies. 
+**Clash Royale Build-A-Bot**
 <table>
-    <tr>
+    <tr>
       <td align="center">
         <img src="https://github.com/Leviaria/ClashRoyaleBuildABot/assets/113382526/799f3df9-991f-4adc-9cb4-e67f15caa3e2" alt="ClashRoyaleBuildABot">
       </td>
-    </tr>
-  </table>
+    </tr>
+</table>
+  
+Welcome to Clash Royale Build-A-Bot! This project provides an advanced state generator that accurately returns detailed information using cutting-edge technologies. 
 
 [![Discord](https://img.shields.io/badge/Discord-00c8d6?logo=discord&logoColor=white&style=flat)](https://discord.gg/K4UfbsfcMa)
 [![Python 3.12.4](https://img.shields.io/badge/python-3.12.4-00c8d6?style=flat&logo=python&logoColor=white)](https://www.python.org/downloads/release/python-3124/)
