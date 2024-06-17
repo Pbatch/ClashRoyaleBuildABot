@@ -12,12 +12,11 @@
 Welcome to Clash Royale Build-A-Bot! This project provides an advanced state generator that accurately returns detailed information using cutting-edge technologies. 
 
 [![Discord](https://img.shields.io/badge/Discord-00c8d6?logo=discord&logoColor=white&style=flat)](https://discord.gg/K4UfbsfcMa)
-[![Python 3.12.4](https://img.shields.io/badge/python-3.12.4-00c8d6?style=flat&logo=python&logoColor=white)](https://www.python.org/downloads/release/python-3124/)
+[![Python 3.10.0](https://img.shields.io/badge/python-3.10.0-00c8d6?style=flat&logo=python&logoColor=white)](https://www.python.org/downloads/release/python-3100/)
 [![All Contributors](https://img.shields.io/badge/all_contributors-17-00c8d6?style=flat)](#contributors-)
 
 [**Getting Started**](#getting-started-with-your-clash-royale-bot) |
-[**Latest Updates**](#latest-updates) |
-[**To-Do List**](#to-do-list) |
+[**Leaderboard**](#leaderboard)
 [**Data**](#data) |
 [**Contributors**](#contributors-)
 
@@ -36,29 +35,50 @@ Follow these steps to set up your environment:
 Need help? Join our [Discord server](https://discord.gg/K4UfbsfcMa).
 
 ---
-<h2 style="background-color: #f0f0f0; padding: 10px; border-radius: 5px;">Latest Updates</h2>
 
-**1.3.0**
-* Added synthetic data for unit training.
-* Updated README.md.
+<h2 style="background-color: #f0f0f0; padding: 10px; border-radius: 5px;">Leaderboard </h2>
 
-**1.2.1**
-* Fixed ONNX and Pillow bugs.
-* Enabled CPU execution provider for ONNX runtime.
-* Updated debug code with new Pillow functionality.
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td><b>Rank</b></td>
+      <td><b>Name</b></td>
+      <td><b>Trophies</b></td>
+      <td><b>Bot</b>b></td>
+    </tr>
+    <tr>
+      <td>#1</td>
+      <td align="center" valign="top" width="14.28%">
+        <a href="https://github.com/Leviaria">
+        <img src="https://avatars.githubusercontent.com/u/113382526?v=4?s=100" width="100px;" alt="Leviaria"/>
+        <br/><sub><b>Leviaria</b></sub></a><br/>
+      </td>
+      <td>
+          <p>2110</p>
+      </td>
+      <td>
+          <p>CustomBot</p>
+      </td>
+    </tr>
+    <tr>
+      <td>#2</td>
+      <td align="center" valign="top" width="14.28%">
+        <a href="https://github.com/pbatch">
+        <img src="https://avatars.githubusercontent.com/pbatch?v=4?s=100" width="100px;" alt="Pbatch"/>
+        <br/><sub><b>Pbatch</b></sub></a><br/>
+      </td>
+      <td>
+          <p>1126</p>
+      </td>
+      <td>
+          <p>CustomBot</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
----
-<h2 style="background-color: #f0f0f0; padding: 10px; border-radius: 5px;">To-Do List</h2>
-
-* Improve PeteBot's performance.
-* Label more diverse cards.
-* Add a tracking layer for unit predictions.
-* Publish tutorials on Q-learning and imitation learning.
-* Release the YOLOv5 training notebook.
-* Implement chest opening and card upgrading.
-* Create a leaderboard for top bots.
-
-Have an idea? Contribute!
 
 ---
 <h2 style="background-color: #f0f0f0; padding: 10px; border-radius: 5px;">Data </h2>
