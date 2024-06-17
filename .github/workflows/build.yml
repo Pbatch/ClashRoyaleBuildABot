@@ -21,7 +21,11 @@ jobs:
       run: |
         pip install .
         pip install .[dev]
+    - name: Verify installation
+      run: |
+        python -m pip check
     - name: Clean up build artifacts
       run: |
         rm -rf build
         rm -rf *.egg-info
+        rm -rf dist
