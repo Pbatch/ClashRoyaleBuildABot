@@ -1,5 +1,8 @@
 <div align="center"> 
-  <table>
+
+# Clash Royale Build-A-Bot
+Welcome to Clash Royale Build-A-Bot! This project provides an advanced state generator that accurately returns detailed information using cutting-edge technologies. 
+<table>
     <tr>
       <td align="center">
         <img src="https://raw.githubusercontent.com/wiki/Pbatch/ClashRoyaleBuildABot/images/demo.gif" alt="Standard Bot">
@@ -17,11 +20,11 @@
 [![Python 3.12.4](https://img.shields.io/badge/python-3.12.4-00c8d6?style=flat&logo=python&logoColor=white)](https://www.python.org/downloads/release/python-3124/)
 [![All Contributors](https://img.shields.io/badge/all_contributors-17-00c8d6?style=flat)](#contributors-)
 
-[Getting Started](#getting-started-with-your-clash-royale-bot) |
-[Latest Updates](#latest-updates) |
-[To-Do List](#to-do-list) |
-[Data](#data) |
-[Contributors](#contributors-)
+[**Getting Started**](#getting-started-with-your-clash-royale-bot) |
+[**Latest Updates**](#latest-updates) |
+[**To-Do List**](#to-do-list) |
+[**Data**](#data) |
+[**Contributors**](#contributors-)
 
 </div>
 
