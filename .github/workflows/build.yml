@@ -1,0 +1,31 @@
+name: Build
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11"]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set Up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+    - name: Install dependencies
+      run: |
+        pip install .
+        pip install .[dev]
+    - name: Verify installation
+      run: |
+        python -m pip check
+    - name: Clean up build artifacts
+      run: |
+        rm -rf build
+        rm -rf *.egg-info
+        rm -rf dist

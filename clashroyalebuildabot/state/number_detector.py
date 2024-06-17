@@ -1,13 +1,11 @@
 import numpy as np
 
-from clashroyalebuildabot.data.constants import (
-    NUMBER_CONFIG,
-    ELIXIR_BOUNDING_BOX,
-    KING_HP,
-    KING_LEVEL_2_X,
-    NUMBER_HEIGHT,
-    NUMBER_WIDTH,
-)
+from clashroyalebuildabot.data.constants import ELIXIR_BOUNDING_BOX
+from clashroyalebuildabot.data.constants import KING_HP
+from clashroyalebuildabot.data.constants import KING_LEVEL_2_X
+from clashroyalebuildabot.data.constants import NUMBER_CONFIG
+from clashroyalebuildabot.data.constants import NUMBER_HEIGHT
+from clashroyalebuildabot.data.constants import NUMBER_WIDTH
 from clashroyalebuildabot.state.onnx_detector import OnnxDetector
 
 
@@ -57,7 +55,7 @@ class NumberDetector(OnnxDetector):
             int(number) if number else -1
         )
 
-    def _post_process(self, pred, **kwargs):
+    def _post_process(self, pred):
         clean_pred = {}
         for p, (name, x, y) in zip(pred, NUMBER_CONFIG):
             confidence, number = self._calculate_confidence_and_number(p)

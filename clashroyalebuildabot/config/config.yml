@@ -1,0 +1,10 @@
+adb:
+  # The IP address of your device or emulator.
+  # Use 127.0.0.1 for a local emulator. If you're connecting to a physical device,
+  # make sure to use the device's IP address.
+  ip: "127.0.0.1"
+
+  # The ADB port your emulator is open on.
+  # Should be 5555 in most cases. If you're unable to get this to work,
+  # visit X/wiki/ADB-Port for more information.
+  port: 5555

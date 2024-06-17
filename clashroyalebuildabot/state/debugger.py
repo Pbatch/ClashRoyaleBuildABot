@@ -1,13 +1,12 @@
 import os
 
-from PIL import ImageDraw, ImageFont
+from PIL import ImageDraw
+from PIL import ImageFont
 
-from clashroyalebuildabot.data.constants import (
-    LABELS_DIR,
-    SCREENSHOTS_DIR,
-    CARD_CONFIG,
-    UNITS,
-)
+from clashroyalebuildabot.data.constants import CARD_CONFIG
+from clashroyalebuildabot.data.constants import LABELS_DIR
+from clashroyalebuildabot.data.constants import SCREENSHOTS_DIR
+from clashroyalebuildabot.data.constants import UNITS
 
 
 class Debugger:
@@ -48,7 +47,9 @@ class Debugger:
                     label = f"{unit_name} {xc} {yc} {w} {h}"
                     labels.append(label)
 
-        with open(os.path.join(LABELS_DIR, f"{basename}.txt"), "w") as f:
+        with open(
+            os.path.join(LABELS_DIR, f"{basename}.txt"), "w", encoding="utf-8"
+        ) as f:
             f.write("\n".join(labels))
 
     def _draw_text(self, d, bbox, text, rgba=(0, 0, 0, 255)):
@@ -65,7 +66,7 @@ class Debugger:
 
     def _write_image(self, image, state, basename):
         d = ImageDraw.Draw(image, "RGBA")
-        for k, v in state["numbers"].items():
+        for v in state["numbers"].values():
             d.rectangle(tuple(v["bounding_box"]))
             self._draw_text(d, v["bounding_box"], str(v["number"]))
 

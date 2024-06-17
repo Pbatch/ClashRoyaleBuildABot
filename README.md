@@ -1,88 +1,78 @@
-<div align="center">
+<div align="center"> 
 
-# Clash Royale Build-A-Bot
-
-![ClashRoyaleBuildABot](https://github.com/Pbatch/ClashRoyaleBuildABot/assets/113382526/de3cc4c3-d9f9-479f-a610-0976dbf1a833)
-
-**Build your own bot to play Clash Royale**
-
-[![Discord](https://img.shields.io/badge/Discord-007bff?logo=discord&logoColor=white&style=flat&round=edge)](https://discord.gg/K4UfbsfcMa)
-![Python Version](https://img.shields.io/badge/python-3.12.4-007bff?style=flat&logo=python&logoColor=white&round=edge)
-[![All Contributors](https://img.shields.io/badge/all_contributors-17-007bff?style=flat&round=edge)](#contributors-)
-
-</div>
-
-## Description
-
+**Clash Royale Build-A-Bot**
+<table>
+    <tr>
+      <td align="center">
+        <img src="https://github.com/Leviaria/ClashRoyaleBuildABot/assets/113382526/799f3df9-991f-4adc-9cb4-e67f15caa3e2" alt="ClashRoyaleBuildABot">
+      </td>
+    </tr>
+</table>
+  
 Welcome to Clash Royale Build-A-Bot! This project provides an advanced state generator that accurately returns detailed information using cutting-edge technologies. 
 
-## Previews
+[![Discord](https://img.shields.io/badge/Discord-00c8d6?logo=discord&logoColor=white&style=flat)](https://discord.gg/K4UfbsfcMa)
+[![Python 3.12.4](https://img.shields.io/badge/python-3.12.4-00c8d6?style=flat&logo=python&logoColor=white)](https://www.python.org/downloads/release/python-3124/)
+[![All Contributors](https://img.shields.io/badge/all_contributors-17-00c8d6?style=flat)](#contributors-)
 
-<div align="center">
-    <table>
-        <tr>
-            <td align="center">
-                <img src="https://raw.githubusercontent.com/wiki/Pbatch/ClashRoyaleBuildABot/images/demo.gif" alt="Standard Bot">
-                <p><em>Standard Bot</em></p>
-            </td>
-            <td align="center">
-                <img src="https://raw.githubusercontent.com/wiki/Pbatch/ClashRoyaleBuildABot/images/hog.gif" alt="Hog 2.6 Cycle Bot">
-                <p><em>Hog 2.6 Cycle Bot by OwenKruse</em></p>
-            </td>
-        </tr>
-    </table>
+[**Getting Started**](#getting-started-with-your-clash-royale-bot) |
+[**Latest Updates**](#latest-updates) |
+[**To-Do List**](#to-do-list) |
+[**Data**](#data) |
+[**Contributors**](#contributors-)
+
 </div>
 
-## Getting Started
+---
 
-To get started with building your Clash Royale bot, follow these steps:
+<h2 style="background-color: #f0f0f0; padding: 10px; border-radius: 5px;">Getting Started with Your Clash Royale Bot</h2> 
 
-1. **Setup Your Environment**
-   - Follow our [Setup Guide](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/Setup) to prepare your environment and emulator.
-2. **Try the Basic Bot Tutorial**
-   - Learn the basics with our [Bot Building Tutorial](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/Tutorial-(Basic)).
-3. **Understand State Generation**
-   - Dive deeper into how the state is generated in our [State Guide](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/State).
+Follow these steps to set up your environment:
 
-## Releases
+1. **Install and Configure the Emulator:** Follow our [Emulator Setup Guide](https://github.com/Leviaria/ClashRoyaleBuildABot/wiki/Emulator-Setup).
+2. **Install Python, PIP, and Git:** Go through our [Python & Git Setup Tutorial](https://github.com/Leviaria/ClashRoyaleBuildABot/wiki/Python-Git-Setup).
+3. **Install and Configure Your Bot:** Use our [Bot Installation Guide](https://github.com/Leviaria/ClashRoyaleBuildABot/wiki/Bot-Installation).
 
-### Latest Updates
+Need help? Join our [Discord server](https://discord.gg/K4UfbsfcMa).
 
-- **1.3.0**
-  - Added synthetic data to unit training.
-  - Update README.md.
+---
+<h2 style="background-color: #f0f0f0; padding: 10px; border-radius: 5px;">Latest Updates</h2>
 
-- **1.2.1**
-  - Fixed an ONNX bug and a Pillow bug.
-  - Allowed CPU execution provider for ONNX runtime.
-  - Updated debug code to use new Pillow functionality.
-    
-## Roadmap
+**1.3.0**
+* Added synthetic data for unit training.
+* Updated README.md.
 
-Our future plans include:
+**1.2.1**
+* Fixed ONNX and Pillow bugs.
+* Enabled CPU execution provider for ONNX runtime.
+* Updated debug code with new Pillow functionality.
 
-- Enhancing PeteBot's performance (e.g., placement and elixir management).
-- Labeling more images of diverse cards to support a wider variety of decks.
-- Adding a tracking layer to improve unit predictions over time.
-- Publishing tutorials on Q-learning and imitation learning.
-- Releasing the YOLOv5 training notebook.
-- Implementing chest opening and card upgrading features.
-- Creating a leaderboard for the best bots developed with this repository.
+---
+<h2 style="background-color: #f0f0f0; padding: 10px; border-radius: 5px;">To-Do List</h2>
 
-Have a great idea? Contribute and see it in action!
+* Improve PeteBot's performance.
+* Label more diverse cards.
+* Add a tracking layer for unit predictions.
+* Publish tutorials on Q-learning and imitation learning.
+* Release the YOLOv5 training notebook.
+* Implement chest opening and card upgrading.
+* Create a leaderboard for top bots.
 
-## Data 
+Have an idea? Contribute!
+
+---
+<h2 style="background-color: #f0f0f0; padding: 10px; border-radius: 5px;">Data </h2>
 
 | Name | Description | Link |
-| :---: | :---: | :---: |
-| units.tar.gz | Units in Yolov5 format | https://drive.google.com/file/d/1TsJtJ5u0NP6wb7KOF5qAbBrMuVtn7eBr/view?usp=sharing |
-| numbers.tar.gz | Numbers in Yolov5 format | https://drive.google.com/file/d/1nsKOIdvvBMr_HveioFjv67Ti9sJh8ECM/view?usp=sharing |
+|---|---|---|
+| `units.tar.gz` | Units in YOLOv5 format | [Download](https://drive.google.com/file/d/1TsJtJ5u0NP6wb7KOF5qAbBrMuVtn7eBr/view?usp=sharing) |
+| `numbers.tar.gz` | Numbers in YOLOv5 format | [Download](https://drive.google.com/file/d/1nsKOIdvvBMr_HveioFjv67Ti9sJh8ECM/view?usp=sharing) |
 
-## Contributors ✨
+---
+<h2 style="background-color: #f0f0f0; padding: 10px; border-radius: 5px;">Contributors ✨</h2>
 
-A big thank you to these wonderful contributors! ([emoji key](https://allcontributors.org/docs/en/emoji-key))
-
-This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind are welcome!
+A big thank you to all contributors! 
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. 
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->

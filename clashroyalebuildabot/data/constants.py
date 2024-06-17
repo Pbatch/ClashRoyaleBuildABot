@@ -1,20 +1,16 @@
 import os
+
 from loguru import logger
+
 from clashroyalebuildabot.data.cards import Cards
 from clashroyalebuildabot.data.units import Units
 
-"""
-Miscellaneous
-"""
 # Directories
 SRC_DIR = os.path.dirname(os.path.dirname(__file__))
 DATA_DIR = os.path.join(SRC_DIR, "data")
 SCREENSHOTS_DIR = os.path.join(SRC_DIR, "screenshots")
 LABELS_DIR = os.path.join(SRC_DIR, "labels")
 
-"""
-Click config
-"""
 # Display dimensions
 DISPLAY_WIDTH = 720
 DISPLAY_HEIGHT = 1280
@@ -77,9 +73,6 @@ DISPLAY_CARD_WIDTH = 117
 DISPLAY_CARD_HEIGHT = 147
 DISPLAY_CARD_DELTA_X = 136
 
-"""
-Detector config
-"""
 # Cards
 HAND_SIZE = 5
 DECK_SIZE = 8

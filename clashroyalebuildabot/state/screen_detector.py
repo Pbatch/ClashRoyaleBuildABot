@@ -1,7 +1,10 @@
 import os
+
 import numpy as np
 from PIL import Image
-from clashroyalebuildabot.data.constants import SCREEN_CONFIG, DATA_DIR
+
+from clashroyalebuildabot.data.constants import DATA_DIR
+from clashroyalebuildabot.data.constants import SCREEN_CONFIG
 
 
 class ScreenDetector:
@@ -19,7 +22,9 @@ class ScreenDetector:
             path = os.path.join(DATA_DIR, "images", "screen", f"{name}.jpg")
             image = Image.open(path)
             hash_ = np.array(
-                image.resize((self.hash_size, self.hash_size), Image.BILINEAR)
+                image.resize(
+                    (self.hash_size, self.hash_size), Image.Resampling.BILINEAR
+                )
             ).flatten()
             screen_hashes[i] = hash_
         return screen_hashes
@@ -29,7 +34,8 @@ class ScreenDetector:
             [
                 np.array(
                     image.crop(v["bbox"]).resize(
-                        (self.hash_size, self.hash_size), Image.BILINEAR
+                        (self.hash_size, self.hash_size),
+                        Image.Resampling.BILINEAR,
                     )
                 ).flatten()
                 for v in SCREEN_CONFIG.values()
