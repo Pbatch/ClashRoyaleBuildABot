@@ -28,3 +28,8 @@ jobs:
       run: black . --check --verbose --diff
     - name: Run pylint
       run: pylint --persistent n --fail-under 10 -sn clashroyalebuildabot
+    - name: Clean up build artifacts
+      run: |
+        rm -rf build
+        rm -rf *.egg-info
+        rm -rf dist
