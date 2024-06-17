@@ -1,6 +1,7 @@
-from clashroyalebuildabot.bot.bot import Bot
-import time
 import random
+import time
+
+from clashroyalebuildabot.bot.bot import Bot
 
 
 class RandomBot(Bot):

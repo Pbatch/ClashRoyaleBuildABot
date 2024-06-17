@@ -1,5 +1,7 @@
 import os
+
 from loguru import logger
+
 from clashroyalebuildabot.data.cards import Cards
 from clashroyalebuildabot.data.units import Units
 

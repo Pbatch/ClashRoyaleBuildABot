@@ -1,15 +1,15 @@
 import os
-from PIL import Image
+
 import numpy as np
-from clashroyalebuildabot.data.constants import (
-    CARD_CONFIG,
-    DATA_DIR,
-    MULTI_HASH_SCALE,
-    MULTI_HASH_INTERCEPT,
-    DECK_SIZE,
-    HAND_SIZE,
-)
+from PIL import Image
 from scipy.optimize import linear_sum_assignment
+
+from clashroyalebuildabot.data.constants import CARD_CONFIG
+from clashroyalebuildabot.data.constants import DATA_DIR
+from clashroyalebuildabot.data.constants import DECK_SIZE
+from clashroyalebuildabot.data.constants import HAND_SIZE
+from clashroyalebuildabot.data.constants import MULTI_HASH_INTERCEPT
+from clashroyalebuildabot.data.constants import MULTI_HASH_SCALE
 
 
 class CardDetector:

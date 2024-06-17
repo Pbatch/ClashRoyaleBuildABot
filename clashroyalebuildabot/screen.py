@@ -1,25 +1,28 @@
-import yaml
 import os
-from PIL import Image
-from loguru import logger
+
 from adb_shell.adb_device import AdbDeviceTcp
-from clashroyalebuildabot.data.constants import (
-    SCREENSHOT_WIDTH,
-    SCREENSHOT_HEIGHT,
-)
+from loguru import logger
+from PIL import Image
+import yaml
+
+from clashroyalebuildabot.data.constants import SCREENSHOT_HEIGHT
+from clashroyalebuildabot.data.constants import SCREENSHOT_WIDTH
+
 
 class Screen:
     def __init__(self):
-        config_path = os.path.join(os.path.dirname(__file__), 'config', 'config.yml')
-        with open(config_path, 'r') as file:
+        config_path = os.path.join(
+            os.path.dirname(__file__), "config", "config.yml"
+        )
+        with open(config_path, "r") as file:
             config = yaml.safe_load(file)
-        
-        adb_config = config['adb']
-        device_ip = adb_config['ip']
-        device_port = adb_config['port']
-        
+
+        adb_config = config["adb"]
+        device_ip = adb_config["ip"]
+        device_port = adb_config["port"]
+
         self.device = AdbDeviceTcp(device_ip, device_port)
-        
+
         try:
             self.device.connect()
             window_size = self.device.shell("wm size")

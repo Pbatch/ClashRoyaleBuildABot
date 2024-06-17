@@ -1,10 +1,10 @@
+from datetime import datetime
+import sys
 import threading
 import time
-import sys
-from datetime import datetime
 
-from clashroyalebuildabot.data.cards import Cards
 from clashroyalebuildabot.bot.example.custom_bot import CustomBot
+from clashroyalebuildabot.data.cards import Cards
 
 start_time = datetime.now()
 

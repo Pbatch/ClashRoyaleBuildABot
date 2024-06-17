@@ -3,12 +3,10 @@ import time
 
 from clashroyalebuildabot.bot.bot import Bot
 from clashroyalebuildabot.bot.pete.pete_action import PeteAction
-from clashroyalebuildabot.data.constants import (
-    DISPLAY_WIDTH,
-    SCREENSHOT_WIDTH,
-    DISPLAY_HEIGHT,
-    SCREENSHOT_HEIGHT,
-)
+from clashroyalebuildabot.data.constants import DISPLAY_HEIGHT
+from clashroyalebuildabot.data.constants import DISPLAY_WIDTH
+from clashroyalebuildabot.data.constants import SCREENSHOT_HEIGHT
+from clashroyalebuildabot.data.constants import SCREENSHOT_WIDTH
 
 
 class PeteBot(Bot):

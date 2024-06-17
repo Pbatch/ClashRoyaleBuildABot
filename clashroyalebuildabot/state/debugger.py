@@ -1,13 +1,12 @@
 import os
 
-from PIL import ImageDraw, ImageFont
+from PIL import ImageDraw
+from PIL import ImageFont
 
-from clashroyalebuildabot.data.constants import (
-    LABELS_DIR,
-    SCREENSHOTS_DIR,
-    CARD_CONFIG,
-    UNITS,
-)
+from clashroyalebuildabot.data.constants import CARD_CONFIG
+from clashroyalebuildabot.data.constants import LABELS_DIR
+from clashroyalebuildabot.data.constants import SCREENSHOTS_DIR
+from clashroyalebuildabot.data.constants import UNITS
 
 
 class Debugger:

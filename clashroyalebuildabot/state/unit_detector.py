@@ -2,13 +2,11 @@ import os
 
 import numpy as np
 
-from clashroyalebuildabot.data.constants import (
-    UNITS,
-    DATA_DIR,
-    CARD_TO_UNITS,
-    UNIT_Y_START,
-    UNIT_Y_END,
-)
+from clashroyalebuildabot.data.constants import CARD_TO_UNITS
+from clashroyalebuildabot.data.constants import DATA_DIR
+from clashroyalebuildabot.data.constants import UNIT_Y_END
+from clashroyalebuildabot.data.constants import UNIT_Y_START
+from clashroyalebuildabot.data.constants import UNITS
 from clashroyalebuildabot.state.onnx_detector import OnnxDetector
 from clashroyalebuildabot.state.side_detector import SideDetector
 

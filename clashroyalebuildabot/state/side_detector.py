@@ -1,5 +1,6 @@
 import numpy as np
 from PIL import Image
+
 from clashroyalebuildabot.data.constants import SIDE_SIZE
 from clashroyalebuildabot.state.onnx_detector import OnnxDetector
 

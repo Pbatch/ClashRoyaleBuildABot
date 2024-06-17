@@ -1,5 +1,5 @@
 # Exports for data submodule
-from . import constants
 from . import cards
+from . import constants
 
 __all__ = ["constants", "cards"]

@@ -1,9 +1,7 @@
 import os
 
-from clashroyalebuildabot.data.constants import (
-    DATA_DIR,
-    DECK_SIZE,
-)
+from clashroyalebuildabot.data.constants import DATA_DIR
+from clashroyalebuildabot.data.constants import DECK_SIZE
 from clashroyalebuildabot.state.card_detector import CardDetector
 from clashroyalebuildabot.state.debugger import Debugger
 from clashroyalebuildabot.state.number_detector import NumberDetector
