@@ -24,7 +24,7 @@ class UnitDetector(OnnxDetector):
     @staticmethod
     def _set_card_to_info():
         card_to_info = {}
-        with open(os.path.join(DATA_DIR, "cards.csv")) as f:
+        with open(os.path.join(DATA_DIR, "cards.csv"), encoding="utf-8") as f:
             for line in f:
                 name, _, _, type_, target, transport = (
                     line.strip().replace('"', "").split(",")
@@ -69,8 +69,7 @@ class UnitDetector(OnnxDetector):
         image /= 255
         return image, padding
 
-    def _post_process(self, pred, **kwargs):
-        height, image = kwargs["height"], kwargs["image"]
+    def _post_process(self, pred, height, image):
         pred[:, [1, 3]] *= UNIT_Y_END - UNIT_Y_START
         pred[:, [1, 3]] += UNIT_Y_START * height
         clean_pred = {"ally": {}, "enemy": {}}
@@ -93,6 +92,5 @@ class UnitDetector(OnnxDetector):
         pred = self._infer(np_image.astype(np.float16)).astype(np.float32)[0]
         pred = pred[pred[:, 4] > self.MIN_CONF]
         pred = self.fix_bboxes(pred, width, height, padding)
-        return self._post_process(
-            pred, height=height, image=image, padding=padding
-        )
+        pred = self._post_process(pred, height, image)
+        return pred

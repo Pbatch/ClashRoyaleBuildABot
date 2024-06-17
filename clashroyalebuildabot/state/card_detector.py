@@ -31,7 +31,7 @@ class CardDetector:
     def _calculate_hash(self, image):
         return np.array(
             image.resize(
-                (self.hash_size, self.hash_size), Image.BILINEAR
+                (self.hash_size, self.hash_size), Image.Resampling.BILINEAR
             ).convert("L"),
             dtype=np.float32,
         ).ravel()
@@ -43,7 +43,7 @@ class CardDetector:
             dtype=np.float32,
         )
         i = 0
-        with open(os.path.join(DATA_DIR, "cards.csv")) as f:
+        with open(os.path.join(DATA_DIR, "cards.csv"), encoding="utf-8") as f:
             for line in f:
                 name, _, cost, type_, target, _ = (
                     line.strip().replace('"', "").split(",")

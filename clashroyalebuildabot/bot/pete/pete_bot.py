@@ -20,7 +20,7 @@ class PeteBot(Bot):
         Estimate the tile of each unit to be the bottom of their bounding box
         """
         for side in ["ally", "enemy"]:
-            for k, v in self.state["units"][side].items():
+            for v in self.state["units"][side].values():
                 for unit in v["positions"]:
                     bbox = unit["bounding_box"]
                     bbox[0] *= DISPLAY_WIDTH / SCREENSHOT_WIDTH

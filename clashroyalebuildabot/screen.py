@@ -14,7 +14,7 @@ class Screen:
         config_path = os.path.join(
             os.path.dirname(__file__), "config", "config.yml"
         )
-        with open(config_path, "r") as file:
+        with open(config_path, encoding="utf-8") as file:
             config = yaml.safe_load(file)
 
         adb_config = config["adb"]
@@ -27,11 +27,11 @@ class Screen:
             self.device.connect()
             window_size = self.device.shell("wm size")
             window_size = window_size.replace("Physical size: ", "")
-            self.size = tuple([int(i) for i in window_size.split("x")])
+            self.size = tuple(int(i) for i in window_size.split("x"))
         except Exception as e:
             logger.critical(f"Error getting screen size: {e}")
             logger.critical("Exiting due to device connection error.")
-            raise SystemExit()
+            raise SystemExit() from e
 
     def click(self, x, y):
         self.device.shell(f"input tap {x} {y}")
@@ -66,7 +66,7 @@ class Screen:
 
         image = image.convert("RGB")
         image = image.resize(
-            (SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT), Image.BILINEAR
+            (SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT), Image.Resampling.BILINEAR
         )
 
         return image

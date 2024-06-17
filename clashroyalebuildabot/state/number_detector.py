@@ -55,7 +55,7 @@ class NumberDetector(OnnxDetector):
             int(number) if number else -1
         )
 
-    def _post_process(self, pred, **kwargs):
+    def _post_process(self, pred):
         clean_pred = {}
         for p, (name, x, y) in zip(pred, NUMBER_CONFIG):
             confidence, number = self._calculate_confidence_and_number(p)

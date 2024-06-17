@@ -67,7 +67,7 @@ class StandardAction(Action):
         Only play minions on top of enemy units
         """
         score = [0] if state["numbers"]["elixir"]["number"] != 10 else [0.5]
-        for k, v in state["units"]["enemy"].items():
+        for v in state["units"]["enemy"].values():
             for unit in v["positions"]:
                 tile_x, tile_y = unit["tile_xy"]
                 distance = self._distance(
@@ -101,7 +101,7 @@ class StandardAction(Action):
         Play the archers in the center, vertically aligned with the troop
         """
         score = [0] if state["numbers"]["elixir"]["number"] != 10 else [0.5]
-        for k, v in state["units"]["enemy"].items():
+        for v in state["units"]["enemy"].values():
             for unit in v["positions"]:
                 tile_x, tile_y = unit["tile_xy"]
                 if self.tile_y < tile_y <= 14:

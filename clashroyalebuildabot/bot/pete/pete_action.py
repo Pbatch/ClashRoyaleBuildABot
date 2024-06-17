@@ -83,7 +83,7 @@ class PeteAction(Action):
             C is the negative distance to the furthest unit
         """
         score = [0, 0, 0]
-        for k, v in units["enemy"].items():
+        for v in units["enemy"].values():
             for unit in v["positions"]:
                 tile_x, tile_y = unit["tile_xy"]
                 # Assume the unit will move down a space

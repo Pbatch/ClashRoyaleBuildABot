@@ -1,6 +1,5 @@
 import numpy as np
 import onnxruntime
-from PIL import ImageOps
 
 
 class OnnxDetector:
@@ -56,9 +55,6 @@ class OnnxDetector:
 
     def _infer(self, x):
         return self.sess.run([self.output_name], {self.input_name: x})[0]
-
-    def _post_process(self, pred):
-        raise NotImplementedError
 
     def run(self, image):
         raise NotImplementedError
