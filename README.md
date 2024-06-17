@@ -4,15 +4,9 @@
 Welcome to Clash Royale Build-A-Bot! This project provides an advanced state generator that accurately returns detailed information using cutting-edge technologies. 
 <table>
     <tr>
-      <td align="center">
-        <img src="https://raw.githubusercontent.com/wiki/Pbatch/ClashRoyaleBuildABot/images/demo.gif" alt="Standard Bot">
-      </td>
       <td align="center">
-        <img src="https://github.com/Pbatch/ClashRoyaleBuildABot/assets/113382526/de3cc4c3-d9f9-479f-a610-0976dbf1a833" alt="ClashRoyaleBuildABot">
+        <img src="https://github.com/Leviaria/ClashRoyaleBuildABot/assets/113382526/7092b85d-b028-40df-93af-9f791c87d637" alt="ClashRoyaleBuildABot">
       </td>
-      <td align="center">
-        <img src="https://raw.githubusercontent.com/wiki/Pbatch/ClashRoyaleBuildABot/images/hog.gif" alt="Hog 2.6 Cycle Bot">
-      </td>
     </tr>
   </table>
 
