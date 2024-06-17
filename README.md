@@ -16,7 +16,7 @@ Welcome to Clash Royale Build-A-Bot! This project provides an advanced state gen
 [![All Contributors](https://img.shields.io/badge/all_contributors-17-00c8d6?style=flat)](#contributors-)
 
 [**Getting Started**](#getting-started-with-your-clash-royale-bot) |
-[**Leaderboard**](#leaderboard)
+[**Leaderboard**](#leaderboard) |
 [**Data**](#data) |
 [**Contributors**](#contributors-)
 
