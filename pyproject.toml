@@ -13,7 +13,7 @@ readme = "README.md"
 requires-python = ">= 3.9"
 dependencies = [
     "flatbuffers>=2.0",
-    "numpy>=1.23.5,!=2.0.0,!=2.0.1",
+    "numpy>=1.23.5,<2",
     "onnxruntime", 
     "onnxruntime-gpu>=1.18.0",
     "Pillow>=10.1.0",
