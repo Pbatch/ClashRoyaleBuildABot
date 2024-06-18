@@ -28,7 +28,7 @@ Welcome to Clash Royale Build-A-Bot! This project provides an advanced state gen
 
 Follow these steps to set up your environment:
 
-1. **Install and Configure the Emulator:** Follow our [Emulator Setup Guide](https://github.com/Leviaria/ClashRoyaleBuildABot/wiki/Emulator-Setup).
+1. **Install and Configure the Emulator:** Follow our [Emulator Setup Guide](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/Emulator-Setup-Guide).
 2. **Install Python, PIP, and Git:** Go through our [Python & Git Setup Tutorial](https://github.com/Leviaria/ClashRoyaleBuildABot/wiki/Python-Git-Setup).
 3. **Install and Configure Your Bot:** Use our [Bot Installation Guide](https://github.com/Leviaria/ClashRoyaleBuildABot/wiki/Bot-Installation).
 
