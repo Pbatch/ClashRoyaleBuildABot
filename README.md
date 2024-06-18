@@ -50,7 +50,7 @@ Need help? Join our [Discord server](https://discord.gg/K4UfbsfcMa).
       <td><b>Rank</b></td>
       <td><b>Name</b></td>
       <td><b>Trophies</b></td>
-      <td><b>Bot</b>b></td>
+      <td><b>Bot</b></td>
     </tr>
     <tr>
       <td>#1</td>
