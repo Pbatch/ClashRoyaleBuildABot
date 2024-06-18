@@ -21,6 +21,7 @@ dependencies = [
     "rich>=13.7.1",
     "loguru>=0.7.2",
     "adb-shell[async]==0.4.4",
+    "PyYAML",  
 ]
 
 [project.optional-dependencies]
