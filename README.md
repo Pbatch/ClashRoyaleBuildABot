@@ -30,7 +30,7 @@ Follow these steps to set up your environment:
 
 1. **Install and Configure the Emulator:** Follow our [Emulator Setup Guide](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/Emulator-Setup-Guide).
 2. **Install Python, PIP, and Git:** Go through our [Python, PIP & Git Setup Guide](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/Python,-PIP,-&-Git-Setup-Guide).
-3. **Install and Configure Your Bot:** Use our [Bot Installation Guide](https://github.com/Leviaria/ClashRoyaleBuildABot/wiki/Bot-Installation).
+3. **Install and Configure Your Bot:** Use our [Bot Installation Guide](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/Bot-Installation-Setup-Guide).
 
 Need help? Join our [Discord server](https://discord.gg/K4UfbsfcMa).
 
