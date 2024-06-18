@@ -5,8 +5,9 @@ from .bot import PeteBot
 from .bot import RandomBot
 from .bot import StandardBot
 from .bot import TwoSixHogCycle
-from .data import cards
 from .data import constants
+from .namespaces import Cards
+from .namespaces import Units
 from .screen import Screen
 from .state import CardDetector
 from .state import Detector
@@ -21,7 +22,8 @@ __all__ = [
     "PeteBot",
     "TwoSixHogCycle",
     "constants",
-    "cards",
+    "Cards",
+    "Units",
     "Detector",
     "OnnxDetector",
     "ScreenDetector",
