@@ -13,7 +13,7 @@ readme = "README.md"
 requires-python = ">= 3.9"
 dependencies = [
     "flatbuffers>=2.0",
-    "numpy>=1.23.5,<2",
+    "numpy>=1.23.5,!=2.0.0,!=2.0.1",
     "onnxruntime", 
     "onnxruntime-gpu>=1.18.0",
     "Pillow>=10.1.0",
@@ -23,6 +23,7 @@ dependencies = [
     "loguru>=0.7.2",
     "adb-shell[async]==0.4.4",
     "PyYAML",
+    "pybind11>=2.12",
 ]
 
 [project.optional-dependencies]
