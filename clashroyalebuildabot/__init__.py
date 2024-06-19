@@ -3,7 +3,6 @@ from .bot import Action
 from .bot import Bot
 from .bot import PeteBot
 from .bot import RandomBot
-from .bot import StandardBot
 from .bot import TwoSixHogCycle
 from .data import constants
 from .namespaces import Cards
