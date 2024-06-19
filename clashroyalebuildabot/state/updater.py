@@ -5,7 +5,7 @@ import shutil
 from loguru import logger
 
 GITHUB_REPO = "Pbatch/ClashRoyaleBuildABot"
-LOCAL_VERSION = "9a39050338e15a5c872696ebe7392ba2ea7dca79"
+LOCAL_VERSION = "3b1fb24a35f664fcab4ada324ea4ee4a84084742"  # Die lokale Commit-SHA hier eintragen
 DOWNLOAD_PATH = "update.zip"
 EXTRACT_PATH = "."
 
