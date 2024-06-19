@@ -3,8 +3,8 @@ import shutil
 import subprocess
 import zipfile
 
-import requests
 from loguru import logger
+import requests
 
 
 class Updater:

@@ -2,10 +2,12 @@ from datetime import datetime
 import sys
 import threading
 import time
+
+from loguru import logger
+
 from clashroyalebuildabot.bot.example.custom_bot import CustomBot
 from clashroyalebuildabot.namespaces.cards import Cards
 from clashroyalebuildabot.updater import Updater
-from loguru import logger
 
 start_time = datetime.now()
 
