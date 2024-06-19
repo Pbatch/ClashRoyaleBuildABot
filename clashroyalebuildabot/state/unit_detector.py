@@ -2,11 +2,10 @@ import os
 
 import numpy as np
 
-from clashroyalebuildabot.data.constants import CARD_TO_UNITS
 from clashroyalebuildabot.data.constants import DATA_DIR
+from clashroyalebuildabot.data.constants import DETECTOR_UNITS
 from clashroyalebuildabot.data.constants import UNIT_Y_END
 from clashroyalebuildabot.data.constants import UNIT_Y_START
-from clashroyalebuildabot.data.constants import UNITS
 from clashroyalebuildabot.state.onnx_detector import OnnxDetector
 from clashroyalebuildabot.state.side_detector import SideDetector
 
@@ -14,36 +13,21 @@ from clashroyalebuildabot.state.side_detector import SideDetector
 class UnitDetector(OnnxDetector):
     MIN_CONF = 0.3
 
-    def __init__(self, model_path, card_names):
+    def __init__(self, model_path, cards):
         super().__init__(model_path)
-        self.card_names = card_names
-        self.card_to_info = self._set_card_to_info()
-        self.possible_ally_units = self._set_possible_ally_units()
+        self.cards = cards
+
         self.side_detector = SideDetector(os.path.join(DATA_DIR, "side.onnx"))
+        self.possible_ally_units = self._get_possible_ally_units()
 
-    @staticmethod
-    def _set_card_to_info():
-        card_to_info = {}
-        with open(os.path.join(DATA_DIR, "cards.csv"), encoding="utf-8") as f:
-            for line in f:
-                name, _, _, type_, target, transport = (
-                    line.strip().replace('"', "").split(",")
-                )
-                card_to_info[name] = {
-                    "type": type_,
-                    "target": target,
-                    "transport": transport,
-                }
-        return card_to_info
-
-    def _set_possible_ally_units(self):
-        possible_ally_units = []
-        for name in self.card_names:
-            if name in CARD_TO_UNITS:
-                possible_ally_units.extend(CARD_TO_UNITS[name])
-            elif self.card_to_info[name]["type"] == "troop":
-                possible_ally_units.append(name)
-        return set(possible_ally_units)
+    def _get_possible_ally_units(self):
+        possible_ally_units = set()
+        for card in self.cards:
+            if card.units is None:
+                continue
+            for unit in card.units:
+                possible_ally_units.add(unit)
+        return possible_ally_units
 
     def _calculate_side(self, image, bbox, name):
         if name not in self.possible_ally_units:
@@ -74,15 +58,17 @@ class UnitDetector(OnnxDetector):
         pred[:, [1, 3]] += UNIT_Y_START * height
         clean_pred = {"ally": {}, "enemy": {}}
         for p in pred:
-            name = UNITS[round(p[5])]
+            name, category, target, transport = DETECTOR_UNITS[round(p[5])]
             bbox = [round(i) for i in p[:4]]
             info = {"bounding_box": bbox, "confidence": p[4]}
             side = self._calculate_side(image, bbox, name)
             if name not in clean_pred[side]:
-                clean_pred[side][name] = self.card_to_info.get(
-                    name, {"type": "", "target": "", "transport": ""}
-                )
-                clean_pred[side][name]["positions"] = []
+                clean_pred[side][name] = {
+                    "type": category,
+                    "target": target,
+                    "transport": transport,
+                    "positions": [],
+                }
             clean_pred[side][name]["positions"].append(info)
         return clean_pred
 

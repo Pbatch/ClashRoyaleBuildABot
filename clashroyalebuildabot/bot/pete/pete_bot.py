@@ -10,8 +10,8 @@ from clashroyalebuildabot.data.constants import SCREENSHOT_WIDTH
 
 
 class PeteBot(Bot):
-    def __init__(self, card_names, debug=False):
-        super().__init__(card_names, PeteAction, debug=debug)
+    def __init__(self, cards, debug=False):
+        super().__init__(cards, PeteAction, debug=debug)
 
     def _preprocess(self):
         """

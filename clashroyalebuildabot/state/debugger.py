@@ -6,7 +6,7 @@ from PIL import ImageFont
 from clashroyalebuildabot.data.constants import CARD_CONFIG
 from clashroyalebuildabot.data.constants import LABELS_DIR
 from clashroyalebuildabot.data.constants import SCREENSHOTS_DIR
-from clashroyalebuildabot.data.constants import UNITS
+from clashroyalebuildabot.namespaces.units import NAME2UNIT
 
 
 class Debugger:
@@ -32,6 +32,7 @@ class Debugger:
         os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
         os.makedirs(LABELS_DIR, exist_ok=True)
         self.font = ImageFont.load_default()
+        self.unit_names = [unit[0] for unit in list(NAME2UNIT.values())]
 
     @staticmethod
     def _write_label(image, state, basename):
@@ -72,7 +73,7 @@ class Debugger:
 
         for side in ["ally", "enemy"]:
             for unit_name, v in state["units"][side].items():
-                colour_idx = UNITS.index(unit_name) % len(
+                colour_idx = self.unit_names.index(unit_name) % len(
                     self._COLOUR_AND_RGBA
                 )
                 rgba = self._COLOUR_AND_RGBA[colour_idx][1]

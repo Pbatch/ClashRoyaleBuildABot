@@ -4,7 +4,7 @@ import threading
 import time
 
 from clashroyalebuildabot.bot.example.custom_bot import CustomBot
-from clashroyalebuildabot.data.cards import Cards
+from clashroyalebuildabot.namespaces.cards import Cards
 
 start_time = datetime.now()
 
@@ -21,7 +21,7 @@ def update_terminal_title():
 
 
 def main():
-    card_names = [
+    cards = [
         Cards.MINIONS,
         Cards.ARCHERS,
         Cards.ARROWS,
@@ -31,7 +31,7 @@ def main():
         Cards.KNIGHT,
         Cards.MUSKETEER,
     ]
-    bot = CustomBot(card_names, debug=False)
+    bot = CustomBot(cards, debug=False)
     bot.run()
 
 

@@ -6,18 +6,20 @@ from scipy.optimize import linear_sum_assignment
 
 from clashroyalebuildabot.data.constants import CARD_CONFIG
 from clashroyalebuildabot.data.constants import DATA_DIR
-from clashroyalebuildabot.data.constants import DECK_SIZE
 from clashroyalebuildabot.data.constants import HAND_SIZE
 from clashroyalebuildabot.data.constants import MULTI_HASH_INTERCEPT
 from clashroyalebuildabot.data.constants import MULTI_HASH_SCALE
+from clashroyalebuildabot.namespaces.cards import Cards
 
 
 class CardDetector:
-    def __init__(self, card_names, hash_size=8, grey_std_threshold=5):
-        self.card_names = card_names
+    def __init__(self, cards, hash_size=8, grey_std_threshold=5):
+        self.cards = cards
         self.hash_size = hash_size
         self.grey_std_threshold = grey_std_threshold
-        self.cards, self.card_hashes = self._calculate_cards_and_card_hashes()
+
+        self.cards.append(Cards.BLANK)
+        self.card_hashes = self._calculate_card_hashes()
 
     def _calculate_multi_hash(self, image):
         gray_image = self._calculate_hash(image)
@@ -36,46 +38,23 @@ class CardDetector:
             dtype=np.float32,
         ).ravel()
 
-    def _calculate_cards_and_card_hashes(self):
-        cards = []
+    def _calculate_card_hashes(self):
         card_hashes = np.zeros(
-            (DECK_SIZE + 1, 3, self.hash_size * self.hash_size, HAND_SIZE),
+            (len(self.cards), 3, self.hash_size * self.hash_size, HAND_SIZE),
             dtype=np.float32,
         )
-        i = 0
-        with open(os.path.join(DATA_DIR, "cards.csv"), encoding="utf-8") as f:
-            for line in f:
-                name, _, cost, type_, target, _ = (
-                    line.strip().replace('"', "").split(",")
-                )
-                if name in self.card_names:
-                    path = os.path.join(
-                        DATA_DIR, "images", "cards", f"{name}.jpg"
-                    )
-                    card = Image.open(path)
-                    multi_hash = self._calculate_multi_hash(card)
-                    card_hashes[i] = np.tile(
-                        np.expand_dims(multi_hash, axis=2), (1, 1, HAND_SIZE)
-                    )
-                    cards.append(
-                        {
-                            "name": name,
-                            "cost": int(cost),
-                            "type": type_,
-                            "target": target,
-                        }
-                    )
-                    i += 1
-        path = os.path.join(DATA_DIR, "images", "cards", "blank.jpg")
-        card = Image.open(path)
-        multi_hash = self._calculate_multi_hash(card)
-        card_hashes[-1] = np.tile(
-            np.expand_dims(multi_hash, axis=2), (1, 1, HAND_SIZE)
-        )
-        cards.append(
-            {"name": "blank", "cost": 11, "type": "n/a", "target": "n/a"}
-        )
-        return cards, card_hashes
+        for i, card in enumerate(self.cards):
+            path = os.path.join(
+                DATA_DIR, "images", "cards", f"{card.name}.jpg"
+            )
+            pil_image = Image.open(path)
+
+            multi_hash = self._calculate_multi_hash(pil_image)
+            card_hashes[i] = np.tile(
+                np.expand_dims(multi_hash, axis=2), (1, 1, HAND_SIZE)
+            )
+
+        return card_hashes
 
     def _detect_cards(self, image):
         crops = [image.crop(position) for position in CARD_CONFIG]
@@ -86,7 +65,7 @@ class CardDetector:
             np.amin(np.abs(crop_hashes - self.card_hashes), axis=1), axis=1
         ).T
         _, idx = linear_sum_assignment(hash_diffs)
-        cards = [self.cards[i] for i in idx]
+        cards = [self.cards[i].__dict__ for i in idx]
         return cards, crops
 
     def _detect_if_ready(self, cards, crops):

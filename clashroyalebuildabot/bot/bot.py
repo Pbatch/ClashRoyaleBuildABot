@@ -23,14 +23,14 @@ from clashroyalebuildabot.state.detector import Detector
 
 class Bot:
     def __init__(
-        self, card_names, action_class=Action, auto_start=True, debug=False
+        self, cards, action_class=Action, auto_start=True, debug=False
     ):
-        self.card_names = card_names
+        self.cards = cards
         self.action_class = action_class
         self.auto_start = auto_start
         self.debug = debug
         self.screen = Screen()
-        self.detector = Detector(card_names, debug=self.debug)
+        self.detector = Detector(cards, debug=self.debug)
         self.state = None
 
     @staticmethod
@@ -71,7 +71,6 @@ class Bot:
         all_tiles = ALLY_TILES + LEFT_PRINCESS_TILES + RIGHT_PRINCESS_TILES
         valid_tiles = self._get_valid_tiles()
         actions = []
-
         for i in range(4):
             card = self.state["cards"][i + 1]
             if (
@@ -79,7 +78,7 @@ class Bot:
                 and card["ready"]
                 and card["name"] != "blank"
             ):
-                tiles = all_tiles if card["type"] == "spell" else valid_tiles
+                tiles = all_tiles if card["target_anywhere"] else valid_tiles
                 actions.extend(
                     [
                         self.action_class(i, x, y, *card.values())

@@ -2,8 +2,7 @@ import os
 
 from loguru import logger
 
-from clashroyalebuildabot.data.cards import Cards
-from clashroyalebuildabot.data.units import Units
+from clashroyalebuildabot.namespaces import Units
 
 # Directories
 SRC_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -199,41 +198,45 @@ PRINCESS_HP = [
 # Units
 UNIT_Y_START = 0.05
 UNIT_Y_END = 0.80
-UNITS = [
+DETECTOR_UNITS = [
     Units.ARCHER,
+    Units.BARBARIAN,
+    Units.BARBARIAN_HUT,
+    Units.BOMB_TOWER,
     Units.BOMBER,
     Units.BRAWLER,
+    Units.CANNON,
+    Units.DARK_PRINCE,
+    Units.ELIXIR_COLLECTOR,
+    Units.FURNACE,
     Units.GIANT,
     Units.GOBLIN,
     Units.GOBLIN_CAGE,
     Units.GOBLIN_HUT,
     Units.HUNGRY_DRAGON,
     Units.HUNTER,
+    Units.ICE_GOLEM,
+    Units.ICE_SPIRIT,
+    Units.INFERNO_TOWER,
     Units.KNIGHT,
     Units.MINION,
     Units.MINIPEKKA,
+    Units.MORTAR,
     Units.MUSKETEER,
     Units.PRINCE,
+    Units.ROYAL_HOG,
     Units.SKELETON,
     Units.SPEAR_GOBLIN,
+    Units.TESLA,
     Units.TOMBSTONE,
     Units.VALKYRIE,
     Units.WALL_BREAKER,
+    Units.X_BOW,
 ]
 
 # Multihash coefficients
 MULTI_HASH_SCALE = 0.355
 MULTI_HASH_INTERCEPT = 163
-
-# Cards to units
-CARD_TO_UNITS = {
-    Cards.GOBLIN_CAGE: [Units.BRAWLER],
-    Cards.MINIONS: [Units.MINION],
-    Cards.SKELETONS: [Units.SKELETON],
-    Cards.ARCHERS: [Units.ARCHER],
-    Cards.SPEAR_GOBLINS: [Units.SPEAR_GOBLIN],
-    Cards.GOBLINS: [Units.GOBLIN],
-}
 
 # Side
 SIDE_SIZE = 16
