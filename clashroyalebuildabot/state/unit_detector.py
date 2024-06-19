@@ -2,22 +2,24 @@ import os
 
 import numpy as np
 
-from clashroyalebuildabot.data.constants import DATA_DIR
-from clashroyalebuildabot.data.constants import DETECTOR_UNITS
-from clashroyalebuildabot.data.constants import UNIT_Y_END
-from clashroyalebuildabot.data.constants import UNIT_Y_START
+from clashroyalebuildabot.constants import DETECTOR_UNITS
+from clashroyalebuildabot.constants import MODELS_DIR
 from clashroyalebuildabot.state.onnx_detector import OnnxDetector
 from clashroyalebuildabot.state.side_detector import SideDetector
 
 
 class UnitDetector(OnnxDetector):
     MIN_CONF = 0.3
+    UNIT_Y_START = 0.05
+    UNIT_Y_END = 0.80
 
     def __init__(self, model_path, cards):
         super().__init__(model_path)
         self.cards = cards
 
-        self.side_detector = SideDetector(os.path.join(DATA_DIR, "side.onnx"))
+        self.side_detector = SideDetector(
+            os.path.join(MODELS_DIR, "side.onnx")
+        )
         self.possible_ally_units = self._get_possible_ally_units()
 
     def _get_possible_ally_units(self):
@@ -41,9 +43,9 @@ class UnitDetector(OnnxDetector):
         image = image.crop(
             (
                 0,
-                UNIT_Y_START * image.height,
+                self.UNIT_Y_START * image.height,
                 image.width,
-                UNIT_Y_END * image.height,
+                self.UNIT_Y_END * image.height,
             )
         )
         image = self.resize(image)
@@ -54,8 +56,8 @@ class UnitDetector(OnnxDetector):
         return image, padding
 
     def _post_process(self, pred, height, image):
-        pred[:, [1, 3]] *= UNIT_Y_END - UNIT_Y_START
-        pred[:, [1, 3]] += UNIT_Y_START * height
+        pred[:, [1, 3]] *= self.UNIT_Y_END - self.UNIT_Y_START
+        pred[:, [1, 3]] += self.UNIT_Y_START * height
         clean_pred = {"ally": {}, "enemy": {}}
         for p in pred:
             name, category, target, transport = DETECTOR_UNITS[round(p[5])]

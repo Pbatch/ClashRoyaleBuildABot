@@ -4,15 +4,16 @@ import numpy as np
 from PIL import Image
 from scipy.optimize import linear_sum_assignment
 
-from clashroyalebuildabot.data.constants import CARD_CONFIG
-from clashroyalebuildabot.data.constants import DATA_DIR
-from clashroyalebuildabot.data.constants import HAND_SIZE
-from clashroyalebuildabot.data.constants import MULTI_HASH_INTERCEPT
-from clashroyalebuildabot.data.constants import MULTI_HASH_SCALE
+from clashroyalebuildabot.constants import CARD_CONFIG
+from clashroyalebuildabot.constants import IMAGES_DIR
 from clashroyalebuildabot.namespaces.cards import Cards
 
 
 class CardDetector:
+    HAND_SIZE = 5
+    MULTI_HASH_SCALE = 0.355
+    MULTI_HASH_INTERCEPT = 163
+
     def __init__(self, cards, hash_size=8, grey_std_threshold=5):
         self.cards = cards
         self.hash_size = hash_size
@@ -23,8 +24,12 @@ class CardDetector:
 
     def _calculate_multi_hash(self, image):
         gray_image = self._calculate_hash(image)
-        light_image = MULTI_HASH_SCALE * gray_image + MULTI_HASH_INTERCEPT
-        dark_image = (gray_image - MULTI_HASH_INTERCEPT) / MULTI_HASH_SCALE
+        light_image = (
+            self.MULTI_HASH_SCALE * gray_image + self.MULTI_HASH_INTERCEPT
+        )
+        dark_image = (
+            gray_image - self.MULTI_HASH_INTERCEPT
+        ) / self.MULTI_HASH_SCALE
         multi_hash = np.vstack([gray_image, light_image, dark_image]).astype(
             np.float32
         )
@@ -40,18 +45,21 @@ class CardDetector:
 
     def _calculate_card_hashes(self):
         card_hashes = np.zeros(
-            (len(self.cards), 3, self.hash_size * self.hash_size, HAND_SIZE),
+            (
+                len(self.cards),
+                3,
+                self.hash_size * self.hash_size,
+                self.HAND_SIZE,
+            ),
             dtype=np.float32,
         )
         for i, card in enumerate(self.cards):
-            path = os.path.join(
-                DATA_DIR, "images", "cards", f"{card.name}.jpg"
-            )
+            path = os.path.join(IMAGES_DIR, "cards", f"{card.name}.jpg")
             pil_image = Image.open(path)
 
             multi_hash = self._calculate_multi_hash(pil_image)
             card_hashes[i] = np.tile(
-                np.expand_dims(multi_hash, axis=2), (1, 1, HAND_SIZE)
+                np.expand_dims(multi_hash, axis=2), (1, 1, self.HAND_SIZE)
             )
 
         return card_hashes

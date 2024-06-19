@@ -1,8 +1,6 @@
 **/__pycache__
 .idea/
-clashroyalebuildabot/screenshots
-clashroyalebuildabot/labels
-clashroyalebuildabot/logs
+clashroyalebuildabot/debug
 .venv
 .vscode
 *.egg-info

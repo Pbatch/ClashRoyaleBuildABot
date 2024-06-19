@@ -1,14 +1,16 @@
 import numpy as np
 from PIL import Image
 
-from clashroyalebuildabot.data.constants import SIDE_SIZE
 from clashroyalebuildabot.state.onnx_detector import OnnxDetector
 
 
 class SideDetector(OnnxDetector):
-    @staticmethod
-    def _preprocess(image):
-        image = image.resize((SIDE_SIZE, SIDE_SIZE), Image.Resampling.BICUBIC)
+    SIDE_SIZE = 16
+
+    def _preprocess(self, image):
+        image = image.resize(
+            (self.SIDE_SIZE, self.SIDE_SIZE), Image.Resampling.BICUBIC
+        )
         image = np.array(image, dtype=np.float32) / 255
         return np.expand_dims(image, axis=0)
 
