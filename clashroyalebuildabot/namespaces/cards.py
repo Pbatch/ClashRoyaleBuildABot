@@ -148,4 +148,4 @@ class _CardsNamespace:
 
 
 Cards = _CardsNamespace()
-NAME2CARD = {k: v for k, v in asdict(Cards).items()}
+NAME2CARD = dict(asdict(Cards).items())

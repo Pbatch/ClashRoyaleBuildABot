@@ -48,4 +48,4 @@ class _UnitsNamespace:
 
 
 Units = _UnitsNamespace()
-NAME2UNIT = {k: v for k, v in asdict(Units).items()}
+NAME2UNIT = dict(asdict(Units).items())
