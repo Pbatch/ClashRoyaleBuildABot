@@ -5,8 +5,6 @@ import numpy as np
 from clashroyalebuildabot.data.constants import DATA_DIR, DETECTOR_UNITS
 from clashroyalebuildabot.data.constants import UNIT_Y_END
 from clashroyalebuildabot.data.constants import UNIT_Y_START
-from clashroyalebuildabot.namespaces.cards import Cards, NAME2CARD
-from clashroyalebuildabot.namespaces.units import NAME2UNIT, Unit
 from clashroyalebuildabot.state.onnx_detector import OnnxDetector
 from clashroyalebuildabot.state.side_detector import SideDetector
 
@@ -59,18 +57,18 @@ class UnitDetector(OnnxDetector):
         pred[:, [1, 3]] += UNIT_Y_START * height
         clean_pred = {"ally": {}, "enemy": {}}
         for p in pred:
-            unit = Unit(*DETECTOR_UNITS[round(p[5])])
+            name, category, target, transport = DETECTOR_UNITS[round(p[5])]
             bbox = [round(i) for i in p[:4]]
             info = {"bounding_box": bbox, "confidence": p[4]}
-            side = self._calculate_side(image, bbox, unit.name)
-            if unit.name not in clean_pred[side]:
-                clean_pred[side][unit.name] = {
-                    "type": unit.category,
-                    "target": unit.target,
-                    "transport": unit.transport,
+            side = self._calculate_side(image, bbox, name)
+            if name not in clean_pred[side]:
+                clean_pred[side][name] = {
+                    "type": category,
+                    "target": target,
+                    "transport": transport,
                     "positions": [],
                 }
-            clean_pred[side][unit.name]["positions"].append(info)
+            clean_pred[side][name]["positions"].append(info)
         return clean_pred
 
     def run(self, image):
