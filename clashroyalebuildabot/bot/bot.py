@@ -79,7 +79,7 @@ class Bot:
                 and card["ready"]
                 and card["name"] != "blank"
             ):
-                tiles = all_tiles if card["type"] == "spell" else valid_tiles
+                tiles = all_tiles if card["target_anywhere"] else valid_tiles
                 actions.extend(
                     [
                         self.action_class(i, x, y, *card.values())
