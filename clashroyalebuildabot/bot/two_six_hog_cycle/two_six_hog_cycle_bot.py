@@ -1,6 +1,8 @@
 import random
 import time
 
+from loguru import logger
+
 from clashroyalebuildabot.bot.bot import Bot
 from clashroyalebuildabot.bot.two_six_hog_cycle.two_six_hog_cycle_action import (
     TwoSixHogCycleAction,
@@ -68,7 +70,7 @@ class TwoSixHogCycle(Bot):
                 # Play the best action
                 self.play_action(action)
                 # Log the result
-                print(
+                logger.info(
                     f"Playing {action} with score {action.score} and sleeping for 1 second"
                 )
                 time.sleep(1.0)
