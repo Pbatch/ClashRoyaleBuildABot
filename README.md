@@ -74,7 +74,7 @@ Need help? Join our [Discord server](https://discord.gg/K4UfbsfcMa).
         <br/><sub><b>Pbatch</b></sub></a><br/>
       </td>
       <td>
-          <p>1126</p>
+          <p>1250</p>
       </td>
       <td>
           <p>CustomBot</p>
