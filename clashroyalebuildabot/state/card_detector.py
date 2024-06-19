@@ -4,8 +4,7 @@ import numpy as np
 from PIL import Image
 from scipy.optimize import linear_sum_assignment
 
-from clashroyalebuildabot.constants import CARD_CONFIG
-from clashroyalebuildabot.constants import SRC_DIR
+from clashroyalebuildabot.constants import CARD_CONFIG, IMAGES_DIR
 from clashroyalebuildabot.namespaces.cards import Cards
 
 
@@ -54,7 +53,7 @@ class CardDetector:
             dtype=np.float32,
         )
         for i, card in enumerate(self.cards):
-            path = os.path.join(SRC_DIR, "images", "cards", f"{card.name}.jpg")
+            path = os.path.join(IMAGES_DIR, "cards", f"{card.name}.jpg")
             pil_image = Image.open(path)
 
             multi_hash = self._calculate_multi_hash(pil_image)
