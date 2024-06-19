@@ -88,12 +88,3 @@ class Updater:
             logger.info("Update successful!")
         else:
             logger.info("Update cancelled.")
-
-
-def main():
-    updater = Updater()
-    updater.check_for_update()
-
-
-if __name__ == '__main__':
-    main()
