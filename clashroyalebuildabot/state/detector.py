@@ -23,7 +23,7 @@ class Detector:
             os.path.join(DATA_DIR, "numbers_S_128x32.onnx")
         )
         self.unit_detector = UnitDetector(
-            os.path.join(DATA_DIR, "units_S_480x352.onnx"), self.cards
+            os.path.join(DATA_DIR, "units_M_480x352.onnx"), self.cards
         )
         self.screen_detector = ScreenDetector()
         self.side_detector = SideDetector(os.path.join(DATA_DIR, "side.onnx"))

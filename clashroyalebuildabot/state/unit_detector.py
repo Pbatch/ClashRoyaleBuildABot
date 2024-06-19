@@ -81,9 +81,3 @@ class UnitDetector(OnnxDetector):
         pred = self.fix_bboxes(pred, width, height, padding)
         pred = self._post_process(pred, height, image)
         return pred
-
-
-detector = UnitDetector(
-    os.path.join(DATA_DIR, "units_S_480x352.onnx"),
-    cards=[Cards.GOBLIN_HUT, Cards.GOBLINS, Cards.ROYAL_HOGS],
-)
