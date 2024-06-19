@@ -4,7 +4,8 @@ import numpy as np
 from PIL import Image
 from scipy.optimize import linear_sum_assignment
 
-from clashroyalebuildabot.constants import CARD_CONFIG, IMAGES_DIR
+from clashroyalebuildabot.constants import CARD_CONFIG
+from clashroyalebuildabot.constants import IMAGES_DIR
 from clashroyalebuildabot.namespaces.cards import Cards
 
 
