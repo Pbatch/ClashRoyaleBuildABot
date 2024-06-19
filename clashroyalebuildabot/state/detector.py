@@ -13,7 +13,9 @@ class Detector:
 
     def __init__(self, cards, debug=False):
         if len(cards) != self.DECK_SIZE:
-            raise ValueError(f"You must specify all {self.DECK_SIZE} of your cards")
+            raise ValueError(
+                f"You must specify all {self.DECK_SIZE} of your cards"
+            )
 
         self.cards = cards
         self.debug = debug

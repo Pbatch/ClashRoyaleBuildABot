@@ -2,9 +2,8 @@ import os
 
 import numpy as np
 
-from clashroyalebuildabot.constants import DETECTOR_UNITS, MODELS_DIR
-from clashroyalebuildabot.constants import UNIT_Y_END
-from clashroyalebuildabot.constants import UNIT_Y_START
+from clashroyalebuildabot.constants import DETECTOR_UNITS
+from clashroyalebuildabot.constants import MODELS_DIR
 from clashroyalebuildabot.state.onnx_detector import OnnxDetector
 from clashroyalebuildabot.state.side_detector import SideDetector
 
@@ -18,7 +17,9 @@ class UnitDetector(OnnxDetector):
         super().__init__(model_path)
         self.cards = cards
 
-        self.side_detector = SideDetector(os.path.join(MODELS_DIR, "side.onnx"))
+        self.side_detector = SideDetector(
+            os.path.join(MODELS_DIR, "side.onnx")
+        )
         self.possible_ally_units = self._get_possible_ally_units()
 
     def _get_possible_ally_units(self):

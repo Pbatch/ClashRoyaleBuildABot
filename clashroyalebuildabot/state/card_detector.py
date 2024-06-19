@@ -4,9 +4,8 @@ import numpy as np
 from PIL import Image
 from scipy.optimize import linear_sum_assignment
 
-from clashroyalebuildabot.constants import CARD_CONFIG, SRC_DIR
-from clashroyalebuildabot.constants import MULTI_HASH_INTERCEPT
-from clashroyalebuildabot.constants import MULTI_HASH_SCALE
+from clashroyalebuildabot.constants import CARD_CONFIG
+from clashroyalebuildabot.constants import SRC_DIR
 from clashroyalebuildabot.namespaces.cards import Cards
 
 
@@ -25,8 +24,12 @@ class CardDetector:
 
     def _calculate_multi_hash(self, image):
         gray_image = self._calculate_hash(image)
-        light_image = self.MULTI_HASH_SCALE * gray_image + self.MULTI_HASH_INTERCEPT
-        dark_image = (gray_image - self.MULTI_HASH_INTERCEPT) / self.MULTI_HASH_SCALE
+        light_image = (
+            self.MULTI_HASH_SCALE * gray_image + self.MULTI_HASH_INTERCEPT
+        )
+        dark_image = (
+            gray_image - self.MULTI_HASH_INTERCEPT
+        ) / self.MULTI_HASH_SCALE
         multi_hash = np.vstack([gray_image, light_image, dark_image]).astype(
             np.float32
         )
@@ -42,13 +45,16 @@ class CardDetector:
 
     def _calculate_card_hashes(self):
         card_hashes = np.zeros(
-            (len(self.cards), 3, self.hash_size * self.hash_size, self.HAND_SIZE),
+            (
+                len(self.cards),
+                3,
+                self.hash_size * self.hash_size,
+                self.HAND_SIZE,
+            ),
             dtype=np.float32,
         )
         for i, card in enumerate(self.cards):
-            path = os.path.join(
-                SRC_DIR, "images", "cards", f"{card.name}.jpg"
-            )
+            path = os.path.join(SRC_DIR, "images", "cards", f"{card.name}.jpg")
             pil_image = Image.open(path)
 
             multi_hash = self._calculate_multi_hash(pil_image)

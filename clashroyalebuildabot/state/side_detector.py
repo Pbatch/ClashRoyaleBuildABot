@@ -8,7 +8,9 @@ class SideDetector(OnnxDetector):
     SIDE_SIZE = 16
 
     def _preprocess(self, image):
-        image = image.resize((self.SIDE_SIZE, self.SIDE_SIZE), Image.Resampling.BICUBIC)
+        image = image.resize(
+            (self.SIDE_SIZE, self.SIDE_SIZE), Image.Resampling.BICUBIC
+        )
         image = np.array(image, dtype=np.float32) / 255
         return np.expand_dims(image, axis=0)
 

@@ -3,7 +3,8 @@ import os
 import numpy as np
 from PIL import Image
 
-from clashroyalebuildabot.constants import SCREEN_CONFIG, IMAGES_DIR
+from clashroyalebuildabot.constants import IMAGES_DIR
+from clashroyalebuildabot.constants import SCREEN_CONFIG
 
 
 class ScreenDetector:

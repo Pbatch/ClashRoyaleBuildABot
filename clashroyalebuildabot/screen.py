@@ -5,8 +5,9 @@ from loguru import logger
 from PIL import Image
 import yaml
 
-from clashroyalebuildabot.constants import SCREENSHOT_HEIGHT, SRC_DIR
+from clashroyalebuildabot.constants import SCREENSHOT_HEIGHT
 from clashroyalebuildabot.constants import SCREENSHOT_WIDTH
+from clashroyalebuildabot.constants import SRC_DIR
 
 
 class Screen:
