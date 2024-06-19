@@ -14,8 +14,12 @@ class Updater:
 
     @staticmethod
     def _get_current_sha():
-        result = subprocess.run(['git', 'rev-parse', 'HEAD'],
-                                capture_output=True, text=True, check=True)
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
         sha = result.stdout.strip()
         return sha
 
@@ -38,13 +42,17 @@ class Updater:
             zip_ref.extractall(self.EXTRACT_PATH)
 
     def _replace_old_version(self, commit_sha):
-        new_folder_name = f"{self.GITHUB_REPO.rsplit('/', maxsplit=1)[-1]}-{commit_sha}"
+        new_folder_name = (
+            f"{self.GITHUB_REPO.rsplit('/', maxsplit=1)[-1]}-{commit_sha}"
+        )
         new_folder_path = os.path.join(self.EXTRACT_PATH, new_folder_name)
 
         if not os.path.exists(new_folder_path):
             return
 
-        logger.info(f"Replacing old version with new version: {new_folder_name}")
+        logger.info(
+            f"Replacing old version with new version: {new_folder_name}"
+        )
         for item in os.listdir(self.EXTRACT_PATH):
             item_path = os.path.join(self.EXTRACT_PATH, item)
             if item in {new_folder_name, "bot.log", ".git"}:
@@ -73,8 +81,10 @@ class Updater:
             logger.info("You are already using the latest version.")
             return
 
-        user_input = input("A new update is available. Do you want to update? (Y/N): ")
-        if user_input.lower() == 'y':
+        user_input = input(
+            "A new update is available. Do you want to update? (Y/N): "
+        )
+        if user_input.lower() == "y":
             logger.info("Downloading update...")
             self._download_update(latest_sha)
 
