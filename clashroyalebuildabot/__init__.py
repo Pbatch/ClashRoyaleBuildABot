@@ -16,7 +16,6 @@ from .state import ScreenDetector
 from .state import UnitDetector
 
 __all__ = [
-    "StandardBot",
     "RandomBot",
     "PeteBot",
     "TwoSixHogCycle",
