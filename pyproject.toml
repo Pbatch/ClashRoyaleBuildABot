@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "ClashRoyaleBuildABot"
@@ -48,8 +48,6 @@ exclude = '''
   | \.venv
   | _build
   | buck-out
-  | build
-  | dist
 )/
 '''
 
