@@ -14,7 +14,7 @@ from clashroyalebuildabot.namespaces.cards import Cards
 
 
 class CustomBot(Bot):
-    def __init__(self, card_names, debug=False):
+    def __init__(self, cards, debug=False):
         preset_deck = {
             Cards.MINIONS,
             Cards.ARCHERS,
@@ -25,9 +25,9 @@ class CustomBot(Bot):
             Cards.KNIGHT,
             Cards.MUSKETEER,
         }
-        if set(card_names) != preset_deck:
+        if set(cards) != preset_deck:
             raise ValueError(f"CustomBot must use cards: {preset_deck}")
-        super().__init__(card_names, CustomAction, debug=debug)
+        super().__init__(cards, CustomAction, debug=debug)
         self.end_of_game_clicked = False
         self.pause_until = 0
         self.scale_x = DISPLAY_WIDTH / SCREENSHOT_WIDTH

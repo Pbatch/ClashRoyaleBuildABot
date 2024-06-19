@@ -13,7 +13,7 @@ from clashroyalebuildabot.namespaces.cards import Cards
 
 
 class TwoSixHogCycle(Bot):
-    def __init__(self, card_names, debug=True):
+    def __init__(self, cards, debug=True):
         preset_deck = {
             Cards.HOG_RIDER,
             Cards.THE_LOG,
@@ -24,11 +24,11 @@ class TwoSixHogCycle(Bot):
             Cards.CANNON,
             Cards.MUSKETEER,
         }
-        if set(card_names) != preset_deck:
+        if set(cards) != preset_deck:
             raise ValueError(
                 f"You must use the preset deck with cards {preset_deck} for TwoSixHogCycleBot"
             )
-        super().__init__(card_names, TwoSixHogCycleAction, debug=debug)
+        super().__init__(cards, TwoSixHogCycleAction, debug=debug)
 
     def _preprocess(self):
         """

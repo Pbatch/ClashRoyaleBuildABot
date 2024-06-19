@@ -21,7 +21,7 @@ def update_terminal_title():
 
 
 def main():
-    card_names = [
+    cards = [
         Cards.MINIONS,
         Cards.ARCHERS,
         Cards.ARROWS,
@@ -31,7 +31,7 @@ def main():
         Cards.KNIGHT,
         Cards.MUSKETEER,
     ]
-    bot = CustomBot(card_names, debug=False)
+    bot = CustomBot(cards, debug=False)
     bot.run()
 
 
