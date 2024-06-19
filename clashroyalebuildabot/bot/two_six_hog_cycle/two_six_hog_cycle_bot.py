@@ -5,11 +5,11 @@ from clashroyalebuildabot.bot.bot import Bot
 from clashroyalebuildabot.bot.two_six_hog_cycle.two_six_hog_cycle_action import (
     TwoSixHogCycleAction,
 )
-from clashroyalebuildabot.namespaces.cards import Cards
 from clashroyalebuildabot.data.constants import DISPLAY_HEIGHT
 from clashroyalebuildabot.data.constants import DISPLAY_WIDTH
 from clashroyalebuildabot.data.constants import SCREENSHOT_HEIGHT
 from clashroyalebuildabot.data.constants import SCREENSHOT_WIDTH
+from clashroyalebuildabot.namespaces.cards import Cards
 
 
 class TwoSixHogCycle(Bot):

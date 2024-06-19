@@ -1,7 +1,7 @@
+from datetime import datetime
 import sys
 import threading
 import time
-from datetime import datetime
 
 from clashroyalebuildabot.bot.example.custom_bot import CustomBot
 from clashroyalebuildabot.namespaces.cards import Cards

@@ -2,7 +2,8 @@ import os
 
 import numpy as np
 
-from clashroyalebuildabot.data.constants import DATA_DIR, DETECTOR_UNITS
+from clashroyalebuildabot.data.constants import DATA_DIR
+from clashroyalebuildabot.data.constants import DETECTOR_UNITS
 from clashroyalebuildabot.data.constants import UNIT_Y_END
 from clashroyalebuildabot.data.constants import UNIT_Y_START
 from clashroyalebuildabot.state.onnx_detector import OnnxDetector

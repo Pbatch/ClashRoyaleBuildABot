@@ -1,7 +1,9 @@
-from dataclasses import dataclass, asdict
+from dataclasses import asdict
+from dataclasses import dataclass
 from typing import List, Optional
 
-from clashroyalebuildabot.namespaces.units import Unit, Units
+from clashroyalebuildabot.namespaces.units import Unit
+from clashroyalebuildabot.namespaces.units import Units
 
 
 @dataclass(frozen=True)
