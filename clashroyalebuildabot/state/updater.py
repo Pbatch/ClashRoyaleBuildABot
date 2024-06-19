@@ -73,7 +73,8 @@ def check_for_update():
             logger.info("Replacing old version with new version...")
             replace_old_version(latest_commit_sha)
             update_local_version(latest_commit_sha)
-            os.remove(DOWNLOAD_PATH)
+            if os.path.exists(DOWNLOAD_PATH):
+                os.remove(DOWNLOAD_PATH)
             logger.info("Update successful!")
         else:
             logger.info("Update canceled.")
