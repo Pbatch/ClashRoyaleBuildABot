@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 import sys
 import threading
@@ -6,6 +7,7 @@ import time
 from loguru import logger
 
 from clashroyalebuildabot.bot.example.custom_bot import CustomBot
+from clashroyalebuildabot.constants import DEBUG_DIR
 from clashroyalebuildabot.namespaces.cards import Cards
 from clashroyalebuildabot.updater import Updater
 
@@ -41,7 +43,7 @@ def main():
 
 
 if __name__ == "__main__":
-    logger.add("bot.log", rotation="500 MB")
+    logger.add(os.path.join(DEBUG_DIR, "bot.log"), rotation="500 MB")
     title_thread = threading.Thread(target=update_terminal_title, daemon=True)
     title_thread.start()
     main()

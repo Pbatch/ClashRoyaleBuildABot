@@ -1,11 +1,11 @@
 import numpy as np
 
-from clashroyalebuildabot.data.constants import ELIXIR_BOUNDING_BOX
-from clashroyalebuildabot.data.constants import KING_HP
-from clashroyalebuildabot.data.constants import KING_LEVEL_2_X
-from clashroyalebuildabot.data.constants import NUMBER_CONFIG
-from clashroyalebuildabot.data.constants import NUMBER_HEIGHT
-from clashroyalebuildabot.data.constants import NUMBER_WIDTH
+from clashroyalebuildabot.constants import ELIXIR_BOUNDING_BOX
+from clashroyalebuildabot.constants import KING_HP
+from clashroyalebuildabot.constants import KING_LEVEL_2_X
+from clashroyalebuildabot.constants import NUMBER_CONFIG
+from clashroyalebuildabot.constants import NUMBER_HEIGHT
+from clashroyalebuildabot.constants import NUMBER_WIDTH
 from clashroyalebuildabot.state.onnx_detector import OnnxDetector
 
 

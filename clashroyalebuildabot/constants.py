@@ -5,10 +5,12 @@ from loguru import logger
 from clashroyalebuildabot.namespaces import Units
 
 # Directories
-SRC_DIR = os.path.dirname(os.path.dirname(__file__))
-DATA_DIR = os.path.join(SRC_DIR, "data")
-SCREENSHOTS_DIR = os.path.join(SRC_DIR, "screenshots")
-LABELS_DIR = os.path.join(SRC_DIR, "labels")
+SRC_DIR = os.path.dirname(__file__)
+DEBUG_DIR = os.path.join(SRC_DIR, "debug")
+MODELS_DIR = os.path.join(SRC_DIR, "models")
+IMAGES_DIR = os.path.join(SRC_DIR, "images")
+SCREENSHOTS_DIR = os.path.join(DEBUG_DIR, "screenshots")
+LABELS_DIR = os.path.join(DEBUG_DIR, "labels")
 
 # Display dimensions
 DISPLAY_WIDTH = 720
@@ -73,8 +75,6 @@ DISPLAY_CARD_HEIGHT = 147
 DISPLAY_CARD_DELTA_X = 136
 
 # Cards
-HAND_SIZE = 5
-DECK_SIZE = 8
 CARD_Y = 543
 CARD_INIT_X = 84
 CARD_WIDTH = 61
@@ -196,8 +196,6 @@ PRINCESS_HP = [
 ]
 
 # Units
-UNIT_Y_START = 0.05
-UNIT_Y_END = 0.80
 DETECTOR_UNITS = [
     Units.ARCHER,
     Units.BARBARIAN,
@@ -233,10 +231,3 @@ DETECTOR_UNITS = [
     Units.WALL_BREAKER,
     Units.X_BOW,
 ]
-
-# Multihash coefficients
-MULTI_HASH_SCALE = 0.355
-MULTI_HASH_INTERCEPT = 163
-
-# Side
-SIDE_SIZE = 16

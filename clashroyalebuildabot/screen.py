@@ -5,15 +5,13 @@ from loguru import logger
 from PIL import Image
 import yaml
 
-from clashroyalebuildabot.data.constants import SCREENSHOT_HEIGHT
-from clashroyalebuildabot.data.constants import SCREENSHOT_WIDTH
+from clashroyalebuildabot.constants import SCREENSHOT_HEIGHT, SRC_DIR
+from clashroyalebuildabot.constants import SCREENSHOT_WIDTH
 
 
 class Screen:
     def __init__(self):
-        config_path = os.path.join(
-            os.path.dirname(__file__), "config", "config.yml"
-        )
+        config_path = os.path.join(SRC_DIR, "config.yaml")
         with open(config_path, encoding="utf-8") as file:
             config = yaml.safe_load(file)
 

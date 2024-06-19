@@ -3,8 +3,7 @@ import os
 import numpy as np
 from PIL import Image
 
-from clashroyalebuildabot.data.constants import DATA_DIR
-from clashroyalebuildabot.data.constants import SCREEN_CONFIG
+from clashroyalebuildabot.constants import SCREEN_CONFIG, IMAGES_DIR
 
 
 class ScreenDetector:
@@ -19,7 +18,7 @@ class ScreenDetector:
             dtype=np.int32,
         )
         for i, name in enumerate(SCREEN_CONFIG.keys()):
-            path = os.path.join(DATA_DIR, "images", "screen", f"{name}.jpg")
+            path = os.path.join(IMAGES_DIR, "screen", f"{name}.jpg")
             image = Image.open(path)
             hash_ = np.array(
                 image.resize(
