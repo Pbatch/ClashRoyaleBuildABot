@@ -2,12 +2,15 @@ from datetime import datetime
 import sys
 import threading
 import time
-from clashroyalebuildabot.bot.example.custom_bot import CustomBot
-from clashroyalebuildabot.namespaces.cards import Cards
-from clashroyalebuildabot.state.updater import check_for_update
+
 from loguru import logger
 
+from clashroyalebuildabot.bot.example.custom_bot import CustomBot
+from clashroyalebuildabot.namespaces.cards import Cards
+from clashroyalebuildabot.updater import Updater
+
 start_time = datetime.now()
+
 
 def update_terminal_title():
     while True:
@@ -19,8 +22,10 @@ def update_terminal_title():
         sys.stdout.flush()
         time.sleep(1)
 
+
 def main():
-    check_for_update()
+    updater = Updater()
+    updater.check_for_update()
     cards = [
         Cards.MINIONS,
         Cards.ARCHERS,
@@ -34,8 +39,9 @@ def main():
     bot = CustomBot(cards, debug=False)
     bot.run()
 
+
 if __name__ == "__main__":
-    logger.add("bot.log", rotation="500 MB")  # Fügt die Logdatei hinzu
+    logger.add("bot.log", rotation="500 MB")
     title_thread = threading.Thread(target=update_terminal_title, daemon=True)
     title_thread.start()
     main()
