@@ -1,6 +1,8 @@
 import random
 import time
 
+from loguru import logger
+
 from clashroyalebuildabot.bot.bot import Bot
 
 
@@ -17,5 +19,5 @@ class RandomBot(Bot):
                 # Play the given action
                 self.play_action(action)
                 # Log the result
-                print(f"Playing {action}")
+                logger.info(f"Playing {action}")
             time.sleep(3)
