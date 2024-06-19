@@ -24,6 +24,7 @@ dependencies = [
     "adb-shell[async]==0.4.4",
     "PyYAML",
     "pybind11>=2.12",
+    "requests>=2.25.1",
 ]
 
 [project.optional-dependencies]
