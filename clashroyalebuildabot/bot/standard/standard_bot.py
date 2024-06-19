@@ -3,7 +3,7 @@ import time
 
 from clashroyalebuildabot.bot.bot import Bot
 from clashroyalebuildabot.bot.standard.standard_action import StandardAction
-from clashroyalebuildabot.data.cards import Cards
+from clashroyalebuildabot.namespaces.cards import Cards
 from clashroyalebuildabot.data.constants import DISPLAY_HEIGHT
 from clashroyalebuildabot.data.constants import DISPLAY_WIDTH
 from clashroyalebuildabot.data.constants import SCREENSHOT_HEIGHT

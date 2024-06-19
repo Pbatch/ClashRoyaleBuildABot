@@ -6,7 +6,7 @@ from loguru import logger
 
 from clashroyalebuildabot.bot import Bot
 from clashroyalebuildabot.bot.example.custom_action import CustomAction
-from clashroyalebuildabot.data.cards import Cards
+from clashroyalebuildabot.namespaces.cards import Cards
 from clashroyalebuildabot.data.constants import DISPLAY_HEIGHT
 from clashroyalebuildabot.data.constants import DISPLAY_WIDTH
 from clashroyalebuildabot.data.constants import SCREENSHOT_HEIGHT

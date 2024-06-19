@@ -4,11 +4,14 @@ from typing import List, Optional
 from clashroyalebuildabot.namespaces.units import Unit, Units
 
 
-@dataclass
+@dataclass(frozen=True)
 class Card:
     name: str
     cost: int
-    units: Optional[List[Unit]]
+    units: Optional[List[Unit]] = None
+
+    def __hash__(self):
+        return hash(self.name)
 
 
 @dataclass(frozen=True)
@@ -134,8 +137,6 @@ class _CardsNamespace:
     ZAP: Card = Card("zap", 2)
     ZAPPIES: Card = Card("zappies", 4)
 
-    def dict(self):
-        return {k: v for k, v in asdict(self).items()}
-
 
 Cards = _CardsNamespace()
+NAME2CARD = {k: v for k, v in asdict(Cards).items()}

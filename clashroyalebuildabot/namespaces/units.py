@@ -1,8 +1,8 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import Literal, Optional
 
 
-@dataclass
+@dataclass(frozen=True)
 class Unit:
     name: str
     category: Literal["troop", "spell", "building"]
@@ -48,3 +48,4 @@ class _UnitsNamespace:
 
 
 Units = _UnitsNamespace()
+NAME2UNIT = {k: v for k, v in asdict(Units).items()}

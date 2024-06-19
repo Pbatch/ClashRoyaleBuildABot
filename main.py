@@ -4,7 +4,7 @@ import threading
 import time
 
 from clashroyalebuildabot.bot.example.custom_bot import CustomBot
-from clashroyalebuildabot.data.cards import Cards
+from clashroyalebuildabot.namespaces.cards import Cards
 
 start_time = datetime.now()
 

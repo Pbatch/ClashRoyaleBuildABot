@@ -230,7 +230,7 @@ DETECTOR_UNITS = [
     Units.TOMBSTONE,
     Units.VALKYRIE,
     Units.WALL_BREAKER,
-    Units.XBOW,
+    Units.X_BOW,
 ]
 
 # Multihash coefficients

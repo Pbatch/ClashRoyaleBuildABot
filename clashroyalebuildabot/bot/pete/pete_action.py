@@ -1,5 +1,5 @@
 from clashroyalebuildabot.bot.action import Action
-from clashroyalebuildabot.data.cards import Cards
+from clashroyalebuildabot.namespaces.cards import Cards
 
 
 class PeteAction(Action):

@@ -4,21 +4,22 @@ import numpy as np
 from PIL import Image
 from scipy.optimize import linear_sum_assignment
 
-from clashroyalebuildabot import Cards
 from clashroyalebuildabot.data.constants import CARD_CONFIG
 from clashroyalebuildabot.data.constants import DATA_DIR
-from clashroyalebuildabot.data.constants import DECK_SIZE
 from clashroyalebuildabot.data.constants import HAND_SIZE
 from clashroyalebuildabot.data.constants import MULTI_HASH_INTERCEPT
 from clashroyalebuildabot.data.constants import MULTI_HASH_SCALE
+from clashroyalebuildabot.namespaces.cards import Cards
 
 
 class CardDetector:
-    def __init__(self, card_names, hash_size=8, grey_std_threshold=5):
-        self.card_names = card_names
+    def __init__(self, cards, hash_size=8, grey_std_threshold=5):
+        self.cards = cards
         self.hash_size = hash_size
         self.grey_std_threshold = grey_std_threshold
-        self.cards, self.card_hashes = self._calculate_cards_and_card_hashes()
+
+        self.cards.append(Cards.BLANK)
+        self.card_hashes = self._calculate_card_hashes()
 
     def _calculate_multi_hash(self, image):
         gray_image = self._calculate_hash(image)
@@ -37,18 +38,12 @@ class CardDetector:
             dtype=np.float32,
         ).ravel()
 
-    def _calculate_cards_and_card_hashes(self):
+    def _calculate_card_hashes(self):
         card_hashes = np.zeros(
-            (DECK_SIZE + 1, 3, self.hash_size * self.hash_size, HAND_SIZE),
+            (len(self.cards), 3, self.hash_size * self.hash_size, HAND_SIZE),
             dtype=np.float32,
         )
-
-        cards = [
-            card for card in Cards.values() if card.name in self.card_names
-        ]
-        cards.append(Cards.BLANK)
-
-        for i, card in enumerate(cards):
+        for i, card in enumerate(self.cards):
             path = os.path.join(
                 DATA_DIR, "images", "cards", f"{card.name}.jpg"
             )
@@ -59,7 +54,7 @@ class CardDetector:
                 np.expand_dims(multi_hash, axis=2), (1, 1, HAND_SIZE)
             )
 
-        return cards, card_hashes
+        return card_hashes
 
     def _detect_cards(self, image):
         crops = [image.crop(position) for position in CARD_CONFIG]
@@ -70,7 +65,7 @@ class CardDetector:
             np.amin(np.abs(crop_hashes - self.card_hashes), axis=1), axis=1
         ).T
         _, idx = linear_sum_assignment(hash_diffs)
-        cards = [self.cards[i] for i in idx]
+        cards = [self.cards[i].__dict__ for i in idx]
         return cards, crops
 
     def _detect_if_ready(self, cards, crops):

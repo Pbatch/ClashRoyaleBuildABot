@@ -23,14 +23,14 @@ from clashroyalebuildabot.state.detector import Detector
 
 class Bot:
     def __init__(
-        self, card_names, action_class=Action, auto_start=True, debug=False
+        self, cards, action_class=Action, auto_start=True, debug=False
     ):
-        self.card_names = card_names
+        self.cards = cards
         self.action_class = action_class
         self.auto_start = auto_start
         self.debug = debug
         self.screen = Screen()
-        self.detector = Detector(card_names, debug=self.debug)
+        self.detector = Detector(cards, debug=self.debug)
         self.state = None
 
     @staticmethod
@@ -90,16 +90,16 @@ class Bot:
         return actions
 
     def set_state(self):
-        try:
-            screenshot = self.screen.take_screenshot()
-            self.state = self.detector.run(screenshot)
-            if self.auto_start and self.state["screen"] != "in_game":
-                self.screen.click(
-                    *SCREEN_CONFIG[self.state["screen"]]["click_coordinates"]
-                )
-                time.sleep(2)
-        except Exception as e:
-            logger.error(f"Error occurred while taking screenshot: {e}")
+        # try:
+        screenshot = self.screen.take_screenshot()
+        self.state = self.detector.run(screenshot)
+        if self.auto_start and self.state["screen"] != "in_game":
+            self.screen.click(
+                *SCREEN_CONFIG[self.state["screen"]]["click_coordinates"]
+            )
+            time.sleep(2)
+        # except Exception as e:
+        #     logger.error(f"Error occurred while taking screenshot: {e}")
 
     def play_action(self, action):
         card_centre = self._get_card_centre(action.index)
