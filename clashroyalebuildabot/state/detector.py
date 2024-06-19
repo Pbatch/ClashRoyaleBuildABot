@@ -34,10 +34,12 @@ class Detector:
             self.debugger = Debugger()
 
     def run(self, image):
+        cards, ready = self.card_detector.run(image)
         state = {
             "units": self.unit_detector.run(image),
             "numbers": self.number_detector.run(image),
-            "cards": self.card_detector.run(image),
+            "cards": cards,
+            "ready": ready,
             "screen": self.screen_detector.run(image),
         }
 

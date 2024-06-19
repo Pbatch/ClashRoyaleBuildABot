@@ -133,16 +133,16 @@ class CustomAction(Action):
         return [0]
 
     def calculate_score(self, state):
-        name_to_score = {
-            Cards.KNIGHT.name: self._calculate_knight_score,
-            Cards.MINIONS.name: self._calculate_minions_score,
-            Cards.FIREBALL.name: self._calculate_fireball_score,
-            Cards.GIANT.name: self._calculate_giant_score,
-            Cards.MINIPEKKA.name: self._calculate_minipekka_score,
-            Cards.MUSKETEER.name: self._calculate_musketeer_score,
-            Cards.ARROWS.name: self._calculate_arrows_score,
-            Cards.ARCHERS.name: self._calculate_archers_score,
+        card_to_score = {
+            Cards.KNIGHT: self._calculate_knight_score,
+            Cards.MINIONS: self._calculate_minions_score,
+            Cards.FIREBALL: self._calculate_fireball_score,
+            Cards.GIANT: self._calculate_giant_score,
+            Cards.MINIPEKKA: self._calculate_minipekka_score,
+            Cards.MUSKETEER: self._calculate_musketeer_score,
+            Cards.ARROWS: self._calculate_arrows_score,
+            Cards.ARCHERS: self._calculate_archers_score,
         }
-        score_function = name_to_score.get(self.name)
+        score_function = card_to_score.get(self.card)
         self.score = score_function(state) if score_function else [0]
         return self.score
