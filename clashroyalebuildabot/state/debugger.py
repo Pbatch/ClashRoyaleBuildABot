@@ -6,7 +6,7 @@ from PIL import ImageFont
 from clashroyalebuildabot.data.constants import CARD_CONFIG
 from clashroyalebuildabot.data.constants import LABELS_DIR
 from clashroyalebuildabot.data.constants import SCREENSHOTS_DIR
-from clashroyalebuildabot.namespaces.units import Units
+from clashroyalebuildabot.namespaces.units import NAME2UNIT
 
 
 class Debugger:
@@ -32,7 +32,7 @@ class Debugger:
         os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
         os.makedirs(LABELS_DIR, exist_ok=True)
         self.font = ImageFont.load_default()
-        self.unit_names = [unit.name for unit in Units.dict().values()]
+        self.unit_names = [unit[0] for unit in list(NAME2UNIT.values())]
 
     @staticmethod
     def _write_label(image, state, basename):
