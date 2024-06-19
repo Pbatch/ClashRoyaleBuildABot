@@ -2,7 +2,6 @@
 from . import constants
 from .bot import Action
 from .bot import Bot
-from .bot import PeteBot
 from .bot import RandomBot
 from .bot import TwoSixHogCycle
 from .namespaces import Cards
@@ -17,7 +16,6 @@ from .state import UnitDetector
 
 __all__ = [
     "RandomBot",
-    "PeteBot",
     "TwoSixHogCycle",
     "constants",
     "Cards",

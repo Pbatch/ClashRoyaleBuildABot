@@ -73,16 +73,19 @@ class CardDetector:
             np.amin(np.abs(crop_hashes - self.card_hashes), axis=1), axis=1
         ).T
         _, idx = linear_sum_assignment(hash_diffs)
-        cards = [self.cards[i].__dict__ for i in idx]
+        cards = [self.cards[i] for i in idx]
+
         return cards, crops
 
-    def _detect_if_ready(self, cards, crops):
-        for card, crop in zip(cards, crops):
+    def _detect_if_ready(self, crops):
+        ready = []
+        for i, crop in enumerate(crops[1:]):
             std = np.mean(np.std(np.array(crop), axis=2))
-            card["ready"] = std > self.grey_std_threshold
-        return cards
+            if std > self.grey_std_threshold:
+                ready.append(i)
+        return ready
 
     def run(self, image):
         cards, crops = self._detect_cards(image)
-        cards = self._detect_if_ready(cards, crops)
-        return cards
+        ready = self._detect_if_ready(crops)
+        return cards, ready

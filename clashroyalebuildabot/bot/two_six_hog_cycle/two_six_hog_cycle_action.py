@@ -180,18 +180,18 @@ class TwoSixHogCycleAction(Action):
         )
 
     def calculate_score(self, state):
-        name_to_score = {
-            Cards.HOG_RIDER.name: self._calculate_hog_rider_score,
-            Cards.ICE_GOLEM.name: self._calculate_ice_golem_score,
-            Cards.FIREBALL.name: self._calculate_fireball_score,
-            Cards.ICE_SPIRIT.name: self._calculate_ice_spirit_score,
-            Cards.THE_LOG.name: self._calculate_log_score,
-            Cards.MUSKETEER.name: self._calculate_musketeer_score,
-            Cards.CANNON.name: self._calculate_cannon_score,
-            Cards.SKELETONS.name: self._calculate_ice_spirit_score,
+        card_to_score = {
+            Cards.HOG_RIDER: self._calculate_hog_rider_score,
+            Cards.ICE_GOLEM: self._calculate_ice_golem_score,
+            Cards.FIREBALL: self._calculate_fireball_score,
+            Cards.ICE_SPIRIT: self._calculate_ice_spirit_score,
+            Cards.THE_LOG: self._calculate_log_score,
+            Cards.MUSKETEER: self._calculate_musketeer_score,
+            Cards.CANNON: self._calculate_cannon_score,
+            Cards.SKELETONS: self._calculate_ice_spirit_score,
         }
 
-        score_function = name_to_score[self.name]
+        score_function = card_to_score[self.card]
         score = score_function(state)
         self.score = score
         return score

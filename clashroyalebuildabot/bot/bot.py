@@ -71,20 +71,15 @@ class Bot:
         all_tiles = ALLY_TILES + LEFT_PRINCESS_TILES + RIGHT_PRINCESS_TILES
         valid_tiles = self._get_valid_tiles()
         actions = []
-        for i in range(4):
+        for i in self.state["ready"]:
             card = self.state["cards"][i + 1]
-            if (
-                int(self.state["numbers"]["elixir"]["number"]) >= card["cost"]
-                and card["ready"]
-                and card["name"] != "blank"
-            ):
-                tiles = all_tiles if card["target_anywhere"] else valid_tiles
-                actions.extend(
-                    [
-                        self.action_class(i, x, y, *card.values())
-                        for (x, y) in tiles
-                    ]
-                )
+            if int(self.state["numbers"]["elixir"]["number"]) < card.cost:
+                continue
+
+            tiles = all_tiles if card.target_anywhere else valid_tiles
+            actions.extend(
+                [self.action_class(i, x, y, card) for (x, y) in tiles]
+            )
 
         return actions
 
