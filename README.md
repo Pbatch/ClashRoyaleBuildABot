@@ -1,6 +1,4 @@
 <div align="center"> 
-
-**Clash Royale Build-A-Bot**
 <table>
     <tr>
       <td align="center">
@@ -8,7 +6,10 @@
       </td>
     </tr>
 </table>
-  
+
+    📌 This bot is under active development and may experience minor issues.  
+    Please report any bugs so we can fix them promptly.
+    
 Welcome to Clash Royale Build-A-Bot! This project provides an advanced state generator that accurately returns detailed information using cutting-edge technologies. 
 
 [![Discord](https://img.shields.io/badge/Discord-00c8d6?logo=discord&logoColor=white&style=flat)](https://discord.gg/K4UfbsfcMa)
