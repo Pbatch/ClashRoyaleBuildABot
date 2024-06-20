@@ -90,7 +90,7 @@ class CustomBot(Bot):
         self.set_state()
         new_screen = self.state.screen
         if new_screen != old_screen:
-            logger.debug(f"New screen state: {new_screen}")
+            logger.info(f"New screen state: {new_screen}")
 
         if new_screen == "end_of_game":
             logger.info("End of game detected. Waiting 10 seconds for battle button")
