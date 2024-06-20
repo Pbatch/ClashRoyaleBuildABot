@@ -1,4 +1,4 @@
-from clashroyalebuildabot.bot.action import Action
+from clashroyalebuildabot.bot.bot import Action
 from clashroyalebuildabot.namespaces.cards import Cards
 
 
