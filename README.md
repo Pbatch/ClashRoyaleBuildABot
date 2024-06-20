@@ -6,6 +6,7 @@
     <tr>
       <td align="center">
         <img src="https://github.com/Leviaria/ClashRoyaleBuildABot/assets/113382526/799f3df9-991f-4adc-9cb4-e67f15caa3e2" alt="ClashRoyaleBuildABot">
+        <div align="center">
       </td>
     </tr>
 </table>
