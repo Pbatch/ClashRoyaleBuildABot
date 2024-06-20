@@ -20,7 +20,7 @@ def update_terminal_title():
 
 
 def main():
-    bot = CustomBot(debug=True)
+    bot = CustomBot(debug=False)
     bot.run()
 
 
