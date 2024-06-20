@@ -57,14 +57,7 @@ class Updater:
         )
         for item in os.listdir(self.EXTRACT_PATH):
             item_path = os.path.join(self.EXTRACT_PATH, item)
-            if item in {
-                new_folder_name,
-                DEBUG_DIR,
-                os.path.join(DEBUG_DIR, "bot.log"),
-                os.path.join(DEBUG_DIR, "screenshots"),
-                os.path.join(DEBUG_DIR, "labels"),
-                ".git",
-            }:
+            if item in {new_folder_name, ".git"}:
                 continue
 
             if os.path.isdir(item_path):
