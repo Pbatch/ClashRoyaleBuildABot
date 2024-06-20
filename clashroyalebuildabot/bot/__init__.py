@@ -1,6 +1,4 @@
-# Exports for bot submodule
-from .action import Action
-from .bot import Bot
+from .bot import Action, Bot
 from .random import RandomBot
 from .two_six_hog_cycle import TwoSixHogCycle
 
