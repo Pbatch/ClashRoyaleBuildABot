@@ -3,12 +3,15 @@ import os
 import sys
 import threading
 import time
-import yaml
+
 from loguru import logger
+import yaml
+
 from clashroyalebuildabot.bot.example.custom_bot import CustomBot
 from clashroyalebuildabot.constants import DEBUG_DIR
 
 start_time = datetime.now()
+
 
 def update_terminal_title():
     while True:
@@ -20,12 +23,16 @@ def update_terminal_title():
         sys.stdout.flush()
         time.sleep(1)
 
+
 def main():
     bot = CustomBot(debug=False)
     bot.run()
 
+
 if __name__ == "__main__":
-    config_path = os.path.join(os.path.dirname(__file__), "clashroyalebuildabot/config.yaml")
+    config_path = os.path.join(
+        os.path.dirname(__file__), "clashroyalebuildabot/config.yaml"
+    )
     with open(config_path, encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
@@ -33,7 +40,9 @@ if __name__ == "__main__":
 
     logger.remove()
     logger.add(sys.stdout, level=log_level)
-    logger.add(os.path.join(DEBUG_DIR, "bot.log"), rotation="500 MB", level=log_level)
+    logger.add(
+        os.path.join(DEBUG_DIR, "bot.log"), rotation="500 MB", level=log_level
+    )
 
     title_thread = threading.Thread(target=update_terminal_title, daemon=True)
     title_thread.start()

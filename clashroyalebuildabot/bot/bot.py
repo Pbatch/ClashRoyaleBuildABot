@@ -1,12 +1,24 @@
 import time
+
 from loguru import logger
-from clashroyalebuildabot.constants import (
-    ALLY_TILES, DISPLAY_CARD_DELTA_X, DISPLAY_CARD_HEIGHT, DISPLAY_CARD_INIT_X, DISPLAY_CARD_WIDTH, DISPLAY_CARD_Y,
-    DISPLAY_HEIGHT, LEFT_PRINCESS_TILES, RIGHT_PRINCESS_TILES, TILE_HEIGHT, TILE_INIT_X, TILE_INIT_Y, TILE_WIDTH
-)
+
+from clashroyalebuildabot.constants import ALLY_TILES
+from clashroyalebuildabot.constants import DISPLAY_CARD_DELTA_X
+from clashroyalebuildabot.constants import DISPLAY_CARD_HEIGHT
+from clashroyalebuildabot.constants import DISPLAY_CARD_INIT_X
+from clashroyalebuildabot.constants import DISPLAY_CARD_WIDTH
+from clashroyalebuildabot.constants import DISPLAY_CARD_Y
+from clashroyalebuildabot.constants import DISPLAY_HEIGHT
+from clashroyalebuildabot.constants import LEFT_PRINCESS_TILES
+from clashroyalebuildabot.constants import RIGHT_PRINCESS_TILES
+from clashroyalebuildabot.constants import TILE_HEIGHT
+from clashroyalebuildabot.constants import TILE_INIT_X
+from clashroyalebuildabot.constants import TILE_INIT_Y
+from clashroyalebuildabot.constants import TILE_WIDTH
 from clashroyalebuildabot.detectors.detector import Detector
 from clashroyalebuildabot.emulator import Emulator
 from clashroyalebuildabot.namespaces import Screens
+
 
 class Action:
     def __init__(self, index, tile_x, tile_y, card):
@@ -18,8 +30,11 @@ class Action:
     def __repr__(self):
         return f"{self.card.name} at ({self.tile_x}, {self.tile_y})"
 
+
 class Bot:
-    def __init__(self, cards, action_class=Action, auto_start=True, debug=False):
+    def __init__(
+        self, cards, action_class=Action, auto_start=True, debug=False
+    ):
         self.cards = cards
         self.action_class = action_class
         self.auto_start = auto_start
@@ -31,7 +46,9 @@ class Bot:
     @staticmethod
     def _get_nearest_tile(x, y):
         tile_x = round(((x - TILE_INIT_X) / TILE_WIDTH) - 0.5)
-        tile_y = round(((DISPLAY_HEIGHT - TILE_INIT_Y - y) / TILE_HEIGHT) - 0.5)
+        tile_y = round(
+            ((DISPLAY_HEIGHT - TILE_INIT_Y - y) / TILE_HEIGHT) - 0.5
+        )
         return tile_x, tile_y
 
     @staticmethod
@@ -42,7 +59,11 @@ class Bot:
 
     @staticmethod
     def _get_card_centre(card_n):
-        x = DISPLAY_CARD_INIT_X + DISPLAY_CARD_WIDTH / 2 + card_n * DISPLAY_CARD_DELTA_X
+        x = (
+            DISPLAY_CARD_INIT_X
+            + DISPLAY_CARD_WIDTH / 2
+            + card_n * DISPLAY_CARD_DELTA_X
+        )
         y = DISPLAY_CARD_Y + DISPLAY_CARD_HEIGHT / 2
         return x, y
 
@@ -66,7 +87,9 @@ class Bot:
                 continue
 
             tiles = all_tiles if card.target_anywhere else valid_tiles
-            actions.extend([self.action_class(i, x, y, card) for (x, y) in tiles])
+            actions.extend(
+                [self.action_class(i, x, y, card) for (x, y) in tiles]
+            )
 
         return actions
 
