@@ -1,9 +1,11 @@
 import random
 import subprocess
 import time
+import os
+import yaml
+import sys
 
 from loguru import logger
-
 from clashroyalebuildabot.bot import Bot
 from clashroyalebuildabot.bot.bot import Action
 from clashroyalebuildabot.bot.example.custom_action import CustomAction
@@ -23,6 +25,16 @@ class CustomBot(Bot):
     ]
 
     def __init__(self, cards=None, debug=False):
+        config_path = os.path.join(os.path.dirname(__file__), "..", "..", "config.yaml")
+        with open(config_path, encoding="utf-8") as file:
+            config = yaml.safe_load(file)
+
+        log_level = config.get("bot", {}).get("log_level", "INFO").upper()
+
+        logger.remove()
+        logger.add(sys.stdout, level=log_level)
+        logger.add(os.path.join(os.path.dirname(__file__), "..", "bot.log"), rotation="500 MB", level=log_level)
+
         if cards is None:
             cards = self.PRESET_DECK
         if set(cards) != set(self.PRESET_DECK):

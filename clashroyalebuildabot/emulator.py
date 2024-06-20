@@ -1,20 +1,21 @@
 import os
-
 from adb_shell.adb_device import AdbDeviceTcp
 from loguru import logger
 from PIL import Image
 import yaml
-
-from clashroyalebuildabot.constants import SCREENSHOT_HEIGHT
-from clashroyalebuildabot.constants import SCREENSHOT_WIDTH
-from clashroyalebuildabot.constants import SRC_DIR
-
+import sys
+from clashroyalebuildabot.constants import SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH, SRC_DIR
 
 class Emulator:
     def __init__(self):
         config_path = os.path.join(SRC_DIR, "config.yaml")
         with open(config_path, encoding="utf-8") as file:
             config = yaml.safe_load(file)
+
+        log_level = config.get("bot", {}).get("log_level", "INFO").upper()
+        logger.remove()
+        logger.add(sys.stdout, level=log_level)
+        logger.add(os.path.join(SRC_DIR, "bot.log"), rotation="500 MB", level=log_level)
 
         adb_config = config["adb"]
         device_ip = adb_config["ip"]
