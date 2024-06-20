@@ -2,16 +2,13 @@ import os
 import shutil
 import subprocess
 import zipfile
-import time
-
-from loguru import logger
 import requests
 
 class Updater:
     GITHUB_REPO = "Pbatch/ClashRoyaleBuildABot"
     DOWNLOAD_PATH = "update.zip"
     EXTRACT_PATH = "."
-    IGNORE_DIRS = ["debug", ".git"]
+    IGNORE_DIRS = {"debug", ".git"}  # Set für besserer Performance bei der Überprüfung
 
     @staticmethod
     def _get_current_sha():
@@ -32,6 +29,7 @@ class Updater:
         return sha
 
     def _download_update(self, commit_sha):
+        print("Downloading update...")
         url = f"https://github.com/{self.GITHUB_REPO}/archive/{commit_sha}.zip"
         response = requests.get(url, timeout=300)
         response.raise_for_status()
@@ -39,6 +37,7 @@ class Updater:
             file.write(response.content)
 
     def _extract_update(self):
+        print(f"Extracting update from {self.DOWNLOAD_PATH}...")
         with zipfile.ZipFile(self.DOWNLOAD_PATH, "r") as zip_ref:
             zip_ref.extractall(self.EXTRACT_PATH)
 
@@ -49,14 +48,16 @@ class Updater:
         if not os.path.exists(new_folder_path):
             return
 
-        logger.info(f"Replacing old version with new version: {new_folder_name}")
+        print(f"Replacing old version with new version: {new_folder_name}")
         for item in os.listdir(self.EXTRACT_PATH):
-            if item in {new_folder_name} | set(self.IGNORE_DIRS):
+            if item == new_folder_name or item in self.IGNORE_DIRS:
                 continue
             item_path = os.path.join(self.EXTRACT_PATH, item)
             shutil.rmtree(item_path, ignore_errors=True)
 
         for item in os.listdir(new_folder_path):
+            if item in self.IGNORE_DIRS:
+                continue
             src_path = os.path.join(new_folder_path, item)
             dst_path = os.path.join(self.EXTRACT_PATH, item)
             if os.path.isdir(src_path):
@@ -71,32 +72,26 @@ class Updater:
         shutil.rmtree(new_folder_path)
 
     def check_for_update(self):
-        logger.info("Checking for updates...")
-
+        print("Checking for updates...")
         current_sha = self._get_current_sha()
-        logger.info(f"Current commit SHA: {current_sha}")
+        print(f"Current commit SHA: {current_sha}")
 
         latest_sha = self._get_latest_sha()
-        logger.info(f"Latest commit SHA: {latest_sha}")
+        print(f"Latest commit SHA: {latest_sha}")
 
         if current_sha == latest_sha:
-            logger.info("You are already using the latest version.")
+            print("You are already using the latest version.")
             return
 
         user_input = input(
             "A new update is available. Do you want to update? (Y/N): "
         )
         if user_input.lower() == "y":
-            logger.info("Downloading update...")
             self._download_update(latest_sha)
-
-            logger.info(f"Extracting update from {self.DOWNLOAD_PATH}...")
             self._extract_update()
-
-            logger.info("Replacing old version with new version...")
             self._replace_old_version(latest_sha)
             if os.path.exists(self.DOWNLOAD_PATH):
                 os.remove(self.DOWNLOAD_PATH)
-            logger.info("Update successful!")
+            print("Update successful!")
         else:
-            logger.info("Update cancelled.")
+            print("Update cancelled.")
