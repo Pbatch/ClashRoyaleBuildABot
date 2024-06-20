@@ -1,3 +1,9 @@
+bot:
+  # The logging level for the bot.
+  # Use "DEBUG" for detailed debugging information, "INFO" for general information,
+  # "WARNING" for warning messages, "ERROR" for error messages, and "CRITICAL" for critical issues.
+  log_level: "INFO"
+
 adb:
   # The IP address of your device or emulator.
   # Use 127.0.0.1 for a local emulator. If you're connecting to a physical device,
