@@ -4,6 +4,7 @@ import time
 
 from loguru import logger
 
+from clashroyalebuildabot import Screens
 from clashroyalebuildabot.bot import Bot
 from clashroyalebuildabot.bot.example.custom_action import CustomAction
 from clashroyalebuildabot.constants import DISPLAY_HEIGHT
@@ -71,7 +72,7 @@ class CustomBot(Bot):
         actions = self.get_actions()
         logger.info(f"Actions after end of game: {actions}")
 
-        if self.state.screen == "lobby":
+        if self.state.screen == Screens.LOBBY:
             logger.debug("Lobby detected, resuming normal operation.")
             return
 
