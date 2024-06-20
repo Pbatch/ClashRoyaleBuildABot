@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Tuple, Any
+from typing import Any, List, Tuple
 
 from clashroyalebuildabot.namespaces.cards import Card
 from clashroyalebuildabot.namespaces.screens import Screen

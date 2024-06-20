@@ -1,11 +1,12 @@
 import os
 
 from clashroyalebuildabot.constants import MODELS_DIR
-from clashroyalebuildabot.state.card_detector import CardDetector
-from clashroyalebuildabot.state.debugger import Debugger
-from clashroyalebuildabot.state.number_detector import NumberDetector
-from clashroyalebuildabot.state.screen_detector import ScreenDetector
-from clashroyalebuildabot.state.unit_detector import UnitDetector
+from clashroyalebuildabot.debugger import Debugger
+from clashroyalebuildabot.detectors.card_detector import CardDetector
+from clashroyalebuildabot.detectors.number_detector import NumberDetector
+from clashroyalebuildabot.detectors.screen_detector import ScreenDetector
+from clashroyalebuildabot.detectors.unit_detector import UnitDetector
+from clashroyalebuildabot.namespaces import State
 
 
 class Detector:
@@ -35,14 +36,11 @@ class Detector:
 
     def run(self, image):
         cards, ready = self.card_detector.run(image)
-        state = {
-            "units": self.unit_detector.run(image),
-            "numbers": self.number_detector.run(image),
-            "cards": cards,
-            "ready": ready,
-            "screen": self.screen_detector.run(image),
-        }
+        units = self.unit_detector.run(image)
+        numbers = self.number_detector.run(image)
+        screen = self.screen_detector.run(image)
 
+        state = State(units, numbers, cards, ready, screen)
         if self.debugger is not None:
             self.debugger.run(image, state)
 

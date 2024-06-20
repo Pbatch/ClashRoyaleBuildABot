@@ -4,8 +4,8 @@ import numpy as np
 
 from clashroyalebuildabot.constants import DETECTOR_UNITS
 from clashroyalebuildabot.constants import MODELS_DIR
-from clashroyalebuildabot.state.onnx_detector import OnnxDetector
-from clashroyalebuildabot.state.side_detector import SideDetector
+from clashroyalebuildabot.detectors.onnx_detector import OnnxDetector
+from clashroyalebuildabot.detectors.side_detector import SideDetector
 
 
 class UnitDetector(OnnxDetector):

@@ -1,6 +1,6 @@
 from dataclasses import asdict
 from dataclasses import dataclass
-from typing import Optional, Literal
+from typing import Literal, Optional
 
 
 @dataclass(frozen=True)

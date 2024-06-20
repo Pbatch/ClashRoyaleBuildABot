@@ -35,7 +35,7 @@ class CustomBot(Bot):
 
     def _preprocess(self):
         for side in ["ally", "enemy"]:
-            for k, v in self.state["units"][side].items():
+            for k, v in self.state.units[side].items():
                 for unit in v["positions"]:
                     bbox = unit["bounding_box"]
                     bbox[0] *= self.scale_x
@@ -76,9 +76,9 @@ class CustomBot(Bot):
         if self.end_of_game_clicked:
             self._end_of_game()
 
-        old_screen = self.state["screen"] if self.state is not None else None
+        old_screen = self.state.screen if self.state is not None else None
         self.set_state()
-        new_screen = self.state["screen"]
+        new_screen = self.state.screen
         if new_screen != old_screen:
             logger.debug(f"New screen state: {new_screen}")
 

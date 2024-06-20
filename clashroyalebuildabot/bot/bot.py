@@ -12,13 +12,13 @@ from clashroyalebuildabot.constants import DISPLAY_CARD_Y
 from clashroyalebuildabot.constants import DISPLAY_HEIGHT
 from clashroyalebuildabot.constants import LEFT_PRINCESS_TILES
 from clashroyalebuildabot.constants import RIGHT_PRINCESS_TILES
-from clashroyalebuildabot.constants import SCREEN_CONFIG
 from clashroyalebuildabot.constants import TILE_HEIGHT
 from clashroyalebuildabot.constants import TILE_INIT_X
 from clashroyalebuildabot.constants import TILE_INIT_Y
 from clashroyalebuildabot.constants import TILE_WIDTH
-from clashroyalebuildabot.screen import Screen
-from clashroyalebuildabot.state.detector import Detector
+from clashroyalebuildabot.detectors.detector import Detector
+from clashroyalebuildabot.emulator import Emulator
+from clashroyalebuildabot.namespaces import Screens
 
 
 class Bot:
@@ -29,7 +29,7 @@ class Bot:
         self.action_class = action_class
         self.auto_start = auto_start
         self.debug = debug
-        self.screen = Screen()
+        self.emulator = Emulator()
         self.detector = Detector(cards, debug=self.debug)
         self.state = None
 
@@ -59,9 +59,9 @@ class Bot:
 
     def _get_valid_tiles(self):
         tiles = ALLY_TILES
-        if self.state["numbers"]["left_enemy_princess_hp"]["number"] == 0:
+        if self.state.numbers["left_enemy_princess_hp"]["number"] == 0:
             tiles += LEFT_PRINCESS_TILES
-        if self.state["numbers"]["right_enemy_princess_hp"]["number"] == 0:
+        if self.state.numbers["right_enemy_princess_hp"]["number"] == 0:
             tiles += RIGHT_PRINCESS_TILES
         return tiles
 
@@ -71,9 +71,9 @@ class Bot:
         all_tiles = ALLY_TILES + LEFT_PRINCESS_TILES + RIGHT_PRINCESS_TILES
         valid_tiles = self._get_valid_tiles()
         actions = []
-        for i in self.state["ready"]:
-            card = self.state["cards"][i + 1]
-            if int(self.state["numbers"]["elixir"]["number"]) < card.cost:
+        for i in self.state.ready:
+            card = self.state.cards[i + 1]
+            if int(self.state.numbers["elixir"]["number"]) < card.cost:
                 continue
 
             tiles = all_tiles if card.target_anywhere else valid_tiles
@@ -85,12 +85,10 @@ class Bot:
 
     def set_state(self):
         try:
-            screenshot = self.screen.take_screenshot()
+            screenshot = self.emulator.take_screenshot()
             self.state = self.detector.run(screenshot)
-            if self.auto_start and self.state["screen"] != "in_game":
-                self.screen.click(
-                    *SCREEN_CONFIG[self.state["screen"]]["click_coordinates"]
-                )
+            if self.auto_start and self.state.screen != Screens.IN_GAME:
+                self.emulator.click(*self.state.screen.click_xy)
                 time.sleep(2)
         except Exception as e:
             logger.error(f"Error occurred while taking screenshot: {e}")
@@ -98,5 +96,5 @@ class Bot:
     def play_action(self, action):
         card_centre = self._get_card_centre(action.index)
         tile_centre = self._get_tile_centre(action.tile_x, action.tile_y)
-        self.screen.click(*card_centre)
-        self.screen.click(*tile_centre)
+        self.emulator.click(*card_centre)
+        self.emulator.click(*tile_centre)
