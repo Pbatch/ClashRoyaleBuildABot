@@ -1,4 +1,7 @@
 <div align="center"> 
+
+    📌 This bot is under active development and may experience minor issues.  
+    Please report any bugs so we can fix them promptly.
 <table>
     <tr>
       <td align="center">
@@ -6,9 +9,6 @@
       </td>
     </tr>
 </table>
-
-    📌 This bot is under active development and may experience minor issues.  
-    Please report any bugs so we can fix them promptly.
     
 Welcome to Clash Royale Build-A-Bot! This project provides an advanced state generator that accurately returns detailed information using cutting-edge technologies. 
 
