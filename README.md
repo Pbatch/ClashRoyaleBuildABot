@@ -1,24 +1,23 @@
-<div align="center"> 
+<div align="center">
 
-    📌 This bot is under active development and may experience minor issues.  
-    Please report any bugs so we can fix them promptly.
+📌 This bot is under active development and may experience minor issues.  
+Please report any bugs so we can fix them promptly.
+
 <table>
     <tr>
-      <td align="center">
-        <img src="https://github.com/Leviaria/ClashRoyaleBuildABot/assets/113382526/799f3df9-991f-4adc-9cb4-e67f15caa3e2" alt="ClashRoyaleBuildABot">
-        <div align="center">
-      </td>
+        <td align="center">
+            <img src="https://github.com/Leviaria/ClashRoyaleBuildABot/assets/113382526/799f3df9-991f-4adc-9cb4-e67f15caa3e2" alt="ClashRoyaleBuildABot">
+        </td>
     </tr>
 </table>
-    
-Welcome to Clash Royale Build-A-Bot! This project provides an advanced state generator that accurately returns detailed information using cutting-edge technologies. 
+
+Welcome to Clash Royale Build-A-Bot! This project provides an advanced state generator that accurately returns detailed information using cutting-edge technologies.
 
 [![Discord](https://img.shields.io/badge/Discord-00c8d6?logo=discord&logoColor=white&style=flat)](https://discord.gg/K4UfbsfcMa)
 [![Python 3.10.0](https://img.shields.io/badge/python-3.10.0-00c8d6?style=flat&logo=python&logoColor=white)](https://www.python.org/downloads/release/python-3100/)
 [![All Contributors](https://img.shields.io/badge/all_contributors-17-00c8d6?style=flat)](#contributors-)
 
 [**Getting Started**](#getting-started-with-your-clash-royale-bot) |
-[**Leaderboard**](#leaderboard) |
 [**Data**](#data) |
 [**Contributors**](#contributors-)
 
@@ -26,7 +25,7 @@ Welcome to Clash Royale Build-A-Bot! This project provides an advanced state gen
 
 ---
 
-<h2 style="background-color: #f0f0f0; padding: 10px; border-radius: 5px;">Getting Started with Your Clash Royale Bot</h2> 
+## Getting Started with Your Clash Royale Bot
 
 Follow these steps to set up your environment:
 
@@ -42,63 +41,19 @@ Need help? Join our [Discord server](https://discord.gg/K4UfbsfcMa).
 
 ---
 
-<h2 style="background-color: #f0f0f0; padding: 10px; border-radius: 5px;">Leaderboard </h2>
+## Data
 
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-<table>
-  <tbody>
-    <tr>
-      <td><b>Rank</b></td>
-      <td><b>Name</b></td>
-      <td><b>Trophies</b></td>
-      <td><b>Bot</b></td>
-    </tr>
-    <tr>
-      <td>#1</td>
-      <td align="center" valign="top" width="14.28%">
-        <a href="https://github.com/Leviaria">
-        <img src="https://avatars.githubusercontent.com/u/113382526?v=4?s=100" width="100px;" alt="Leviaria"/>
-        <br/><sub><b>Leviaria</b></sub></a><br/>
-      </td>
-      <td>
-          <p>2110</p>
-      </td>
-      <td>
-          <p>CustomBot</p>
-      </td>
-    </tr>
-    <tr>
-      <td>#2</td>
-      <td align="center" valign="top" width="14.28%">
-        <a href="https://github.com/pbatch">
-        <img src="https://avatars.githubusercontent.com/pbatch?v=4?s=100" width="100px;" alt="Pbatch"/>
-        <br/><sub><b>Pbatch</b></sub></a><br/>
-      </td>
-      <td>
-          <p>1300</p>
-      </td>
-      <td>
-          <p>CustomBot</p>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
+| Name              | Description            | Link                                                                 |
+|-------------------|------------------------|----------------------------------------------------------------------|
+| `units.tar.gz`    | Units in YOLOv5 format | [Download](https://drive.google.com/file/d/1TsJtJ5u0NP6wb7KOF5qAbBrMuVtn7eBr/view?usp=sharing) |
+| `numbers.tar.gz`  | Numbers in YOLOv5 format| [Download](https://drive.google.com/file/d/1nsKOIdvvBMr_HveioFjv67Ti9sJh8ECM/view?usp=sharing) |
 
 ---
-<h2 style="background-color: #f0f0f0; padding: 10px; border-radius: 5px;">Data </h2>
 
-| Name | Description | Link |
-|---|---|---|
-| `units.tar.gz` | Units in YOLOv5 format | [Download](https://drive.google.com/file/d/1TsJtJ5u0NP6wb7KOF5qAbBrMuVtn7eBr/view?usp=sharing) |
-| `numbers.tar.gz` | Numbers in YOLOv5 format | [Download](https://drive.google.com/file/d/1nsKOIdvvBMr_HveioFjv67Ti9sJh8ECM/view?usp=sharing) |
+## Contributors ✨
 
----
-<h2 style="background-color: #f0f0f0; padding: 10px; border-radius: 5px;">Contributors ✨</h2>
-
-A big thank you to all contributors! 
-This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. 
+A big thank you to all contributors!  
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification.
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
