@@ -1,16 +1,22 @@
+import os
 import random
 import subprocess
-import time
-import os
-import yaml
 import sys
+import time
 
 from loguru import logger
+import yaml
+
 from clashroyalebuildabot.bot import Bot
-from clashroyalebuildabot.bot.bot import Action
 from clashroyalebuildabot.bot.example.custom_action import CustomAction
-from clashroyalebuildabot.constants import DISPLAY_HEIGHT, DISPLAY_WIDTH, SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH
+from clashroyalebuildabot.constants import DEBUG_DIR
+from clashroyalebuildabot.constants import DISPLAY_HEIGHT
+from clashroyalebuildabot.constants import DISPLAY_WIDTH
+from clashroyalebuildabot.constants import SCREENSHOT_HEIGHT
+from clashroyalebuildabot.constants import SCREENSHOT_WIDTH
+from clashroyalebuildabot.constants import SRC_DIR
 from clashroyalebuildabot.namespaces.cards import Cards
+
 
 class CustomBot(Bot):
     PRESET_DECK = [
@@ -25,7 +31,7 @@ class CustomBot(Bot):
     ]
 
     def __init__(self, cards=None, debug=False):
-        config_path = os.path.join(os.path.dirname(__file__), "..", "..", "config.yaml")
+        config_path = os.path.join(SRC_DIR, "config.yaml")
         with open(config_path, encoding="utf-8") as file:
             config = yaml.safe_load(file)
 
@@ -33,7 +39,11 @@ class CustomBot(Bot):
 
         logger.remove()
         logger.add(sys.stdout, level=log_level)
-        logger.add(os.path.join(os.path.dirname(__file__), "..", "bot.log"), rotation="500 MB", level=log_level)
+        logger.add(
+            os.path.join(DEBUG_DIR, "bot.log"),
+            rotation="500 MB",
+            level=log_level,
+        )
 
         if cards is None:
             cards = self.PRESET_DECK
@@ -58,9 +68,14 @@ class CustomBot(Bot):
                     unit["tile_xy"] = self._get_nearest_tile(*bbox_bottom)
 
     def _restart_game(self):
-        subprocess.run("adb shell am force-stop com.supercell.clashroyale", shell=True)
+        subprocess.run(
+            "adb shell am force-stop com.supercell.clashroyale", shell=True
+        )
         time.sleep(1)
-        subprocess.run("adb shell am start -n com.supercell.clashroyale/com.supercell.titan.GameApp", shell=True)
+        subprocess.run(
+            "adb shell am start -n com.supercell.clashroyale/com.supercell.titan.GameApp",
+            shell=True,
+        )
         logger.info("Waiting 10 seconds.")
         time.sleep(10)
         self.end_of_game_clicked = False
@@ -93,7 +108,9 @@ class CustomBot(Bot):
             logger.info(f"New screen state: {new_screen}")
 
         if new_screen == "end_of_game":
-            logger.info("End of game detected. Waiting 10 seconds for battle button")
+            logger.info(
+                "End of game detected. Waiting 10 seconds for battle button"
+            )
             self.pause_until = time.time() + 10
             self.end_of_game_clicked = True
             time.sleep(10)
@@ -119,7 +136,9 @@ class CustomBot(Bot):
             return
 
         self.play_action(action)
-        logger.info(f"Playing {action} with score {action.score}. Waiting for 1 second")
+        logger.info(
+            f"Playing {action} with score {action.score}. Waiting for 1 second"
+        )
         time.sleep(1)
 
     def run(self):
