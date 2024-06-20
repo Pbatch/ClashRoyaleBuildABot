@@ -3,9 +3,7 @@ import os
 import sys
 import threading
 import time
-
 from loguru import logger
-
 from clashroyalebuildabot.bot.example.custom_bot import CustomBot
 from clashroyalebuildabot.constants import DEBUG_DIR
 from clashroyalebuildabot.updater import Updater
