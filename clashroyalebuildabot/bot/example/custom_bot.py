@@ -4,15 +4,17 @@ import subprocess
 import sys
 import time
 
-import yaml
 from loguru import logger
+import yaml
 
 from clashroyalebuildabot.bot import Bot
 from clashroyalebuildabot.bot.example.custom_action import CustomAction
-from clashroyalebuildabot.constants import DISPLAY_HEIGHT, SRC_DIR, DEBUG_DIR
+from clashroyalebuildabot.constants import DEBUG_DIR
+from clashroyalebuildabot.constants import DISPLAY_HEIGHT
 from clashroyalebuildabot.constants import DISPLAY_WIDTH
 from clashroyalebuildabot.constants import SCREENSHOT_HEIGHT
 from clashroyalebuildabot.constants import SCREENSHOT_WIDTH
+from clashroyalebuildabot.constants import SRC_DIR
 from clashroyalebuildabot.namespaces.cards import Cards
 
 
@@ -29,9 +31,7 @@ class CustomBot(Bot):
     ]
 
     def __init__(self, cards=None, debug=False):
-        config_path = os.path.join(
-            SRC_DIR, "config.yaml"
-        )
+        config_path = os.path.join(SRC_DIR, "config.yaml")
         with open(config_path, encoding="utf-8") as file:
             config = yaml.safe_load(file)
 
