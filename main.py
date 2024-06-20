@@ -26,8 +26,6 @@ def update_terminal_title():
 
 
 def main():
-    updater = Updater()
-    updater.check_for_update()
     cards = [
         Cards.MINIONS,
         Cards.ARCHERS,
@@ -43,6 +41,7 @@ def main():
 
 
 if __name__ == "__main__":
+    Updater().check_for_update()
     logger.add(os.path.join(DEBUG_DIR, "bot.log"), rotation="500 MB")
     title_thread = threading.Thread(target=update_terminal_title, daemon=True)
     title_thread.start()
