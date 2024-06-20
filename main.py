@@ -7,7 +7,6 @@ import yaml
 from loguru import logger
 from clashroyalebuildabot.bot.example.custom_bot import CustomBot
 from clashroyalebuildabot.constants import DEBUG_DIR
-from clashroyalebuildabot.updater import Updater
 
 start_time = datetime.now()
 
