@@ -36,8 +36,6 @@ if __name__ == "__main__":
     logger.add(sys.stdout, level=log_level)
     logger.add(os.path.join(DEBUG_DIR, "bot.log"), rotation="500 MB", level=log_level)
 
-    # Update-Prüfung und Hauptprogramm starten
-    Updater().check_for_update()
     title_thread = threading.Thread(target=update_terminal_title, daemon=True)
     title_thread.start()
     main()
