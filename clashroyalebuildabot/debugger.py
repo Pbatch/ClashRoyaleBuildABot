@@ -38,7 +38,7 @@ class Debugger:
     def _write_label(image, state, basename):
         labels = []
         for side in ["ally", "enemy"]:
-            for unit_name, v in state["units"][side].items():
+            for unit_name, v in state.units[side].items():
                 for i in v["positions"]:
                     bbox = i["bounding_box"]
                     xc = (bbox[0] + bbox[2]) / (2 * image.width)
@@ -67,12 +67,12 @@ class Debugger:
 
     def _write_image(self, image, state, basename):
         d = ImageDraw.Draw(image, "RGBA")
-        for v in state["numbers"].values():
+        for v in state.numbers.values():
             d.rectangle(tuple(v["bounding_box"]))
             self._draw_text(d, v["bounding_box"], str(v["number"]))
 
         for side in ["ally", "enemy"]:
-            for unit_name, v in state["units"][side].items():
+            for unit_name, v in state.units[side].items():
                 colour_idx = self.unit_names.index(unit_name) % len(
                     self._COLOUR_AND_RGBA
                 )
@@ -80,9 +80,9 @@ class Debugger:
                 for i in v["positions"]:
                     self._draw_text(d, i["bounding_box"], unit_name, rgba)
 
-        for card, position in zip(state["cards"], CARD_CONFIG):
+        for card, position in zip(state.cards, CARD_CONFIG):
             d.rectangle(tuple(position))
-            self._draw_text(d, position, card["name"])
+            self._draw_text(d, position, card.name)
 
         image.save(os.path.join(SCREENSHOTS_DIR, f"{basename}.png"))
 

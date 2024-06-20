@@ -1,8 +1,12 @@
+import os
+import sys
 import time
 
 from loguru import logger
+import yaml
 
 from clashroyalebuildabot.constants import ALLY_TILES
+from clashroyalebuildabot.constants import DEBUG_DIR
 from clashroyalebuildabot.constants import DISPLAY_CARD_DELTA_X
 from clashroyalebuildabot.constants import DISPLAY_CARD_HEIGHT
 from clashroyalebuildabot.constants import DISPLAY_CARD_INIT_X
@@ -11,6 +15,7 @@ from clashroyalebuildabot.constants import DISPLAY_CARD_Y
 from clashroyalebuildabot.constants import DISPLAY_HEIGHT
 from clashroyalebuildabot.constants import LEFT_PRINCESS_TILES
 from clashroyalebuildabot.constants import RIGHT_PRINCESS_TILES
+from clashroyalebuildabot.constants import SRC_DIR
 from clashroyalebuildabot.constants import TILE_HEIGHT
 from clashroyalebuildabot.constants import TILE_INIT_X
 from clashroyalebuildabot.constants import TILE_INIT_Y
@@ -42,6 +47,22 @@ class Bot:
         self.emulator = Emulator()
         self.detector = Detector(cards, debug=self.debug)
         self.state = None
+
+        self._setup_logger()
+
+    @staticmethod
+    def _setup_logger():
+        config_path = os.path.join(SRC_DIR, "config.yaml")
+        with open(config_path, encoding="utf-8") as file:
+            config = yaml.safe_load(file)
+        log_level = config.get("bot", {}).get("log_level", "INFO").upper()
+        logger.remove()
+        logger.add(sys.stdout, level=log_level)
+        logger.add(
+            os.path.join(DEBUG_DIR, "bot.log"),
+            rotation="500 MB",
+            level=log_level,
+        )
 
     @staticmethod
     def _get_nearest_tile(x, y):
@@ -94,14 +115,11 @@ class Bot:
         return actions
 
     def set_state(self):
-        try:
-            screenshot = self.emulator.take_screenshot()
-            self.state = self.detector.run(screenshot)
-            if self.auto_start and self.state.screen != Screens.IN_GAME:
-                self.emulator.click(*self.state.screen.click_xy)
-                time.sleep(2)
-        except Exception as e:
-            logger.error(f"Error occurred while taking screenshot: {e}")
+        screenshot = self.emulator.take_screenshot()
+        self.state = self.detector.run(screenshot)
+        if self.auto_start and self.state.screen != Screens.IN_GAME:
+            self.emulator.click(*self.state.screen.click_xy)
+            time.sleep(2)
 
     def play_action(self, action):
         card_centre = self._get_card_centre(action.index)

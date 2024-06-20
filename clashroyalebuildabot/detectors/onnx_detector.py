@@ -1,13 +1,18 @@
 import numpy as np
-import onnxruntime
+import onnxruntime as ort
 
 
 class OnnxDetector:
     def __init__(self, model_path):
         self.model_path = model_path
-        self.sess = onnxruntime.InferenceSession(
+
+        providers = list(
+            set(ort.get_available_providers())
+            & {"CUDAExecutionProvider", "CPUExecutionProvider"}
+        )
+        self.sess = ort.InferenceSession(
             self.model_path,
-            providers=["CPUExecutionProvider", "CUDAExecutionProvider"],
+            providers=providers,
         )
         self.output_name = self.sess.get_outputs()[0].name
 

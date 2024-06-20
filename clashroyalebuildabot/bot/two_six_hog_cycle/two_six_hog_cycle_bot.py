@@ -15,22 +15,24 @@ from clashroyalebuildabot.namespaces.cards import Cards
 
 
 class TwoSixHogCycle(Bot):
-    def __init__(self, cards, debug=True):
-        preset_deck = {
-            Cards.HOG_RIDER,
-            Cards.THE_LOG,
-            Cards.FIREBALL,
-            Cards.ICE_SPIRIT,
-            Cards.ICE_GOLEM,
-            Cards.SKELETONS,
-            Cards.CANNON,
-            Cards.MUSKETEER,
-        }
-        if set(cards) != preset_deck:
+    PRESET_DECK = {
+        Cards.HOG_RIDER,
+        Cards.THE_LOG,
+        Cards.FIREBALL,
+        Cards.ICE_SPIRIT,
+        Cards.ICE_GOLEM,
+        Cards.SKELETONS,
+        Cards.CANNON,
+        Cards.MUSKETEER,
+    }
+
+    def __init__(self, cards=None, debug=True):
+        if cards is not None:
             raise ValueError(
-                f"You must use the preset deck with cards {preset_deck} for TwoSixHogCycleBot"
+                f"CustomBot uses a preset deck: {self.PRESET_DECK}."
+                "Use cards=None instead."
             )
-        super().__init__(cards, TwoSixHogCycleAction, debug=debug)
+        super().__init__(self.PRESET_DECK, TwoSixHogCycleAction, debug=debug)
 
     def _preprocess(self):
         """
@@ -39,7 +41,7 @@ class TwoSixHogCycle(Bot):
         Estimate the tile of each unit to be the bottom of their bounding box
         """
         for side in ["ally", "enemy"]:
-            for v in self.state["units"][side].values():
+            for v in self.state.units[side].values():
                 for unit in v["positions"]:
                     bbox = unit["bounding_box"]
                     bbox[0] *= DISPLAY_WIDTH / SCREENSHOT_WIDTH

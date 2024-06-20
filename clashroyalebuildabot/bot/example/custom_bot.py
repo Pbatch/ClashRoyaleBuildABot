@@ -1,20 +1,16 @@
-import os
 import random
 import subprocess
-import sys
 import time
 
 from loguru import logger
-import yaml
 
+from clashroyalebuildabot import Screens
 from clashroyalebuildabot.bot import Bot
 from clashroyalebuildabot.bot.example.custom_action import CustomAction
-from clashroyalebuildabot.constants import DEBUG_DIR
 from clashroyalebuildabot.constants import DISPLAY_HEIGHT
 from clashroyalebuildabot.constants import DISPLAY_WIDTH
 from clashroyalebuildabot.constants import SCREENSHOT_HEIGHT
 from clashroyalebuildabot.constants import SCREENSHOT_WIDTH
-from clashroyalebuildabot.constants import SRC_DIR
 from clashroyalebuildabot.namespaces.cards import Cards
 
 
@@ -31,25 +27,12 @@ class CustomBot(Bot):
     ]
 
     def __init__(self, cards=None, debug=False):
-        config_path = os.path.join(SRC_DIR, "config.yaml")
-        with open(config_path, encoding="utf-8") as file:
-            config = yaml.safe_load(file)
-
-        log_level = config.get("bot", {}).get("log_level", "INFO").upper()
-
-        logger.remove()
-        logger.add(sys.stdout, level=log_level)
-        logger.add(
-            os.path.join(DEBUG_DIR, "bot.log"),
-            rotation="500 MB",
-            level=log_level,
-        )
-
-        if cards is None:
-            cards = self.PRESET_DECK
-        if set(cards) != set(self.PRESET_DECK):
-            raise ValueError(f"CustomBot must use cards: {self.PRESET_DECK}")
-        super().__init__(cards, CustomAction, debug=debug)
+        if cards is not None:
+            raise ValueError(
+                f"CustomBot uses a preset deck: {self.PRESET_DECK}."
+                "Use cards=None instead."
+            )
+        super().__init__(self.PRESET_DECK, CustomAction, debug=debug)
         self.end_of_game_clicked = False
         self.pause_until = 0
         self.scale_x = DISPLAY_WIDTH / SCREENSHOT_WIDTH
@@ -89,7 +72,7 @@ class CustomBot(Bot):
         actions = self.get_actions()
         logger.info(f"Actions after end of game: {actions}")
 
-        if self.state["screen"] == "lobby":
+        if self.state.screen == Screens.LOBBY:
             logger.debug("Lobby detected, resuming normal operation.")
             return
 
