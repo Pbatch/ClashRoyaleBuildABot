@@ -16,7 +16,7 @@ class TwoSixHogCycleAction(Action):
         Place hog rider on the bridge as high up as possible
         Try to target the lowest hp tower
         """
-        for v in state["units"]["enemy"].values():
+        for v in state.units["enemy"].values():
             for unit in v["positions"]:
                 tile_x, tile_y = unit["tile_xy"]
                 if self.tile_y < tile_y <= 14:
@@ -28,9 +28,9 @@ class TwoSixHogCycleAction(Action):
                     ):
                         return [0]
 
-        if state["numbers"]["elixir"]["number"] >= 7:
+        if state.numbers["elixir"]["number"] >= 7:
             left_hp, right_hp = [
-                state["numbers"][f"{direction}_enemy_princess_hp"]["number"]
+                state.numbers[f"{direction}_enemy_princess_hp"]["number"]
                 for direction in ["left", "right"]
             ]
             if self.tile_x == 3:
@@ -49,7 +49,7 @@ class TwoSixHogCycleAction(Action):
             return [0]
 
         for side in ["ally", "enemy"]:
-            for v in state["units"][side].values():
+            for v in state.units[side].values():
                 for unit in v["positions"]:
                     tile_y = unit["tile_xy"][1]
                     if v["transport"] == "ground" and tile_y >= 10:
@@ -64,7 +64,7 @@ class TwoSixHogCycleAction(Action):
         That should be just within her range and not too close to the enemy
         """
         for side in ["ally", "enemy"]:
-            for v in state["units"][side].values():
+            for v in state.units[side].values():
                 for unit in v["positions"]:
                     tile_y = unit["tile_xy"][1]
                     if v["transport"] == "air" and self.tile_y == tile_y - 7:
@@ -81,7 +81,7 @@ class TwoSixHogCycleAction(Action):
             return [0]
 
         for side in ["ally", "enemy"]:
-            for v in state["units"][side].values():
+            for v in state.units[side].values():
                 for unit in v["positions"]:
                     tile_x, tile_y = unit["tile_xy"]
                     if not (18 >= tile_y >= 15) or v["transport"] != "ground":
@@ -102,7 +102,7 @@ class TwoSixHogCycleAction(Action):
             return [0]
 
         for side in ["ally", "enemy"]:
-            for v in state["units"][side].values():
+            for v in state.units[side].values():
                 for unit in v["positions"]:
                     tile_x, tile_y = unit["tile_xy"]
                     if not (18 >= tile_y >= 15) or v["transport"] != "ground":
@@ -149,9 +149,8 @@ class TwoSixHogCycleAction(Action):
         """
         Calculate the score for the log card
         """
-        units = state["units"]
         score = [0]
-        for v in units["enemy"].values():
+        for v in state.units["enemy"].values():
             for unit in v["positions"]:
                 tile_x, tile_y = unit["tile_xy"]
                 if tile_y <= 8 and v["transport"] == "ground":
@@ -164,8 +163,7 @@ class TwoSixHogCycleAction(Action):
         """
         Play the fireball card if it will hit flying units
         """
-        units = state["units"]
-        for v in units["enemy"].values():
+        for v in state.units["enemy"].values():
             for unit in v["positions"]:
                 tile_x, tile_y = unit["tile_xy"]
                 if (
@@ -176,7 +174,7 @@ class TwoSixHogCycleAction(Action):
                     return [1]
 
         return self._calculate_spell_score(
-            state["units"], radius=2.5, min_to_hit=3
+            state.units, radius=2.5, min_to_hit=3
         )
 
     def calculate_score(self, state):

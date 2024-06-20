@@ -1,18 +1,21 @@
 # Exports for clashroyalebuildabot
 from . import constants
+from . import debugger
 from .bot import Action
 from .bot import Bot
 from .bot import RandomBot
 from .bot import TwoSixHogCycle
+from .detectors import CardDetector
+from .detectors import Detector
+from .detectors import NumberDetector
+from .detectors import OnnxDetector
+from .detectors import ScreenDetector
+from .detectors import UnitDetector
+from .emulator import Emulator
 from .namespaces import Cards
+from .namespaces import Screens
+from .namespaces import State
 from .namespaces import Units
-from .screen import Screen
-from .state import CardDetector
-from .state import Detector
-from .state import NumberDetector
-from .state import OnnxDetector
-from .state import ScreenDetector
-from .state import UnitDetector
 
 __all__ = [
     "RandomBot",
@@ -20,13 +23,14 @@ __all__ = [
     "constants",
     "Cards",
     "Units",
+    "State",
     "Detector",
     "OnnxDetector",
     "ScreenDetector",
     "NumberDetector",
     "UnitDetector",
     "CardDetector",
-    "Screen",
+    "Emulator",
     "Action",
     "Bot",
 ]

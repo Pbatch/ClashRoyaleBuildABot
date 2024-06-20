@@ -10,7 +10,7 @@ from clashroyalebuildabot.constants import SCREENSHOT_WIDTH
 from clashroyalebuildabot.constants import SRC_DIR
 
 
-class Screen:
+class Emulator:
     def __init__(self):
         config_path = os.path.join(SRC_DIR, "config.yaml")
         with open(config_path, encoding="utf-8") as file:

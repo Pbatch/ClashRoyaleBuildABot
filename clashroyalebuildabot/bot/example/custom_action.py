@@ -30,10 +30,10 @@ class CustomAction(Action):
         return [1 if hit_units >= min_to_hit else 0, hit_units, max_distance]
 
     def _calculate_unit_score(self, state, tile_x_conditions, score_if_met):
-        score = [0.5] if state["numbers"]["elixir"]["number"] == 10 else [0]
+        score = [0.5] if state.numbers["elixir"]["number"] == 10 else [0]
         for unit in (
             unit
-            for v in state["units"]["enemy"].values()
+            for v in state.units["enemy"].values()
             for unit in v["positions"]
         ):
             tile_x, tile_y = unit["tile_xy"]
@@ -54,10 +54,10 @@ class CustomAction(Action):
         )
 
     def _calculate_minions_score(self, state):
-        score = [0.5] if state["numbers"]["elixir"]["number"] == 10 else [0]
+        score = [0.5] if state.numbers["elixir"]["number"] == 10 else [0]
         for unit in (
             unit
-            for v in state["units"]["enemy"].values()
+            for v in state.units["enemy"].values()
             for unit in v["positions"]
         ):
             tile_x, tile_y = unit["tile_xy"]
@@ -70,13 +70,11 @@ class CustomAction(Action):
 
     def _calculate_fireball_score(self, state):
         return self._calculate_spell_score(
-            state["units"], radius=2.5, min_to_hit=3
+            state.units, radius=2.5, min_to_hit=3
         )
 
     def _calculate_arrows_score(self, state):
-        return self._calculate_spell_score(
-            state["units"], radius=4, min_to_hit=5
-        )
+        return self._calculate_spell_score(state.units, radius=4, min_to_hit=5)
 
     def _calculate_archers_score(self, state):
         return self._calculate_unit_score(
@@ -91,10 +89,10 @@ class CustomAction(Action):
     def _calculate_giant_score(self, state):
         score = [0]
         left_hp, right_hp = (
-            state["numbers"][f"{direction}_enemy_princess_hp"]["number"]
+            state.numbers[f"{direction}_enemy_princess_hp"]["number"]
             for direction in ["left", "right"]
         )
-        if state["numbers"]["elixir"]["number"] == 10:
+        if state.numbers["elixir"]["number"] == 10:
             if self.tile_x == 3:
                 score = [1, self.tile_y, left_hp != -1, left_hp <= right_hp]
             elif self.tile_x == 14:
@@ -103,7 +101,7 @@ class CustomAction(Action):
 
     def _calculate_minipekka_score(self, state):
         left_hp, right_hp = (
-            state["numbers"][f"{direction}_enemy_princess_hp"]["number"]
+            state.numbers[f"{direction}_enemy_princess_hp"]["number"]
             for direction in ["left", "right"]
         )
         if self.tile_x in [3, 14]:
@@ -117,7 +115,7 @@ class CustomAction(Action):
     def _calculate_musketeer_score(self, state):
         for unit in (
             unit
-            for v in state["units"]["enemy"].values()
+            for v in state.units["enemy"].values()
             for unit in v["positions"]
         ):
             distance = self._distance(

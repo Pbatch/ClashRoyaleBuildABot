@@ -31,7 +31,7 @@ class _UnitsNamespace:
     HUNTER: Unit = ("hunter", "troop", "all", "ground")
     ICE_GOLEM: Unit = ("ice_golem", "troop", "buildings", "ground")
     ICE_SPIRIT: Unit = ("ice_spirit", "troop", "all", "ground")
-    INFERNO_TOWER: Unit = ("inferno_tower", "building")
+    INFERNO_TOWER: Unit = ("inferno_tower", "building", None, None)
     KNIGHT: Unit = ("knight", "troop", "ground", "ground")
     MINION: Unit = ("minion", "troop", "both", "air")
     MINIPEKKA: Unit = ("minipekka", "troop", "ground", "ground")

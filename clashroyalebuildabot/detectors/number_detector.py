@@ -6,7 +6,7 @@ from clashroyalebuildabot.constants import KING_LEVEL_2_X
 from clashroyalebuildabot.constants import NUMBER_CONFIG
 from clashroyalebuildabot.constants import NUMBER_HEIGHT
 from clashroyalebuildabot.constants import NUMBER_WIDTH
-from clashroyalebuildabot.state.onnx_detector import OnnxDetector
+from clashroyalebuildabot.detectors.onnx_detector import OnnxDetector
 
 
 class NumberDetector(OnnxDetector):

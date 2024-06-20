@@ -1,6 +1,5 @@
 # Exports for state submodule
 from .card_detector import CardDetector
-from .debugger import Debugger
 from .detector import Detector
 from .number_detector import NumberDetector
 from .onnx_detector import OnnxDetector
@@ -14,5 +13,4 @@ __all__ = [
     "NumberDetector",
     "UnitDetector",
     "CardDetector",
-    "Debugger",
 ]

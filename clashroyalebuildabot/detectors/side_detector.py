@@ -1,7 +1,7 @@
 import numpy as np
 from PIL import Image
 
-from clashroyalebuildabot.state.onnx_detector import OnnxDetector
+from clashroyalebuildabot.detectors.onnx_detector import OnnxDetector
 
 
 class SideDetector(OnnxDetector):

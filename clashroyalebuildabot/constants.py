@@ -1,7 +1,5 @@
 import os
 
-from loguru import logger
-
 from clashroyalebuildabot.namespaces import Units
 
 # Directories
@@ -19,31 +17,6 @@ DISPLAY_HEIGHT = 1280
 # Screenshot dimensions
 SCREENSHOT_WIDTH = 368
 SCREENSHOT_HEIGHT = 652
-
-# Screen ID
-CHEST_SIZE = 62
-CHEST_X = 0
-CHEST_Y = 590
-OK_X = 143
-OK_Y = 558
-OK_WIDTH = 82
-OK_HEIGHT = 30
-SCREEN_CONFIG = {
-    "lobby": {
-        "bbox": (CHEST_X, CHEST_Y, CHEST_X + CHEST_SIZE, CHEST_Y + CHEST_SIZE),
-        "click_coordinates": (220, 830),
-    },
-    "end_of_game": {
-        "bbox": (OK_X, OK_Y, OK_X + OK_WIDTH, OK_Y + OK_HEIGHT),
-        "click_coordinates": (360, 1125),
-    },
-}
-
-# Log click coordinates for screen configurations
-for screen, config in SCREEN_CONFIG.items():
-    logger.info(
-        f"Screen: {screen}, Click coordinates: {config['click_coordinates']}"
-    )
 
 # Playable tiles
 TILE_HEIGHT = 27.6
