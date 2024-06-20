@@ -2,17 +2,16 @@ import os
 import shutil
 import subprocess
 import zipfile
+import time
 
 from loguru import logger
 import requests
-
-from clashroyalebuildabot.constants import DEBUG_DIR
-
 
 class Updater:
     GITHUB_REPO = "Pbatch/ClashRoyaleBuildABot"
     DOWNLOAD_PATH = "update.zip"
     EXTRACT_PATH = "."
+    IGNORE_DIRS = ["debug", ".git"]
 
     @staticmethod
     def _get_current_sha():
@@ -44,29 +43,30 @@ class Updater:
             zip_ref.extractall(self.EXTRACT_PATH)
 
     def _replace_old_version(self, commit_sha):
-        new_folder_name = (
-            f"{self.GITHUB_REPO.rsplit('/', maxsplit=1)[-1]}-{commit_sha}"
-        )
+        new_folder_name = f"{self.GITHUB_REPO.rsplit('/', maxsplit=1)[-1]}-{commit_sha}"
         new_folder_path = os.path.join(self.EXTRACT_PATH, new_folder_name)
 
         if not os.path.exists(new_folder_path):
             return
 
-        logger.info(
-            f"Replacing old version with new version: {new_folder_name}"
-        )
+        logger.info(f"Replacing old version with new version: {new_folder_name}")
         for item in os.listdir(self.EXTRACT_PATH):
-            item_path = os.path.join(self.EXTRACT_PATH, item)
-            if item in {new_folder_name, ".git"}:
+            if item in {new_folder_name} | set(self.IGNORE_DIRS):
                 continue
-
-            if os.path.isdir(item_path):
-                shutil.rmtree(item_path)
-            else:
-                os.remove(item_path)
+            item_path = os.path.join(self.EXTRACT_PATH, item)
+            shutil.rmtree(item_path, ignore_errors=True)
 
         for item in os.listdir(new_folder_path):
-            shutil.move(os.path.join(new_folder_path, item), self.EXTRACT_PATH)
+            src_path = os.path.join(new_folder_path, item)
+            dst_path = os.path.join(self.EXTRACT_PATH, item)
+            if os.path.isdir(src_path):
+                if os.path.exists(dst_path):
+                    shutil.rmtree(dst_path)
+                shutil.copytree(src_path, dst_path)
+            else:
+                if os.path.exists(dst_path):
+                    os.remove(dst_path)
+                shutil.copy2(src_path, dst_path)
 
         shutil.rmtree(new_folder_path)
 
