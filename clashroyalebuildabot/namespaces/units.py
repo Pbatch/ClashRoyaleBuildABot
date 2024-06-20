@@ -21,7 +21,7 @@ class _UnitsNamespace:
     BRAWLER: Unit = ("brawler", "troop", "ground", "ground")
     CANNON: Unit = ("cannon", "building", "ground", "ground")
     DARK_PRINCE: Unit = ("dark_prince", "troop", "ground", "ground")
-    ELIXIR_COLLECTOR: Unit = ("elixir_collector", "building")
+    ELIXIR_COLLECTOR: Unit = ("elixir_collector", "building", None, None)
     FURNACE: Unit = ("furnace", "building", None, None)
     GIANT: Unit = ("giant", "troop", "ground", "ground")
     GOBLIN: Unit = ("goblin", "troop", "ground", "ground")
