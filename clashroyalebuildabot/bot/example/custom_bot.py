@@ -4,7 +4,6 @@ import time
 
 from loguru import logger
 
-from clashroyalebuildabot import Screens
 from clashroyalebuildabot.bot import Bot
 from clashroyalebuildabot.bot.example.custom_action import CustomAction
 from clashroyalebuildabot.constants import DISPLAY_HEIGHT
@@ -12,6 +11,7 @@ from clashroyalebuildabot.constants import DISPLAY_WIDTH
 from clashroyalebuildabot.constants import SCREENSHOT_HEIGHT
 from clashroyalebuildabot.constants import SCREENSHOT_WIDTH
 from clashroyalebuildabot.namespaces.cards import Cards
+from clashroyalebuildabot.namespaces.screens import Screens
 
 
 class CustomBot(Bot):
