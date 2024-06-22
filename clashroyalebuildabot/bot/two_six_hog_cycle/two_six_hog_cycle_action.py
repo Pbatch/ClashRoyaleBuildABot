@@ -1,13 +1,12 @@
+import math
+
 from clashroyalebuildabot.bot.bot import Action
 from clashroyalebuildabot.namespaces.cards import Cards
+from clashroyalebuildabot.namespaces.units import Transport
 
 
 class TwoSixHogCycleAction(Action):
     score = 0
-
-    @staticmethod
-    def _distance(x1, y1, x2, y2):
-        return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
 
     def _calculate_hog_rider_score(self, state):
         """
@@ -16,17 +15,14 @@ class TwoSixHogCycleAction(Action):
         Place hog rider on the bridge as high up as possible
         Try to target the lowest hp tower
         """
-        for v in state.units["enemy"].values():
-            for unit in v["positions"]:
-                tile_x, tile_y = unit["tile_xy"]
-                if self.tile_y < tile_y <= 14:
-                    if (
-                        tile_x > 8
-                        and self.tile_x == 10
-                        or tile_x <= 8
-                        and self.tile_x == 7
-                    ):
-                        return [0]
+        for v in state.enemies.values():
+            for position in v["positions"]:
+                if not self.tile_y < position.tile_y <= 14:
+                    continue
+                if (position.tile_x > 8 and self.tile_x == 10) or (
+                    position.tile_x <= 8 and self.tile_x == 7
+                ):
+                    return [0]
 
         if state.numbers["elixir"]["number"] >= 7:
             left_hp, right_hp = [
@@ -45,15 +41,16 @@ class TwoSixHogCycleAction(Action):
         """
         If there are ground troops place the cannon in the middle of the arena
         """
-        if self.tile_x != 9 or self.tile_y != 10:
+        if (self.tile_x, self.tile_y) != (9, 10):
             return [0]
 
-        for side in ["ally", "enemy"]:
-            for v in state.units[side].values():
-                for unit in v["positions"]:
-                    tile_y = unit["tile_xy"][1]
-                    if v["transport"] == "ground" and tile_y >= 10:
-                        return [2]
+        for v in state.enemies.values():
+            for position in v["positions"]:
+                if (
+                    v["transport"] == Transport.GROUND
+                    and position.tile_y >= 10
+                ):
+                    return [2]
 
         return [0]
 
@@ -63,12 +60,13 @@ class TwoSixHogCycleAction(Action):
         Place musketeer at 7 tiles in front of the enemies
         That should be just within her range and not too close to the enemy
         """
-        for side in ["ally", "enemy"]:
-            for v in state.units[side].values():
-                for unit in v["positions"]:
-                    tile_y = unit["tile_xy"][1]
-                    if v["transport"] == "air" and self.tile_y == tile_y - 7:
-                        return [2]
+        for v in state.enemies.values():
+            for position in v["positions"]:
+                if (
+                    v["transport"] == Transport.AIR
+                    and self.tile_y == position.tile_y - 7
+                ):
+                    return [2]
 
         return [0]
 
@@ -80,17 +78,18 @@ class TwoSixHogCycleAction(Action):
         if self.tile_y != 4:
             return [0]
 
-        for side in ["ally", "enemy"]:
-            for v in state.units[side].values():
-                for unit in v["positions"]:
-                    tile_x, tile_y = unit["tile_xy"]
-                    if not (18 >= tile_y >= 15) or v["transport"] != "ground":
-                        continue
+        for v in state.enemies.values():
+            for position in v["positions"]:
+                if (
+                    not (15 <= position.tile_y <= 18)
+                    or v["transport"] != Transport.GROUND
+                ):
+                    continue
 
-                    lhs = tile_x <= 8 and self.tile_x == 9
-                    rhs = tile_x > 8 and self.tile_x == 8
-                    if lhs or rhs:
-                        return [2]
+                lhs = position.tile_x <= 8 and self.tile_x == 9
+                rhs = position.tile_x > 8 and self.tile_x == 8
+                if lhs or rhs:
+                    return [2]
 
         return [0]
 
@@ -101,21 +100,22 @@ class TwoSixHogCycleAction(Action):
         if self.tile_y != 10:
             return [0]
 
-        for side in ["ally", "enemy"]:
-            for v in state.units[side].values():
-                for unit in v["positions"]:
-                    tile_x, tile_y = unit["tile_xy"]
-                    if not (18 >= tile_y >= 15) or v["transport"] != "ground":
-                        continue
+        for v in state.enemies.values():
+            for position in v["positions"]:
+                if (
+                    not (15 <= position.tile_y <= 18)
+                    or v["transport"] != Transport.GROUND
+                ):
+                    continue
 
-                    if (tile_x <= 8 and self.tile_x == 8) or (
-                        tile_x > 8 and self.tile_x == 9
-                    ):
-                        return [2]
+                lhs = position.tile_x <= 8 and self.tile_x == 9
+                rhs = position.tile_x > 8 and self.tile_x == 8
+                if lhs or rhs:
+                    return [2]
 
         return [0]
 
-    def _calculate_spell_score(self, units, radius, min_to_hit):
+    def _calculate_spell_score(self, state, radius, min_to_hit):
         """
         Calculate the score for a spell card (either fireball or arrows)
 
@@ -125,15 +125,12 @@ class TwoSixHogCycleAction(Action):
             C is the negative distance to the furthest unit
         """
         score = [0, 0, 0]
-        for v in units["enemy"].values():
-            for unit in v["positions"]:
-                tile_x, tile_y = unit["tile_xy"]
-                # Assume the unit will move down a few spaces
-                tile_y -= 2
-
+        for v in state.enemies.values():
+            for position in v["positions"]:
                 # Add 1 to the score if the spell will hit the unit
-                distance = self._distance(
-                    tile_x, tile_y, self.tile_x, self.tile_y
+                distance = math.hypot(
+                    position.tile_x - self.tile_x,
+                    position.tile_y - self.tile_y - 2,
                 )
                 if distance <= radius - 1:
                     score[1] += 1
@@ -150,11 +147,13 @@ class TwoSixHogCycleAction(Action):
         Calculate the score for the log card
         """
         score = [0]
-        for v in state.units["enemy"].values():
-            for unit in v["positions"]:
-                tile_x, tile_y = unit["tile_xy"]
-                if tile_y <= 8 and v["transport"] == "ground":
-                    if self.tile_y == tile_y - 4 and self.tile_x == tile_x:
+        for v in state.enemies.values():
+            for position in v["positions"]:
+                if position.tile_y <= 8 and v["transport"] == Transport.GROUND:
+                    if (
+                        self.tile_y == position.tile_y - 4
+                        and self.tile_x == position.tile_x
+                    ):
                         score = [1]
 
         return score
@@ -163,13 +162,12 @@ class TwoSixHogCycleAction(Action):
         """
         Play the fireball card if it will hit flying units
         """
-        for v in state.units["enemy"].values():
-            for unit in v["positions"]:
-                tile_x, tile_y = unit["tile_xy"]
+        for v in state.enemies.values():
+            for position in v["positions"]:
                 if (
-                    v["transport"] == "air"
-                    and self.tile_y == tile_y - 4
-                    and self.tile_x == tile_x
+                    v["transport"] == Transport.AIR
+                    and self.tile_y == position.tile_y - 4
+                    and self.tile_x == position.tile_x
                 ):
                     return [1]
 
@@ -189,7 +187,5 @@ class TwoSixHogCycleAction(Action):
             Cards.SKELETONS: self._calculate_ice_spirit_score,
         }
 
-        score_function = card_to_score[self.card]
-        score = score_function(state)
-        self.score = score
-        return score
+        self.score = card_to_score[self.card](state)
+        return self.score

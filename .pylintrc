@@ -439,6 +439,7 @@ disable=raw-checker-failed,
         R0902, # too-many-instance-attributes
         R0903, # too-few-public-methods
         R0913, # too-many-arguments
+        R0914, # too-many-locals
         W0718, # broad-exception-caught
 
 # Enable the message, report, category or checker with the given id(s). You can

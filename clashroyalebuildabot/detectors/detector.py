@@ -40,7 +40,9 @@ class Detector:
         numbers = self.number_detector.run(image)
         screen = self.screen_detector.run(image)
 
-        state = State(units, numbers, cards, ready, screen)
+        state = State(
+            units["enemy"], units["ally"], numbers, cards, ready, screen
+        )
         if self.debugger is not None:
             self.debugger.run(image, state)
 

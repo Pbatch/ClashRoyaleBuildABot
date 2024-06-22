@@ -4,11 +4,27 @@ from typing import Literal, Optional
 
 
 @dataclass(frozen=True)
+class Target:
+    AIR: str = "air"
+    GROUND: str = "ground"
+    BUILDINGS: str = "buildings"
+    ALL: str = "all"
+
+
+@dataclass(frozen=True)
+class Transport:
+    AIR: str = "air"
+    GROUND: str = "ground"
+
+
+@dataclass(frozen=True)
 class Unit:
     name: str
     category: Literal["troop", "spell", "building"]
-    target: Optional[Literal["air", "ground", "buildings", "all"]]
-    transport: Optional[Literal["air", "ground"]]
+    target: Optional[
+        Literal[Target.AIR, Target.GROUND, Target.BUILDINGS, Target.ALL]
+    ]
+    transport: Optional[Literal[Transport.AIR, Transport.GROUND]]
 
 
 @dataclass(frozen=True)

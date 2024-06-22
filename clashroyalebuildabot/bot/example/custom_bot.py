@@ -4,14 +4,10 @@ import time
 
 from loguru import logger
 
-from clashroyalebuildabot import Screens
 from clashroyalebuildabot.bot import Bot
 from clashroyalebuildabot.bot.example.custom_action import CustomAction
-from clashroyalebuildabot.constants import DISPLAY_HEIGHT
-from clashroyalebuildabot.constants import DISPLAY_WIDTH
-from clashroyalebuildabot.constants import SCREENSHOT_HEIGHT
-from clashroyalebuildabot.constants import SCREENSHOT_WIDTH
 from clashroyalebuildabot.namespaces.cards import Cards
+from clashroyalebuildabot.namespaces.screens import Screens
 
 
 class CustomBot(Bot):
@@ -35,20 +31,6 @@ class CustomBot(Bot):
         super().__init__(self.PRESET_DECK, CustomAction, debug=debug)
         self.end_of_game_clicked = False
         self.pause_until = 0
-        self.scale_x = DISPLAY_WIDTH / SCREENSHOT_WIDTH
-        self.scale_y = DISPLAY_HEIGHT / SCREENSHOT_HEIGHT
-
-    def _preprocess(self):
-        for side in ["ally", "enemy"]:
-            for k, v in self.state.units[side].items():
-                for unit in v["positions"]:
-                    bbox = unit["bounding_box"]
-                    bbox[0] *= self.scale_x
-                    bbox[1] *= self.scale_y
-                    bbox[2] *= self.scale_x
-                    bbox[3] *= self.scale_y
-                    bbox_bottom = [((bbox[0] + bbox[2]) / 2), bbox[3]]
-                    unit["tile_xy"] = self._get_nearest_tile(*bbox_bottom)
 
     def _restart_game(self):
         subprocess.run(
@@ -112,7 +94,6 @@ class CustomBot(Bot):
             return
 
         random.shuffle(actions)
-        self._preprocess()
         action = max(actions, key=lambda x: x.calculate_score(self.state))
         if action.score[0] == 0:
             time.sleep(1)

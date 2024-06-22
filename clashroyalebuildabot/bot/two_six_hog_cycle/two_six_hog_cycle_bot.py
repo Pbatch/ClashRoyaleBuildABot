@@ -7,10 +7,6 @@ from clashroyalebuildabot.bot.bot import Bot
 from clashroyalebuildabot.bot.two_six_hog_cycle.two_six_hog_cycle_action import (
     TwoSixHogCycleAction,
 )
-from clashroyalebuildabot.constants import DISPLAY_HEIGHT
-from clashroyalebuildabot.constants import DISPLAY_WIDTH
-from clashroyalebuildabot.constants import SCREENSHOT_HEIGHT
-from clashroyalebuildabot.constants import SCREENSHOT_WIDTH
 from clashroyalebuildabot.namespaces.cards import Cards
 
 
@@ -34,23 +30,6 @@ class TwoSixHogCycle(Bot):
             )
         super().__init__(self.PRESET_DECK, TwoSixHogCycleAction, debug=debug)
 
-    def _preprocess(self):
-        """
-        Perform preprocessing on the state
-
-        Estimate the tile of each unit to be the bottom of their bounding box
-        """
-        for side in ["ally", "enemy"]:
-            for v in self.state.units[side].values():
-                for unit in v["positions"]:
-                    bbox = unit["bounding_box"]
-                    bbox[0] *= DISPLAY_WIDTH / SCREENSHOT_WIDTH
-                    bbox[1] *= DISPLAY_HEIGHT / SCREENSHOT_HEIGHT
-                    bbox[2] *= DISPLAY_WIDTH / SCREENSHOT_WIDTH
-                    bbox[3] *= DISPLAY_HEIGHT / SCREENSHOT_HEIGHT
-                    bbox_bottom = [((bbox[0] + bbox[2]) / 2), bbox[3]]
-                    unit["tile_xy"] = self._get_nearest_tile(*bbox_bottom)
-
     def run(self):
         while True:
             # Set the state of the game
@@ -60,8 +39,6 @@ class TwoSixHogCycle(Bot):
             if actions:
                 # Shuffle the actions (because action scores might be the same)
                 random.shuffle(actions)
-                # Preprocessing
-                self._preprocess()
                 # Get the best action
                 action = max(
                     actions, key=lambda x: x.calculate_score(self.state)
