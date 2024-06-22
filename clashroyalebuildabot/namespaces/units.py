@@ -21,7 +21,9 @@ class Transport:
 class Unit:
     name: str
     category: Literal["troop", "spell", "building"]
-    target: Optional[Literal[Target.AIR, Target.GROUND, Target.BUILDINGS, Target.ALL]]
+    target: Optional[
+        Literal[Target.AIR, Target.GROUND, Target.BUILDINGS, Target.ALL]
+    ]
     transport: Optional[Literal[Transport.AIR, Transport.GROUND]]
 
 

@@ -19,8 +19,9 @@ class TwoSixHogCycleAction(Action):
             for position in v["positions"]:
                 if not self.tile_y < position.tile_y <= 14:
                     continue
-                if (position.tile_x > 8 and self.tile_x == 10) or \
-                        (position.tile_x <= 8 and self.tile_x == 7):
+                if (position.tile_x > 8 and self.tile_x == 10) or (
+                    position.tile_x <= 8 and self.tile_x == 7
+                ):
                     return [0]
 
         if state.numbers["elixir"]["number"] >= 7:
@@ -45,7 +46,10 @@ class TwoSixHogCycleAction(Action):
 
         for v in state.enemies.values():
             for position in v["positions"]:
-                if v["transport"] == Transport.GROUND and position.tile_y >= 10:
+                if (
+                    v["transport"] == Transport.GROUND
+                    and position.tile_y >= 10
+                ):
                     return [2]
 
         return [0]
@@ -58,7 +62,10 @@ class TwoSixHogCycleAction(Action):
         """
         for v in state.enemies.values():
             for position in v["positions"]:
-                if v["transport"] == Transport.AIR and self.tile_y == position.tile_y - 7:
+                if (
+                    v["transport"] == Transport.AIR
+                    and self.tile_y == position.tile_y - 7
+                ):
                     return [2]
 
         return [0]
@@ -73,7 +80,10 @@ class TwoSixHogCycleAction(Action):
 
         for v in state.enemies.values():
             for position in v["positions"]:
-                if not (15 <= position.tile_y <= 18) or v["transport"] != Transport.GROUND:
+                if (
+                    not (15 <= position.tile_y <= 18)
+                    or v["transport"] != Transport.GROUND
+                ):
                     continue
 
                 lhs = position.tile_x <= 8 and self.tile_x == 9
@@ -92,7 +102,10 @@ class TwoSixHogCycleAction(Action):
 
         for v in state.enemies.values():
             for position in v["positions"]:
-                if not (15 <= position.tile_y <= 18) or v["transport"] != Transport.GROUND:
+                if (
+                    not (15 <= position.tile_y <= 18)
+                    or v["transport"] != Transport.GROUND
+                ):
                     continue
 
                 lhs = position.tile_x <= 8 and self.tile_x == 9
@@ -115,7 +128,10 @@ class TwoSixHogCycleAction(Action):
         for v in state.enemies.values():
             for position in v["positions"]:
                 # Add 1 to the score if the spell will hit the unit
-                distance = math.hypot(position.tile_x - self.tile_x, position.tile_y - self.tile_y - 2)
+                distance = math.hypot(
+                    position.tile_x - self.tile_x,
+                    position.tile_y - self.tile_y - 2,
+                )
                 if distance <= radius - 1:
                     score[1] += 1
                     score[2] = min(score[2], -distance)
@@ -134,7 +150,10 @@ class TwoSixHogCycleAction(Action):
         for v in state.enemies.values():
             for position in v["positions"]:
                 if position.tile_y <= 8 and v["transport"] == Transport.GROUND:
-                    if self.tile_y == position.tile_y - 4 and self.tile_x == position.tile_x:
+                    if (
+                        self.tile_y == position.tile_y - 4
+                        and self.tile_x == position.tile_x
+                    ):
                         score = [1]
 
         return score
@@ -146,9 +165,9 @@ class TwoSixHogCycleAction(Action):
         for v in state.enemies.values():
             for position in v["positions"]:
                 if (
-                        v["transport"] == Transport.AIR
-                        and self.tile_y == position.tile_y - 4
-                        and self.tile_x == position.tile_x
+                    v["transport"] == Transport.AIR
+                    and self.tile_y == position.tile_y - 4
+                    and self.tile_x == position.tile_x
                 ):
                     return [1]
 

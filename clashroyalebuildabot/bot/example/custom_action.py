@@ -12,8 +12,10 @@ class CustomAction(Action):
         max_distance = float("inf")
         for v in state.enemies.values():
             for position in v["positions"]:
-                distance = math.hypot(self.tile_x - position.tile_x,
-                                      self.tile_y - position.tile_y + 2)
+                distance = math.hypot(
+                    self.tile_x - position.tile_x,
+                    self.tile_y - position.tile_y + 2,
+                )
                 if distance <= radius - 1:
                     hit_units += 1
                     max_distance = min(max_distance, -distance)
@@ -25,7 +27,8 @@ class CustomAction(Action):
         for v in state.enemies.values():
             for position in v["positions"]:
                 if self.tile_y < position.tile_y <= 14 and any(
-                    condition(position.tile_x) for condition in tile_x_conditions
+                    condition(position.tile_x)
+                    for condition in tile_x_conditions
                 ):
                     score = score_if_met(self.tile_y, position.tile_y)
         return score
@@ -44,15 +47,16 @@ class CustomAction(Action):
         score = [0.5] if state.numbers["elixir"]["number"] == 10 else [0]
         for v in state.enemies.values():
             for position in v["positions"]:
-                distance = math.hypot(position.tile_x - self.tile_x, position.tile_y - self.tile_y)
+                distance = math.hypot(
+                    position.tile_x - self.tile_x,
+                    position.tile_y - self.tile_y,
+                )
                 if distance < 1:
                     score = [1, -distance]
         return score
 
     def _calculate_fireball_score(self, state):
-        return self._calculate_spell_score(
-            state, radius=2.5, min_to_hit=3
-        )
+        return self._calculate_spell_score(state, radius=2.5, min_to_hit=3)
 
     def _calculate_arrows_score(self, state):
         return self._calculate_spell_score(state, radius=4, min_to_hit=5)
@@ -96,7 +100,10 @@ class CustomAction(Action):
     def _calculate_musketeer_score(self, state):
         for v in state.enemies.values():
             for position in v["positions"]:
-                distance = math.hypot(position.tile_x - self.tile_x, position.tile_y - self.tile_y)
+                distance = math.hypot(
+                    position.tile_x - self.tile_x,
+                    position.tile_y - self.tile_y,
+                )
                 if 5 < distance < 6:
                     return [1]
                 elif distance < 5:

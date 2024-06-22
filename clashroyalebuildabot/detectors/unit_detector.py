@@ -2,9 +2,16 @@ import os
 
 import numpy as np
 
-from clashroyalebuildabot.constants import DETECTOR_UNITS, DISPLAY_WIDTH, SCREENSHOT_WIDTH, DISPLAY_HEIGHT, \
-    SCREENSHOT_HEIGHT, TILE_INIT_X, TILE_WIDTH, TILE_INIT_Y, TILE_HEIGHT
+from clashroyalebuildabot.constants import DETECTOR_UNITS
+from clashroyalebuildabot.constants import DISPLAY_HEIGHT
+from clashroyalebuildabot.constants import DISPLAY_WIDTH
 from clashroyalebuildabot.constants import MODELS_DIR
+from clashroyalebuildabot.constants import SCREENSHOT_HEIGHT
+from clashroyalebuildabot.constants import SCREENSHOT_WIDTH
+from clashroyalebuildabot.constants import TILE_HEIGHT
+from clashroyalebuildabot.constants import TILE_INIT_X
+from clashroyalebuildabot.constants import TILE_INIT_Y
+from clashroyalebuildabot.constants import TILE_WIDTH
 from clashroyalebuildabot.detectors.onnx_detector import OnnxDetector
 from clashroyalebuildabot.detectors.side_detector import SideDetector
 from clashroyalebuildabot.namespaces.state import Position
@@ -76,7 +83,7 @@ class UnitDetector(OnnxDetector):
             bbox = (round(l), round(t), round(r), round(b))
             tile_x, tile_y = self._get_tile_xy(bbox)
             position = Position(bbox, conf, tile_x, tile_y)
-            name, category, target, transport = DETECTOR_UNITS[int(p[5])]
+            name, category, target, transport = DETECTOR_UNITS[int(cls)]
             side = self._calculate_side(image, bbox, name)
             if name not in clean_pred[side]:
                 clean_pred[side][name] = {
