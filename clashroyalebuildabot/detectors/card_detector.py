@@ -19,7 +19,7 @@ class CardDetector:
         self.hash_size = hash_size
         self.grey_std_threshold = grey_std_threshold
 
-        self.cards.append(Cards.BLANK)
+        self.cards.extend([Cards.BLANK for _ in range(5)])
         self.card_hashes = self._calculate_card_hashes()
 
     def _calculate_multi_hash(self, image):
