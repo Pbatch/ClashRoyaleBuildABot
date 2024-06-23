@@ -1,6 +1,5 @@
 import atexit
 import os
-import re
 import socket
 import subprocess
 from collections import deque
@@ -46,47 +45,14 @@ def mainprocess(cmd):
     return p
 
 
-def get_screen_height_width(adb_path, deviceserial):
-    try:
-        p = subprocess.run(
-            rf"{adb_path} -s {deviceserial} shell dumpsys window",
-            shell=True,
-            capture_output=True,
-            **invisibledict,
-        )
-        screenwidth, screenheight = [
-            int(x)
-            for x in re.findall(rb"cur=(\d{,4}x\d{,4}\b)", p.stdout)[0]
-            .lower()
-            .split(b"x")
-        ]
-
-    except Exception:
-        screenwidth, screenheight = (
-            subprocess.run(
-                rf'{adb_path} -s {deviceserial} shell dumpsys window | grep cur= |tr -s " " | cut -d " " -f 4|cut -d "=" -f 2',
-                shell=True,
-                capture_output=True,
-                **invisibledict,
-            )
-            .stdout.decode("utf-8", "ignore")
-            .strip()
-            .split("x")
-        )
-        screenwidth, screenheight = int(screenwidth), int(screenheight)
-    return screenwidth, screenheight
-
-
 class AdbShotTCP:
     def __init__(
         self,
         device_serial,
         adb_path,
-        device,
+        max_video_width,
         ip="127.0.0.1",
         port=5555,
-        max_frame_rate=0,
-        max_video_width=0,
         scrcpy_server_version="2.0",
         forward_port=None,
         frame_buffer=4,
@@ -94,8 +60,6 @@ class AdbShotTCP:
         sleep_after_exception=0.005,
         log_level="info",
         lock_video_orientation=0,
-        start_server=True,
-        connect_to_device=True,
     ):
         r"""Class for capturing screenshots from an Android device over TCP/IP using ADB.
 
@@ -104,8 +68,6 @@ class AdbShotTCP:
             adb_path (str): Path to the ADB executable.
             ip (str, optional): IP address of the device. Defaults to "127.0.0.1".
             port (int, optional): Port number to connect to the device. Defaults to 5555.
-            max_frame_rate (int, optional): Maximum frame rate of the captured screenshots. Defaults to 0 (unlimited).
-            max_video_width (int, optional): Maximum width of the captured screenshots. Defaults to 0 (unlimited).
             scrcpy_server_version (str, optional): Version of the scrcpy server to use. Defaults to "2.0".
             forward_port (int, optional): Port number to forward to the scrcpy server. Defaults to None.
             frame_buffer (int, optional): Number of frames to keep in the buffer. Defaults to 4.
@@ -113,30 +75,30 @@ class AdbShotTCP:
             sleep_after_exception (float, optional): Sleep time after encountering an exception. Defaults to 0.005.
             log_level (str, optional): Log level for the scrcpy server. Defaults to "info".
             lock_video_orientation (int, optional): Orientation of the video to lock. Defaults to 0 (unlocked).
-            start_server (bool, optional): Whether to start the scrcpy server. Defaults to True.
-            connect_to_device (bool, optional): Whether to connect to the device. Defaults to True.
-            *args: Variable length argument list.
-            **kwargs: Arbitrary keyword arguments.
 
         Raises:
             Exception: If connection to the device fails.
 
         Methods:
-            connect_to_device(): Connects to the Android device using ADB.
             quit(): Stops capturing and closes the connection to the device.
             get_one_screenshot(copy_ndarray=False): Retrieves a single screenshot from the device.
             __enter__(): Context manager entry point.
             __exit__(exc_type, exc_value, traceback): Context manager exit point.
             __iter__(): Returns the iterator object.
             __next__(): Returns the next frame in the iteration.
-
         """
+        self.device_serial = device_serial
+        self.adb_path = adb_path
+        self.max_video_width = max_video_width
+        self.ip = ip
+        self.port = port
+
+        if "/" in self.adb_path or "\\" in self.adb_path:
+            self.adb_path = os.path.normpath(adb_path)
+
         if not forward_port:
             forward_port = get_dynamic_ports(qty=1)[0]
-        if "/" in adb_path or "\\" in adb_path:
-            adb_path = os.path.normpath(adb_path)
-        if start_server:
-            mainprocess([adb_path, "start-server"])
+
         self.video_bitrate = 8000000  # ignored
         self.loop_finished = True
         self.getting_screenshot = False
@@ -144,13 +106,7 @@ class AdbShotTCP:
         self.stop_capturing = False
         self.pause_capturing = False
         self.byte_size = byte_package_size
-        self.ip = ip
-        self.port = port
-        self.device_serial = device_serial
 
-        self.adb_path = adb_path
-        self.max_frame_rate = max_frame_rate
-        self.max_video_width = int(max_video_width)
         self.scrcpy_server_version = scrcpy_server_version
         self.forward_port = forward_port
         self.folder_here = os.path.normpath(os.path.abspath(os.path.dirname(__file__)))
@@ -162,8 +118,6 @@ class AdbShotTCP:
         self.lock_video_orientation = lock_video_orientation
         self.real_width, self.real_height = 0, 0
 
-        if connect_to_device:
-            self.connect_to_device()
         self.cmdservercommand = [
             self.adb_path,
             "-s",
@@ -185,23 +139,8 @@ class AdbShotTCP:
             "downsize_on_error=false",
             "send_dummy_byte=true",
             "raw_video_stream=true",
+            f"max_size={self.max_video_width}"
         ]
-        self.screenwidth, self.screenheight = 0, 0
-        if max_video_width > 0:
-            self.cmdservercommand.append(f"max_size={self.max_video_width}")
-        else:
-            try:
-                self.screenwidth, self.screenheight = get_screen_height_width(
-                    self.adb_path, self.device_serial
-                )
-                self.max_video_width = self.screenwidth
-                self.cmdservercommand.append(f"max_size={self.max_video_width}")
-            except Exception as fe:
-                logger.error(fe)
-
-        if max_frame_rate > 0:
-            self.cmdservercommand.append(f"max_fps={self.max_frame_rate}")
-
         self.video_socket = None
         self.t = None
         self.t2 = None
@@ -216,7 +155,6 @@ class AdbShotTCP:
         self._start_scrcpy()
         self._connect_to_server()
         self._start_capturing()
-        # self.pause_capturing = True
 
     def __enter__(self):
         self.stop_capturing = False
@@ -241,13 +179,6 @@ class AdbShotTCP:
 
     def __next__(self):
         return self._iter_frames()
-
-    def connect_to_device(self):
-        subprocess.run(
-            [self.adb_path, "connect", self.device_serial],
-            capture_output=True,
-            **invisibledict,
-        )
 
     def quit(self):
         self.stop_capturing = True
@@ -308,6 +239,7 @@ class AdbShotTCP:
                 self.scrcpy_path,
                 "/data/local/tmp/",
             ],
+            check=True,
             capture_output=True,
             cwd=self.folder_here,
             **invisibledict,
@@ -334,6 +266,7 @@ class AdbShotTCP:
             ],
             cwd=self.folder_here,
             capture_output=True,
+            check=True,
             **invisibledict,
         )
 
@@ -396,13 +329,12 @@ class AdbShotTCP:
                 else:
                     onescreenshot = self.lastframes[-1].copy()
 
-            except Exception as ba:
+            except Exception:
                 if len(thelastframe) > 0:
                     self.lastframes.append(thelastframe)
                     onescreenshot = thelastframe
                     break
-                else:
-                    continue
+                continue
         self.getting_screenshot = False
 
         self.pause_capturing = True
@@ -431,7 +363,7 @@ class AdbShotTCP:
                     self.all_raw_data264.append(ra)
                     sleep(0.01)
                     continue
-                except Exception as fe:
+                except Exception:
                     sleep(0.1)
                     continue
 
@@ -448,7 +380,7 @@ class AdbShotTCP:
                 joinedall = b"".join(self.all_raw_data264[:thistime])
                 packets = self.codec.parse(joinedall)
                 _ = [self.all_raw_data264.pop(0) for _ in range(thistime)]
-            except Exception as fa:
+            except Exception:
                 sleep(self.sleep_after_exception)
             try:
                 packlen = len(packets)

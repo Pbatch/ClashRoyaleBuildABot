@@ -23,13 +23,6 @@ class Emulator:
         device_port = adb_config["port"]
 
         self.device = AdbDeviceTcp(device_ip, device_port)
-        self.blitz_device = AdbShotTCP(
-            device_serial=f"localhost:{device_port}",
-            adb_path=self._adb_path(),
-            ip=device_ip,
-            device=self.device
-        )
-
         try:
             self.device.connect()
             window_size = self.device.shell("wm size")
@@ -39,6 +32,13 @@ class Emulator:
             logger.critical(f"Error getting screen size: {e}")
             logger.critical("Exiting due to device connection error.")
             raise SystemExit() from e
+
+        self.blitz_device = AdbShotTCP(
+            device_serial=f"localhost:{device_port}",
+            adb_path=self._adb_path(),
+            ip=device_ip,
+            max_video_width=self.size[0]
+        )
 
     @staticmethod
     def _adb_path():
