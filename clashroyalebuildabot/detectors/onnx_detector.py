@@ -49,6 +49,14 @@ class OnnxDetector:
         )
         return x, padding
 
+    def resize_pad_transpose_and_scale(self, image):
+        image = self.resize(image)
+        image = np.array(image, dtype=np.float16)
+        image, padding = self.pad(image)
+        image = image.transpose(2, 0, 1)
+        image /= 255
+        return image, padding
+
     def fix_bboxes(self, x, width, height, padding):
         x[:, [0, 2]] -= padding[0]
         x[:, [1, 3]] -= padding[2]

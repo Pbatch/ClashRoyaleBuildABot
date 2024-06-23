@@ -67,11 +67,8 @@ class UnitDetector(OnnxDetector):
                 self.UNIT_Y_END * image.height,
             )
         )
-        image = self.resize(image)
-        image = np.array(image, dtype=np.float32)
-        image, padding = self.pad(image)
-        image = np.expand_dims(image.transpose(2, 0, 1), axis=0)
-        image /= 255
+        image, padding = self.resize_pad_transpose_and_scale(image)
+        image = np.expand_dims(image, axis=0)
         return image, padding
 
     def _post_process(self, pred, height, image):
@@ -99,7 +96,7 @@ class UnitDetector(OnnxDetector):
     def run(self, image):
         height, width = image.height, image.width
         np_image, padding = self._preprocess(image)
-        pred = self._infer(np_image.astype(np.float16)).astype(np.float32)[0]
+        pred = self._infer(np_image)[0]
         pred = pred[pred[:, 4] > self.MIN_CONF]
         pred = self.fix_bboxes(pred, width, height, padding)
         pred = self._post_process(pred, height, image)
