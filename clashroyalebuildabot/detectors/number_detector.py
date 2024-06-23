@@ -70,11 +70,7 @@ class NumberDetector(OnnxDetector):
         return clean_pred
 
     def _preprocess(self, image):
-        image = self.resize(image)
-        image = np.array(image, dtype=np.float32)
-        image, padding = self.pad(image)
-        image = image.transpose(2, 0, 1)
-        image /= 255
+        image, padding = self.resize_pad_transpose_and_scale(image)
         return image, padding
 
     def run(self, image):
@@ -86,8 +82,7 @@ class NumberDetector(OnnxDetector):
             crops.append(crop)
             paddings.append(padding)
 
-        crops = np.array(crops, dtype=np.float16)
-        preds = self._infer(crops).astype(np.float32)
+        preds = self._infer(crops)
 
         for i, padding in enumerate(paddings):
             preds[i] = self.fix_bboxes(
