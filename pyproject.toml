@@ -24,6 +24,12 @@ dependencies = [
     "PyYAML",
     "pybind11>=2.12",
     "requests>=2.25.1",
+    "adbutils",
+    "av",
+    "get_free_port",
+    "kthread",
+    "kthread_sleep",
+    "subprocesskiller"
 ]
 
 [project.optional-dependencies]

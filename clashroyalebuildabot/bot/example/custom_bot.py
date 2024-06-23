@@ -110,4 +110,5 @@ class CustomBot(Bot):
             while True:
                 self.step()
         except KeyboardInterrupt:
+            self.emulator.blitz_device.quit()
             logger.info("Thanks for using CRBAB, see you next time!")

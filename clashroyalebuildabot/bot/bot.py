@@ -21,7 +21,7 @@ from clashroyalebuildabot.constants import TILE_INIT_X
 from clashroyalebuildabot.constants import TILE_INIT_Y
 from clashroyalebuildabot.constants import TILE_WIDTH
 from clashroyalebuildabot.detectors.detector import Detector
-from clashroyalebuildabot.emulator import Emulator
+from clashroyalebuildabot.emulator.emulator import Emulator
 from clashroyalebuildabot.namespaces import Screens
 
 
