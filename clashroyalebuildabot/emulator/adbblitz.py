@@ -1,16 +1,18 @@
 import atexit
+from collections import deque
 import os
 import socket
 import subprocess
-from collections import deque
 
 import av
-import kthread
-import numpy as np
 from get_free_port import get_dynamic_ports
+import kthread
 from kthread_sleep import sleep
 from loguru import logger
-from subprocesskiller import kill_process_children_parents, kill_pid, kill_subprocs
+import numpy as np
+from subprocesskiller import kill_pid
+from subprocesskiller import kill_process_children_parents
+from subprocesskiller import kill_subprocs
 
 startupinfo = subprocess.STARTUPINFO()
 creationflags = 0 | subprocess.CREATE_NO_WINDOW
@@ -109,7 +111,9 @@ class AdbShotTCP:
 
         self.scrcpy_server_version = scrcpy_server_version
         self.forward_port = forward_port
-        self.folder_here = os.path.normpath(os.path.abspath(os.path.dirname(__file__)))
+        self.folder_here = os.path.normpath(
+            os.path.abspath(os.path.dirname(__file__))
+        )
         self.scrcpy_path = os.path.normpath(
             os.path.join(self.folder_here, "scrcpy-server.jar")
         )
@@ -139,7 +143,7 @@ class AdbShotTCP:
             "downsize_on_error=false",
             "send_dummy_byte=true",
             "raw_video_stream=true",
-            f"max_size={self.max_video_width}"
+            f"max_size={self.max_video_width}",
         ]
         self.video_socket = None
         self.t = None
@@ -278,7 +282,9 @@ class AdbShotTCP:
                 cont += 1
                 if self.stop_capturing:
                     break
-                self.video_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.video_socket = socket.socket(
+                    socket.AF_INET, socket.SOCK_STREAM
+                )
                 self.video_socket.connect((self.ip, self.forward_port))
 
                 self.video_socket.setblocking(False)
@@ -293,16 +299,22 @@ class AdbShotTCP:
                 logger.info(fe)
 
     def _start_capturing(self):
-        self.t = kthread.KThread(target=self._all_raw_data, name="all_raw_data_thread")
+        self.t = kthread.KThread(
+            target=self._all_raw_data, name="all_raw_data_thread"
+        )
         self.t.start()
 
-        self.t2 = kthread.KThread(target=self._parse_frames, name="parse_frames_thread")
+        self.t2 = kthread.KThread(
+            target=self._parse_frames, name="parse_frames_thread"
+        )
         self.t2.start()
 
     def _get_infos2(self):
         while True:
             try:
-                self.real_height, self.real_width, *_ = self.lastframes[-1].shape
+                self.real_height, self.real_width, *_ = self.lastframes[
+                    -1
+                ].shape
                 logger.info(self.real_width, self.real_height)
                 break
             except Exception:
@@ -392,7 +404,9 @@ class AdbShotTCP:
                                 continue
                         for frame in frames:
                             new_frame = frame.to_rgb().reformat(
-                                width=frame.width, height=frame.height, format="bgr24"
+                                width=frame.width,
+                                height=frame.height,
+                                format="bgr24",
                             )
                             self.lastframes.append(new_frame.to_ndarray())
                     except Exception as fa:

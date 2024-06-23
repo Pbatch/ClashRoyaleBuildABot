@@ -37,16 +37,18 @@ class Emulator:
             device_serial=f"localhost:{device_port}",
             adb_path=self._adb_path(),
             ip=device_ip,
-            max_video_width=self.size[0]
+            max_video_width=self.size[0],
         )
 
     @staticmethod
     def _adb_path():
-        p = subprocess.run(["which", "adb"], capture_output=True, text=True, check=True)
+        p = subprocess.run(
+            ["which", "adb"], capture_output=True, text=True, check=True
+        )
         path = p.stdout.strip()
-        path = path.replace('/', '\\')
-        if path.startswith('\\'):
-            path = f'{path[1].upper()}:{path[2:]}'
+        path = path.replace("/", "\\")
+        if path.startswith("\\"):
+            path = f"{path[1].upper()}:{path[2:]}"
 
         return path
 
