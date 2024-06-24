@@ -1,8 +1,10 @@
 import os
-import yaml
+import tempfile
+
 from adb_shell.adb_device import AdbDeviceTcp
 from PIL import Image
-import tempfile
+import yaml
+
 
 # Load configuration from config.yaml
 def load_config(config_path=r'clashroyalebuildabot\config.yaml'):
