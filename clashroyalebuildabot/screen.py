@@ -7,7 +7,7 @@ import yaml
 
 
 # Load configuration from config.yaml
-def load_config(config_path=r'clashroyalebuildabot\config.yaml'):
+def load_config(config_path=r'config.yaml'):
     with open(config_path, 'r', encoding='utf-8') as file:  # Specify encoding here
         config = yaml.safe_load(file)
     return config
