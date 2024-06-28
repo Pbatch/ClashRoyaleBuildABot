@@ -25,6 +25,12 @@ repos:
     rev: 5.0.4
     hooks:
     - id: flake8
+-   repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        name: isort (python)
+        args: ["--profile", "black", "--filter-files"]
 ci:
     autofix_prs: true
     autoupdate_commit_msg: '[pre-commit.ci] autoupdate'
