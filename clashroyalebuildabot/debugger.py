@@ -37,16 +37,20 @@ class Debugger:
     @staticmethod
     def _write_label(image, state, basename):
         labels = []
-        for side in ["ally", "enemy"]:
-            for unit_name, v in state.units[side].items():
-                for i in v["positions"]:
-                    bbox = i["bounding_box"]
-                    xc = (bbox[0] + bbox[2]) / (2 * image.width)
-                    yc = (bbox[1] + bbox[3]) / (2 * image.height)
-                    w = (bbox[2] - bbox[0]) / image.width
-                    h = (bbox[3] - bbox[1]) / image.height
-                    label = f"{unit_name} {xc} {yc} {w} {h}"
-                    labels.append(label)
+        unit_names_and_positions = [
+            [unit_name, v["positions"]]
+            for unit_name, v in list(state.allies.items())
+            + list(state.enemies.items())
+        ]
+        for unit_name, positions in unit_names_and_positions:
+            for position in positions:
+                bbox = position.bbox
+                xc = (bbox[0] + bbox[2]) / (2 * image.width)
+                yc = (bbox[1] + bbox[3]) / (2 * image.height)
+                w = (bbox[2] - bbox[0]) / image.width
+                h = (bbox[3] - bbox[1]) / image.height
+                label = f"{unit_name} {xc} {yc} {w} {h}"
+                labels.append(label)
 
         with open(
             os.path.join(LABELS_DIR, f"{basename}.txt"), "w", encoding="utf-8"
@@ -65,20 +69,25 @@ class Debugger:
         d.rectangle(tuple(bbox), outline=rgba)
         d.text(tuple(text_bbox[:2]), text=text, fill="white")
 
+    def _draw_unit_bboxes(self, d, units, prefix):
+        for unit_name, v in units.items():
+            colour_idx = self.unit_names.index(unit_name) % len(
+                self._COLOUR_AND_RGBA
+            )
+            rgba = self._COLOUR_AND_RGBA[colour_idx][1]
+            for position in v["positions"]:
+                self._draw_text(
+                    d, position.bbox, f"{prefix}_{unit_name}", rgba
+                )
+
     def _write_image(self, image, state, basename):
         d = ImageDraw.Draw(image, "RGBA")
         for v in state.numbers.values():
             d.rectangle(tuple(v["bounding_box"]))
             self._draw_text(d, v["bounding_box"], str(v["number"]))
 
-        for side in ["ally", "enemy"]:
-            for unit_name, v in state.units[side].items():
-                colour_idx = self.unit_names.index(unit_name) % len(
-                    self._COLOUR_AND_RGBA
-                )
-                rgba = self._COLOUR_AND_RGBA[colour_idx][1]
-                for i in v["positions"]:
-                    self._draw_text(d, i["bounding_box"], unit_name, rgba)
+        self._draw_unit_bboxes(d, state.allies, "ally")
+        self._draw_unit_bboxes(d, state.enemies, "enemy")
 
         for card, position in zip(state.cards, CARD_CONFIG):
             d.rectangle(tuple(position))
