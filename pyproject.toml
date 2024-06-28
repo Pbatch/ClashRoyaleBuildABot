@@ -27,6 +27,7 @@ dependencies = [
     "adbutils",
     "av",
     "get_free_port",
+    "kthread",
     "subprocesskiller"
 ]
 
