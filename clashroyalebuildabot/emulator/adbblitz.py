@@ -136,10 +136,8 @@ class AdbShotTCP:
 
     def _connect_to_server(self):
         dummy_byte = b""
-        cont = 0
         while not dummy_byte:
-            try:
-                cont += 1
+            with ignored(Exception):
                 self.video_socket = socket.socket(
                     socket.AF_INET, socket.SOCK_STREAM
                 )
@@ -149,10 +147,7 @@ class AdbShotTCP:
                 self.video_socket.settimeout(1)
                 dummy_byte = self.video_socket.recv(1)
                 if len(dummy_byte) == 0:
-                    with ignored(Exception):
-                        self.video_socket.close()
-            except Exception as fe:
-                logger.info(fe)
+                    self.video_socket.close()
 
     def _start_capturing(self):
         self.screenshot_thread = kthread.KThread(
@@ -162,7 +157,7 @@ class AdbShotTCP:
 
     def _update_screenshot(self):
         while True:
-            try:
+            with ignored(Exception):
                 packets = self.codec.parse(self.video_socket.recv(131072))
                 if len(packets) == 0:
                     continue
@@ -179,9 +174,6 @@ class AdbShotTCP:
                     )
                     .to_ndarray()
                 )
-            except Exception as e:
-                sleep(0.01)
-                logger.info(e)
 
     def quit(self):
         while self.screenshot_thread.is_alive():
