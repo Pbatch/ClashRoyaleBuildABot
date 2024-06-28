@@ -1,3 +1,5 @@
+# pylint: disable=R1732
+
 import atexit
 from contextlib import contextmanager
 import socket
@@ -84,6 +86,7 @@ class AdbShotTCP:
                 "scrcpy-server.jar",
                 "/data/local/tmp/",
             ],
+            check=True,
             capture_output=True,
             cwd=EMULATOR_DIR,
         )
@@ -177,8 +180,7 @@ class AdbShotTCP:
     def quit(self):
         while self.screenshot_thread.is_alive():
             with ignored(Exception):
-                if self.screenshot_thread.is_alive:
-                    self.screenshot_thread.kill()
+                self.screenshot_thread.kill()
         self.video_socket.close()
 
         with ignored(Exception):
