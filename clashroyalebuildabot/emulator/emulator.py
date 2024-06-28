@@ -19,10 +19,11 @@ class Emulator:
             config = yaml.safe_load(file)
 
         adb_config = config["adb"]
-        device_ip = adb_config["ip"]
-        device_port = adb_config["port"]
+        serial, ip, port = [
+            adb_config[s] for s in ["device_serial", "ip", "port"]
+        ]
 
-        self.device = AdbDeviceTcp(device_ip, device_port)
+        self.device = AdbDeviceTcp(ip, port)
         try:
             self.device.connect()
             window_size = self.device.shell("wm size")
@@ -34,9 +35,9 @@ class Emulator:
             raise SystemExit() from e
 
         self.blitz_device = AdbShotTCP(
-            device_serial=f"localhost:{device_port}",
+            device_serial=serial,
             adb_path=self._adb_path(),
-            ip=device_ip,
+            ip=ip,
             max_video_width=self.size[0],
         )
 
@@ -49,6 +50,7 @@ class Emulator:
         path = path.replace("/", "\\")
         if path.startswith("\\"):
             path = f"{path[1].upper()}:{path[2:]}"
+        path = os.path.normpath(path)
 
         return path
 
@@ -56,8 +58,8 @@ class Emulator:
         self.device.shell(f"input tap {x} {y}")
 
     def _take_screenshot(self):
-        image = self.blitz_device.get_one_screenshot()
-        image = Image.fromarray(image[..., ::-1])
+        image = self.blitz_device.take_screenshot()
+        image = Image.fromarray(image)
         image = image.resize(
             (SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT), Image.Resampling.BILINEAR
         )
