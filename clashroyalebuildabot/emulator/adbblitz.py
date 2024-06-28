@@ -2,12 +2,11 @@ import atexit
 from contextlib import contextmanager
 import socket
 import subprocess
+import time
 
 import av
 from get_free_port import get_dynamic_ports
 import kthread
-from kthread_sleep import sleep
-from loguru import logger
 from subprocesskiller import kill_pid
 from subprocesskiller import kill_process_children_parents
 from subprocesskiller import kill_subprocs
@@ -201,14 +200,14 @@ class AdbShotTCP:
             kill_process_children_parents(
                 pid=self.scrcpy_proc.pid, max_parent_exe="adb.exe", dontkill=()
             )
-            sleep(2)
+            time.sleep(2)
 
         with ignored(Exception):
             kill_pid(pid=self.scrcpy_proc.pid)
 
     def take_screenshot(self):
         while self.screenshot is None:
-            sleep(0.01)
+            time.sleep(0.01)
         screenshot = self.screenshot
         self.screenshot = None
 
