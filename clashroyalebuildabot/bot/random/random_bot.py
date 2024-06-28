@@ -1,10 +1,9 @@
 import random
 import time
-
 from loguru import logger
+from messages import PLAYING_ACTION_MESSAGE  # Import the PLAYING_ACTION_MESSAGE
 
 from clashroyalebuildabot.bot.bot import Bot
-
 
 class RandomBot(Bot):
     def run(self):
@@ -18,6 +17,6 @@ class RandomBot(Bot):
                 action = random.choice(actions)
                 # Play the given action
                 self.play_action(action)
-                # Log the result
-                logger.info(f"Playing {action}")
+                # Log the result using the predefined message
+                logger.info(PLAYING_ACTION_MESSAGE.format(action=action))
             time.sleep(3)
