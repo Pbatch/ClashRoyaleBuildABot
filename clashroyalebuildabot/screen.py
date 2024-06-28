@@ -1,13 +1,15 @@
 import os
 import tempfile
-
 from adb_shell.adb_device import AdbDeviceTcp
 from loguru import logger
 from PIL import Image
 import yaml
-
 from clashroyalebuildabot.constants import SRC_DIR
-
+from messages import (
+    EMULATOR_PROPERTIES_MESSAGE,
+    CURRENT_RESOLUTION_MESSAGE,
+    CURRENT_DENSITY_MESSAGE
+)
 
 # Load configuration from config.yaml
 def load_config():
@@ -80,7 +82,13 @@ def check_emulator_properties():
 
     if resolution_correct and density_correct:
         logger.info(
-            "The emulator has the correct resolution (720x1280) and density (240 dpi)."
+            EMULATOR_PROPERTIES_MESSAGE
+        )
+        logger.info(
+            CURRENT_RESOLUTION_MESSAGE.format(resolution=resolution)
+        )
+        logger.info(
+            CURRENT_DENSITY_MESSAGE.format(density=density)
         )
 
         screenshot_path = take_screenshot(device)
