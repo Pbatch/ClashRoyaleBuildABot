@@ -8,7 +8,7 @@ from clashroyalebuildabot.bot.two_six_hog_cycle.two_six_hog_cycle_action import 
     TwoSixHogCycleAction,
 )
 from clashroyalebuildabot.namespaces.cards import Cards
-
+from messages import NEW_SCREEN_STATE_MESSAGE
 
 class TwoSixHogCycle(Bot):
     PRESET_DECK = {
@@ -52,4 +52,5 @@ class TwoSixHogCycle(Bot):
                 logger.info(
                     f"Playing {action} with score {action.score} and sleeping for 1 second"
                 )
+                logger.info(NEW_SCREEN_STATE_MESSAGE.format(new_screen=self.state.screen))
                 time.sleep(1.0)
