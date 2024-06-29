@@ -15,6 +15,7 @@ from clashroyalebuildabot.constants import TILE_WIDTH
 from clashroyalebuildabot.detectors.onnx_detector import OnnxDetector
 from clashroyalebuildabot.detectors.side_detector import SideDetector
 from clashroyalebuildabot.namespaces.state import Position
+from clashroyalebuildabot.namespaces.units import Unit
 
 
 class UnitDetector(OnnxDetector):
@@ -29,7 +30,7 @@ class UnitDetector(OnnxDetector):
         self.side_detector = SideDetector(
             os.path.join(MODELS_DIR, "side.onnx")
         )
-        self.possible_ally_units = self._get_possible_ally_units()
+        self.possible_ally_names = self._get_possible_ally_names()
 
     @staticmethod
     def _get_tile_xy(bbox):
@@ -41,17 +42,18 @@ class UnitDetector(OnnxDetector):
         )
         return tile_x, tile_y
 
-    def _get_possible_ally_units(self):
-        possible_ally_units = set()
+    def _get_possible_ally_names(self):
+        possible_ally_names = set()
         for card in self.cards:
             if card.units is None:
                 continue
-            for unit in card.units:
-                possible_ally_units.add(unit)
-        return possible_ally_units
+            for unit_ in card.units:
+                unit = Unit(*unit_)
+                possible_ally_names.add(unit.name)
+        return possible_ally_names
 
     def _calculate_side(self, image, bbox, name):
-        if name not in self.possible_ally_units:
+        if name not in self.possible_ally_names:
             side = "enemy"
         else:
             crop = image.crop(bbox)
