@@ -1,14 +1,22 @@
+from loguru import logger
 import random
 import subprocess
 import time
-
-from loguru import logger
+from lib.messages import (
+    WAITING_MESSAGE,
+    ACTIONS_AFTER_END_GAME_MESSAGE,
+    LOBBY_DETECTED_MESSAGE,
+    CANNOT_FIND_BATTLE_BUTTON_MESSAGE,
+    NEW_SCREEN_STATE_MESSAGE,
+    MAIN_MENU_MESSAGE,
+    NO_ACTIONS_AVAILABLE_MESSAGE,
+    THANK_YOU_MESSAGE
+)
 
 from clashroyalebuildabot.bot import Bot
 from clashroyalebuildabot.bot.example.custom_action import CustomAction
 from clashroyalebuildabot.namespaces.cards import Cards
 from clashroyalebuildabot.namespaces.screens import Screens
-
 
 class CustomBot(Bot):
     PRESET_DECK = [
@@ -41,7 +49,7 @@ class CustomBot(Bot):
             "adb shell am start -n com.supercell.clashroyale/com.supercell.titan.GameApp",
             shell=True,
         )
-        logger.info("Waiting 10 seconds.")
+        logger.info(WAITING_MESSAGE)
         time.sleep(10)
         self.end_of_game_clicked = False
 
@@ -52,13 +60,13 @@ class CustomBot(Bot):
 
         self.set_state()
         actions = self.get_actions()
-        logger.info(f"Actions after end of game: {actions}")
+        logger.info(ACTIONS_AFTER_END_GAME_MESSAGE.format(actions=actions))
 
         if self.state.screen == Screens.LOBBY:
-            logger.debug("Lobby detected, resuming normal operation.")
+            logger.debug(LOBBY_DETECTED_MESSAGE)
             return
 
-        logger.info("Can't find Battle button, force game restart.")
+        logger.info(CANNOT_FIND_BATTLE_BUTTON_MESSAGE)
         self._restart_game()
 
     def step(self):
@@ -70,26 +78,23 @@ class CustomBot(Bot):
         self.set_state()
         new_screen = self.state.screen
         if new_screen != old_screen:
-            logger.info(f"New screen state: {new_screen}")
+            logger.info(NEW_SCREEN_STATE_MESSAGE.format(new_screen=new_screen))
 
         if new_screen == "end_of_game":
-            logger.info(
-                "End of game detected. Waiting 10 seconds for battle button"
-            )
+            logger.info("End of game detected. Waiting 10 seconds for battle button")
             self.pause_until = time.time() + 10
             self.end_of_game_clicked = True
             time.sleep(10)
             return
 
         if new_screen == "lobby":
-            logger.info("In the main menu. Waiting for 1 second")
+            logger.info(MAIN_MENU_MESSAGE)
             time.sleep(1)
             return
 
         actions = self.get_actions()
         if not actions:
-            if self.debug:
-                logger.debug("No actions available. Waiting for 1 second")
+            logger.debug(NO_ACTIONS_AVAILABLE_MESSAGE)
             time.sleep(1)
             return
 
@@ -100,9 +105,7 @@ class CustomBot(Bot):
             return
 
         self.play_action(action)
-        logger.info(
-            f"Playing {action} with score {action.score}. Waiting for 1 second"
-        )
+        logger.info(f"Playing {action} with score {action.score}. Waiting for 1 second")
         time.sleep(1)
 
     def run(self):
@@ -110,4 +113,8 @@ class CustomBot(Bot):
             while True:
                 self.step()
         except KeyboardInterrupt:
-            logger.info("Thanks for using CRBAB, see you next time!")
+            logger.info(THANK_YOU_MESSAGE)
+
+if __name__ == "__main__":
+    bot = CustomBot(debug=True)
+    bot.run()

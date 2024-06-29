@@ -1,10 +1,14 @@
 import os
-
 from adb_shell.adb_device import AdbDeviceTcp
 from loguru import logger
 from PIL import Image
 import yaml
-
+from messages import (
+    ERROR_GETTING_SCREEN_SIZE_MESSAGE,
+    DEVICE_CONNECTION_ERROR_MESSAGE,
+    SCREENSHOT_SUCCESS_MESSAGE,
+    ADB_COMMAND_FAILED_MESSAGE
+)
 from clashroyalebuildabot.constants import SCREENSHOT_HEIGHT
 from clashroyalebuildabot.constants import SCREENSHOT_WIDTH
 from clashroyalebuildabot.constants import SRC_DIR
@@ -28,8 +32,8 @@ class Emulator:
             window_size = window_size.replace("Physical size: ", "")
             self.size = tuple(int(i) for i in window_size.split("x"))
         except Exception as e:
-            logger.critical(f"Error getting screen size: {e}")
-            logger.critical("Exiting due to device connection error.")
+            logger.critical(ERROR_GETTING_SCREEN_SIZE_MESSAGE.format(e=e))
+            logger.critical(DEVICE_CONNECTION_ERROR_MESSAGE)
             raise SystemExit() from e
 
     def click(self, x, y):
@@ -37,7 +41,7 @@ class Emulator:
 
     def _take_screenshot(self):
         screenshot_bytes = self.device.shell("screencap", decode=False)
-        logger.debug("Screenshot captured successfully.")
+        logger.debug(SCREENSHOT_SUCCESS_MESSAGE)
 
         image = None
         try:
@@ -75,7 +79,7 @@ class Emulator:
         try:
             image = self._take_screenshot()
         except Exception as e:
-            logger.error(f"ADB command failed: {e}")
+            logger.error(ADB_COMMAND_FAILED_MESSAGE.format(e=e))
             raise
 
         return image
