@@ -1,6 +1,4 @@
 import os
-import shutil
-import subprocess
 
 from adb_shell.adb_device import AdbDeviceTcp
 from loguru import logger
