@@ -1,5 +1,4 @@
 import os
-import subprocess
 
 from adb_shell.adb_device import AdbDeviceTcp
 from loguru import logger
@@ -36,23 +35,9 @@ class Emulator:
 
         self.blitz_device = AdbShotTCP(
             device_serial=serial,
-            adb_path=self._adb_path(),
             ip=ip,
             max_video_width=self.size[0],
         )
-
-    @staticmethod
-    def _adb_path():
-        p = subprocess.run(
-            ["which", "adb"], capture_output=True, text=True, check=True
-        )
-        path = p.stdout.strip()
-        path = path.replace("/", "\\")
-        if path.startswith("\\"):
-            path = f"{path[1].upper()}:{path[2:]}"
-        path = os.path.normpath(path)
-
-        return path
 
     def click(self, x, y):
         self.device.shell(f"input tap {x} {y}")

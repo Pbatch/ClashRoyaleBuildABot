@@ -2,6 +2,7 @@
 
 import atexit
 from contextlib import contextmanager
+import shutil
 import socket
 import subprocess
 import time
@@ -33,7 +34,6 @@ class AdbShotTCP:
     def __init__(
         self,
         device_serial,
-        adb_path,
         max_video_width,
         ip="127.0.0.1",
         port=5555,
@@ -42,7 +42,6 @@ class AdbShotTCP:
 
         Args:
             device_serial (str): Serial number or IP address of the target device.
-            adb_path (str): Path to the ADB executable.
             ip (str, optional): IP address of the device. Defaults to "127.0.0.1".
             port (int, optional): Port number to connect to the device. Defaults to 5555.
 
@@ -55,11 +54,13 @@ class AdbShotTCP:
             __exit__(exc_type, exc_value, traceback): Context manager exit point.
         """
         self.device_serial = device_serial
-        self.adb_path = adb_path
         self.max_video_width = max_video_width
         self.ip = ip
         self.port = port
 
+        self.adb_path = shutil.which("adb")
+        if self.adb_path is None:
+            raise ValueError("ADB is not on the PATH")
         self.video_socket = None
         self.screenshot_thread = None
         self.screenshot = None
