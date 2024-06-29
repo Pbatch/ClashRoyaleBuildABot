@@ -7,6 +7,7 @@ SRC_DIR = os.path.dirname(__file__)
 DEBUG_DIR = os.path.join(SRC_DIR, "debug")
 MODELS_DIR = os.path.join(SRC_DIR, "models")
 IMAGES_DIR = os.path.join(SRC_DIR, "images")
+EMULATOR_DIR = os.path.join(SRC_DIR, "emulator")
 SCREENSHOTS_DIR = os.path.join(DEBUG_DIR, "screenshots")
 LABELS_DIR = os.path.join(DEBUG_DIR, "labels")
 

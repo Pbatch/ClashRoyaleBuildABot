@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 from adb_shell.adb_device import AdbDeviceTcp
 from loguru import logger
@@ -8,6 +9,7 @@ import yaml
 from clashroyalebuildabot.constants import SCREENSHOT_HEIGHT
 from clashroyalebuildabot.constants import SCREENSHOT_WIDTH
 from clashroyalebuildabot.constants import SRC_DIR
+from clashroyalebuildabot.emulator.adbblitz import AdbShotTCP
 
 
 class Emulator:
@@ -17,11 +19,11 @@ class Emulator:
             config = yaml.safe_load(file)
 
         adb_config = config["adb"]
-        device_ip = adb_config["ip"]
-        device_port = adb_config["port"]
+        serial, ip, port = [
+            adb_config[s] for s in ["device_serial", "ip", "port"]
+        ]
 
-        self.device = AdbDeviceTcp(device_ip, device_port)
-
+        self.device = AdbDeviceTcp(ip, port)
         try:
             self.device.connect()
             window_size = self.device.shell("wm size")
@@ -32,38 +34,32 @@ class Emulator:
             logger.critical("Exiting due to device connection error.")
             raise SystemExit() from e
 
+        self.blitz_device = AdbShotTCP(
+            device_serial=serial,
+            adb_path=self._adb_path(),
+            ip=ip,
+            max_video_width=self.size[0],
+        )
+
+    @staticmethod
+    def _adb_path():
+        p = subprocess.run(
+            ["which", "adb"], capture_output=True, text=True, check=True
+        )
+        path = p.stdout.strip()
+        path = path.replace("/", "\\")
+        if path.startswith("\\"):
+            path = f"{path[1].upper()}:{path[2:]}"
+        path = os.path.normpath(path)
+
+        return path
+
     def click(self, x, y):
         self.device.shell(f"input tap {x} {y}")
 
     def _take_screenshot(self):
-        screenshot_bytes = self.device.shell("screencap", decode=False)
-        logger.debug("Screenshot captured successfully.")
-
-        image = None
-        try:
-            image = Image.frombuffer(
-                "RGBA",
-                self.size,
-                screenshot_bytes[12:],
-                "raw",
-                "RGBX",
-                0,
-                1,
-            )
-        except Exception as e:
-            logger.warning(
-                f"Initial Image.frombuffer failed: {e}. Trying with header removed."
-            )
-
-        if image is None:
-            try:
-                image = Image.frombuffer("RGB", self.size, screenshot_bytes)
-            except Exception as e:
-                logger.error(
-                    f"Image creation failed after header adjustment: {e}"
-                )
-
-        image = image.convert("RGB")
+        image = self.blitz_device.take_screenshot()
+        image = Image.fromarray(image)
         image = image.resize(
             (SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT), Image.Resampling.BILINEAR
         )

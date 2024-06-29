@@ -14,3 +14,7 @@ adb:
   # Should be 5555 in most cases. If you're unable to get this to work,
   # visit X/wiki/ADB-Port for more information.
   port: 5555
+
+  # The serial number of your device
+  # Use adb devices to obtain it
+  device_serial: emulator-5554
