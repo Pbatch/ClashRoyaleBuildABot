@@ -227,16 +227,10 @@ class Emulator:
     def take_screenshot(self):
         logger.debug("Starting to take screenshot...")
         while self.frame is None:
-            time.sleep(0.01)
+            time.sleep(0.001)
         frame, self.frame = self.frame, None
-        screenshot = (
-            frame.to_rgb()
-            .reformat(width=frame.width, height=frame.height, format="rgb24")
-            .to_ndarray()
-        )
-        screenshot = Image.fromarray(screenshot)
-        screenshot = screenshot.resize(
-            (SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT), Image.Resampling.BILINEAR
-        )
+        screenshot = frame.reformat(
+            width=SCREENSHOT_WIDTH, height=SCREENSHOT_HEIGHT, format="rgb24"
+        ).to_image()
 
         return screenshot
