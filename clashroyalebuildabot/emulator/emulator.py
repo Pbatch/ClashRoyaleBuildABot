@@ -1,5 +1,3 @@
-# pylint: disable=R1732
-
 import atexit
 from contextlib import contextmanager
 import os
@@ -11,7 +9,6 @@ import time
 import zipfile
 
 import av
-from get_free_port import get_dynamic_ports
 from loguru import logger
 import requests
 import yaml
@@ -25,8 +22,6 @@ from clashroyalebuildabot.constants import SRC_DIR
 
 
 class KThread(threading.Thread):
-    """A subclass of threading.Thread, with a kill() method."""
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._kill = threading.Event()
@@ -41,6 +36,12 @@ class KThread(threading.Thread):
 
     def kill(self):
         self._kill.set()
+
+
+def get_free_port():
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("", 0))
+        return s.getsockname()[1]
 
 
 def kill_pid(pid):
@@ -62,12 +63,11 @@ def kill_process_children_parents(pid):
 def get_child_processes(pid):
     try:
         child_pids = []
-        ps_command = subprocess.Popen(
+        with subprocess.Popen(
             ["ps", "-o", "pid", "--ppid", str(pid), "--noheaders"],
             stdout=subprocess.PIPE,
-        )
-        ps_output = ps_command.stdout.read()
-        ps_command.stdout.close()
+        ) as ps_command:
+            ps_output = ps_command.stdout.read()
         for line in ps_output.splitlines():
             child_pids.append(int(line))
         return child_pids
@@ -108,7 +108,7 @@ class Emulator:
         self.frame = None
         self.scrcpy_proc = None
         self.codec = av.codec.CodecContext.create("h264", "r")
-        self.forward_port = get_dynamic_ports(qty=1)[0]
+        self.forward_port = get_free_port()
 
         self._install_adb()
         self.width, self.height = self._get_width_and_height()
@@ -220,12 +220,13 @@ class Emulator:
             "raw_video_stream=true",
             f"max_size={self.width}",
         ]
-        self.scrcpy_proc = subprocess.Popen(
+        with subprocess.Popen(
             command,
             stderr=subprocess.PIPE,
             stdout=subprocess.PIPE,
             cwd=EMULATOR_DIR,
-        )
+        ) as proc:
+            self.scrcpy_proc = proc
 
     def _forward_port(self):
         self._run_command(
