@@ -8,6 +8,8 @@ DEBUG_DIR = os.path.join(SRC_DIR, "debug")
 MODELS_DIR = os.path.join(SRC_DIR, "models")
 IMAGES_DIR = os.path.join(SRC_DIR, "images")
 EMULATOR_DIR = os.path.join(SRC_DIR, "emulator")
+ADB_DIR = os.path.join(EMULATOR_DIR, "platform-tools")
+ADB_PATH = os.path.normpath(os.path.join(ADB_DIR, "adb"))
 SCREENSHOTS_DIR = os.path.join(DEBUG_DIR, "screenshots")
 LABELS_DIR = os.path.join(DEBUG_DIR, "labels")
 
