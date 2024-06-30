@@ -25,8 +25,7 @@ dependencies = [
     "requests>=2.25.1",
     "av",
     "get_free_port",
-    "kthread",
-    "subprocesskiller"
+    "kthread"
 ]
 
 [project.optional-dependencies]
