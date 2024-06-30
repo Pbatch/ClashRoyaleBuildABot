@@ -6,17 +6,14 @@ import os
 import platform
 import socket
 import subprocess
+import threading
 import time
 import zipfile
 
 import av
 from get_free_port import get_dynamic_ports
-import kthread
 from loguru import logger
 import requests
-from subprocesskiller import kill_pid
-from subprocesskiller import kill_process_children_parents
-from subprocesskiller import kill_subprocs
 import yaml
 
 from clashroyalebuildabot.constants import ADB_DIR
@@ -27,9 +24,66 @@ from clashroyalebuildabot.constants import SCREENSHOT_WIDTH
 from clashroyalebuildabot.constants import SRC_DIR
 
 
+class KThread(threading.Thread):
+    """A subclass of threading.Thread, with a kill() method."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._kill = threading.Event()
+
+    def start(self):
+        self._kill.clear()
+        super().start()
+
+    def run(self):
+        while not self._kill.is_set():
+            super().run()
+
+    def kill(self):
+        self._kill.set()
+
+
+def kill_pid(pid):
+    try:
+        os.kill(pid, 9)
+    except OSError as e:
+        logger.error(f"Error killing pid {pid}: {e}")
+
+
+def kill_process_children_parents(pid):
+    try:
+        for child_pid in get_child_processes(pid):
+            kill_pid(child_pid)
+        kill_pid(pid)
+    except Exception as e:
+        logger.error(f"Error killing process tree for pid {pid}: {e}")
+
+
+def get_child_processes(pid):
+    try:
+        child_pids = []
+        ps_command = subprocess.Popen(
+            ["ps", "-o", "pid", "--ppid", str(pid), "--noheaders"],
+            stdout=subprocess.PIPE,
+        )
+        ps_output = ps_command.stdout.read()
+        ps_command.stdout.close()
+        for line in ps_output.splitlines():
+            child_pids.append(int(line))
+        return child_pids
+    except Exception as e:
+        logger.error(f"Error getting child processes for pid {pid}: {e}")
+        return []
+
+
 @atexit.register
 def kill_them_all():
-    kill_subprocs()
+    try:
+        parent_pids = get_child_processes(os.getpid())
+        for parent_pid in parent_pids:
+            kill_process_children_parents(parent_pid)
+    except Exception as e:
+        logger.error(f"Error in kill_them_all: {e}")
 
 
 @contextmanager
@@ -109,13 +163,11 @@ class Emulator:
             self.scrcpy_proc.kill()
 
         with ignored(Exception):
-            kill_process_children_parents(
-                pid=self.scrcpy_proc.pid, max_parent_exe="adb.exe", dontkill=()
-            )
+            kill_process_children_parents(pid=self.scrcpy_proc.pid)
             time.sleep(2)
 
         with ignored(Exception):
-            kill_pid(pid=self.scrcpy_proc.pid)
+            kill_pid(self.scrcpy_proc.pid)
 
     def _run_command(self, command):
         command = [ADB_PATH, "-s", self.serial, *command]
@@ -196,7 +248,7 @@ class Emulator:
                     self.video_socket.close()
 
     def _start_capturing(self):
-        self.screenshot_thread = kthread.KThread(
+        self.screenshot_thread = KThread(
             target=self._update_screenshot, name="update_screenshot_thread"
         )
         self.screenshot_thread.start()

@@ -24,9 +24,7 @@ dependencies = [
     "pybind11>=2.12",
     "requests>=2.25.1",
     "av",
-    "get_free_port",
-    "kthread",
-    "subprocesskiller"
+    "get_free_port"
 ]
 
 [project.optional-dependencies]
