@@ -13,7 +13,6 @@ import av
 from get_free_port import get_dynamic_ports
 import kthread
 from loguru import logger
-from PIL import Image
 import requests
 from subprocesskiller import kill_pid
 from subprocesskiller import kill_process_children_parents
