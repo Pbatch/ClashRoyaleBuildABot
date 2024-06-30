@@ -1,5 +1,4 @@
 .idea/
-clashroyalebuildabot/debug
 .venv
 .vscode
 *.egg-info
@@ -7,3 +6,5 @@ dist/
 build/
 __pycache__/
 *.pyc
+clashroyalebuildabot/debug
+clashroyalebuildabot/emulator/platform-tools
