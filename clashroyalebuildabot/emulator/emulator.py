@@ -1,3 +1,5 @@
+# pylint: disable=consider-using-with
+
 import atexit
 from contextlib import contextmanager
 import os
