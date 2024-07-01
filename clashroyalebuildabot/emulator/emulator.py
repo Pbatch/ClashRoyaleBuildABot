@@ -1,3 +1,5 @@
+# pylint: disable=consider-using-with
+
 import atexit
 from contextlib import contextmanager
 import os
@@ -173,12 +175,17 @@ class Emulator:
         command = [ADB_PATH, "-s", self.serial, *command]
         logger.debug(" ".join(command))
         try:
+            start_time = time.time()
             result = subprocess.run(
                 command,
                 cwd=EMULATOR_DIR,
                 capture_output=True,
                 check=True,
                 text=True,
+            )
+            end_time = time.time()
+            logger.debug(
+                f"Command executed in {end_time - start_time} seconds"
             )
         except subprocess.CalledProcessError as e:
             logger.error(f"Error executing command: {e}")
@@ -220,13 +227,19 @@ class Emulator:
             "raw_video_stream=true",
             f"max_size={self.width}",
         ]
-        with subprocess.Popen(
-            command,
-            stderr=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            cwd=EMULATOR_DIR,
-        ) as proc:
-            self.scrcpy_proc = proc
+        logger.debug("Starting scrcpy process")
+        try:
+            self.scrcpy_proc = subprocess.Popen(
+                command,
+                stderr=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                cwd=EMULATOR_DIR,
+            )
+            logger.debug("scrcpy process started")
+        except Exception as e:
+            logger.error(f"Failed to start scrcpy process: {e}")
+            self.quit()
+            raise
 
     def _forward_port(self):
         self._run_command(
@@ -266,6 +279,7 @@ class Emulator:
                     continue
 
                 self.frame = frames[-1]
+                time.sleep(0.001)
 
     def _get_width_and_height(self):
         window_size = self._run_command(["shell", "wm", "size"])
