@@ -1,6 +1,5 @@
 import os
 import random
-import subprocess
 import sys
 import time
 
@@ -44,7 +43,6 @@ class Bot:
 
         self._setup_logger()
         self.end_of_game_clicked = False
-        self.pause_until = 0
 
     @staticmethod
     def _setup_logger():
@@ -115,6 +113,7 @@ class Bot:
         self.state = self.detector.run(screenshot)
         if self.auto_start and self.state.screen != Screens.IN_GAME:
             self.emulator.click(*self.state.screen.click_xy)
+            logger.info("Starting game. Waiting for 2 seconds")
             time.sleep(2)
 
     def play_action(self, action):
@@ -124,26 +123,14 @@ class Bot:
         self.emulator.click(*tile_centre)
 
     def _restart_game(self):
-        subprocess.run(
-            "adb shell am force-stop com.supercell.clashroyale",
-            shell=True,
-            check=True,
-        )
+        self.emulator.stop_game()
         time.sleep(1)
-        subprocess.run(
-            "adb shell am start -n com.supercell.clashroyale/com.supercell.titan.GameApp",
-            shell=True,
-            check=True,
-        )
-        logger.info("Waiting 10 seconds.")
+        self.emulator.start_game()
+        logger.info("Starting game. Waiting 10 seconds.")
         time.sleep(10)
         self.end_of_game_clicked = False
 
     def _end_of_game(self):
-        if time.time() < self.pause_until:
-            time.sleep(1)
-            return
-
         self.set_state()
         actions = self.get_actions()
         logger.info(f"Actions after end of game: {actions}")
@@ -170,7 +157,6 @@ class Bot:
             logger.info(
                 "End of game detected. Waiting 10 seconds for battle button"
             )
-            self.pause_until = time.time() + 10
             self.end_of_game_clicked = True
             time.sleep(10)
             return
@@ -182,8 +168,7 @@ class Bot:
 
         actions = self.get_actions()
         if not actions:
-            if self.debug:
-                logger.debug("No actions available. Waiting for 1 second")
+            logger.debug("No actions available. Waiting for 1 second")
             time.sleep(1)
             return
 
@@ -197,6 +182,7 @@ class Bot:
                 best_score = score
 
         if best_score[0] == 0:
+            logger.info("No good actions available. Waiting for 1 second")
             time.sleep(1)
             return
 
