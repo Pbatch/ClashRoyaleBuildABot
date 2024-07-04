@@ -1,7 +1,7 @@
 <div align="center">
 
 📌 This bot is under active development and may experience minor issues.  
-Please report any bugs so we can fix them promptly.
+Please report any bugs on Discord, and we will fix them promptly.
 
 <table>
     <tr>
