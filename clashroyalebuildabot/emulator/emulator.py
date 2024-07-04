@@ -287,6 +287,22 @@ class Emulator:
         width, height = tuple(int(i) for i in window_size.split("x"))
         return width, height
 
+    def stop_game(self):
+        self._run_command(
+            ["shell", "am", "force-stop", "com.supercell.clashroyale"]
+        )
+
+    def start_game(self):
+        self._run_command(
+            [
+                "shell",
+                "am",
+                "start",
+                "-n",
+                "com.supercell.clashroyale/com.supercell.titan.GameApp",
+            ]
+        )
+
     def click(self, x, y):
         self._run_command(["shell", "input", "tap", str(x), str(y)])
 
