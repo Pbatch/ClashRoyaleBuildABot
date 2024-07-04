@@ -1,4 +1,5 @@
 from datetime import datetime
+import signal
 import sys
 import threading
 import time
@@ -43,6 +44,9 @@ def main():
 
 
 if __name__ == "__main__":
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+
     title_thread = threading.Thread(target=update_terminal_title, daemon=True)
     title_thread.start()
+
     main()
