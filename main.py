@@ -3,7 +3,15 @@ import sys
 import threading
 import time
 
-from clashroyalebuildabot.bot.example.custom_bot import CustomBot
+from clashroyalebuildabot.actions.archers_action import ArchersAction
+from clashroyalebuildabot.actions.arrows_action import ArrowsAction
+from clashroyalebuildabot.actions.fireball_action import FireballAction
+from clashroyalebuildabot.actions.giant_action import GiantAction
+from clashroyalebuildabot.actions.knight_action import KnightAction
+from clashroyalebuildabot.actions.minions_action import MinionsAction
+from clashroyalebuildabot.actions.minipekka_action import MinipekkaAction
+from clashroyalebuildabot.actions.musketeer_action import MusketeerAction
+from clashroyalebuildabot.bot import Bot
 
 start_time = datetime.now()
 
@@ -20,7 +28,17 @@ def update_terminal_title():
 
 
 def main():
-    bot = CustomBot(debug=False)
+    actions = {
+        ArchersAction,
+        ArrowsAction,
+        FireballAction,
+        GiantAction,
+        KnightAction,
+        MinionsAction,
+        MinipekkaAction,
+        MusketeerAction,
+    }
+    bot = Bot(actions=actions, debug=False)
     bot.run()
 
 

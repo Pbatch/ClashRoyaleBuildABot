@@ -1,4 +1,6 @@
 import os
+import random
+import subprocess
 import sys
 import time
 
@@ -25,30 +27,24 @@ from clashroyalebuildabot.emulator.emulator import Emulator
 from clashroyalebuildabot.namespaces import Screens
 
 
-class Action:
-    def __init__(self, index, tile_x, tile_y, card):
-        self.index = index
-        self.tile_x = tile_x
-        self.tile_y = tile_y
-        self.card = card
-
-    def __repr__(self):
-        return f"{self.card.name} at ({self.tile_x}, {self.tile_y})"
-
-
 class Bot:
-    def __init__(
-        self, cards, action_class=Action, auto_start=True, debug=False
-    ):
-        self.cards = cards
-        self.action_class = action_class
+    def __init__(self, actions, auto_start=True, debug=False):
+        self.actions = actions
         self.auto_start = auto_start
         self.debug = debug
+
+        cards = [action.CARD for action in actions]
+        if len(cards) != 8:
+            raise ValueError(f"Must provide 8 cards but was given: {cards}")
+        self.cards_to_actions = dict(zip(cards, actions))
+
+        self.detector = Detector(cards=cards, debug=self.debug)
         self.emulator = Emulator()
-        self.detector = Detector(cards, debug=self.debug)
         self.state = None
 
         self._setup_logger()
+        self.end_of_game_clicked = False
+        self.pause_until = 0
 
     @staticmethod
     def _setup_logger():
@@ -109,7 +105,7 @@ class Bot:
 
             tiles = all_tiles if card.target_anywhere else valid_tiles
             actions.extend(
-                [self.action_class(i, x, y, card) for (x, y) in tiles]
+                [self.cards_to_actions[card](i, x, y) for (x, y) in tiles]
             )
 
         return actions
@@ -126,3 +122,94 @@ class Bot:
         tile_centre = self._get_tile_centre(action.tile_x, action.tile_y)
         self.emulator.click(*card_centre)
         self.emulator.click(*tile_centre)
+
+    def _restart_game(self):
+        subprocess.run(
+            "adb shell am force-stop com.supercell.clashroyale",
+            shell=True,
+            check=True,
+        )
+        time.sleep(1)
+        subprocess.run(
+            "adb shell am start -n com.supercell.clashroyale/com.supercell.titan.GameApp",
+            shell=True,
+            check=True,
+        )
+        logger.info("Waiting 10 seconds.")
+        time.sleep(10)
+        self.end_of_game_clicked = False
+
+    def _end_of_game(self):
+        if time.time() < self.pause_until:
+            time.sleep(1)
+            return
+
+        self.set_state()
+        actions = self.get_actions()
+        logger.info(f"Actions after end of game: {actions}")
+
+        if self.state.screen == Screens.LOBBY:
+            logger.debug("Lobby detected, resuming normal operation.")
+            return
+
+        logger.info("Can't find Battle button, force game restart.")
+        self._restart_game()
+
+    def step(self):
+        if self.end_of_game_clicked:
+            self._end_of_game()
+            return
+
+        old_screen = self.state.screen if self.state else None
+        self.set_state()
+        new_screen = self.state.screen
+        if new_screen != old_screen:
+            logger.info(f"New screen state: {new_screen}")
+
+        if new_screen == Screens.END_OF_GAME:
+            logger.info(
+                "End of game detected. Waiting 10 seconds for battle button"
+            )
+            self.pause_until = time.time() + 10
+            self.end_of_game_clicked = True
+            time.sleep(10)
+            return
+
+        if new_screen == Screens.LOBBY:
+            logger.info("In the main menu. Waiting for 1 second")
+            time.sleep(1)
+            return
+
+        actions = self.get_actions()
+        if not actions:
+            if self.debug:
+                logger.debug("No actions available. Waiting for 1 second")
+            time.sleep(1)
+            return
+
+        random.shuffle(actions)
+        best_score = [0]
+        best_action = None
+        for action in actions:
+            score = action.calculate_score(self.state)
+            if score > best_score:
+                best_action = action
+                best_score = score
+
+        if best_score[0] == 0:
+            time.sleep(1)
+            return
+
+        self.play_action(best_action)
+        logger.info(
+            f"Playing {best_action} with score {best_score}. Waiting for 1 second"
+        )
+        time.sleep(1)
+
+    def run(self):
+        try:
+            while True:
+                self.step()
+        except (KeyboardInterrupt, Exception):
+            self.emulator.quit()
+            logger.info("Thanks for using CRBAB, see you next time!")
