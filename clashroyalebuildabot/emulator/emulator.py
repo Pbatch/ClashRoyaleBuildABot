@@ -113,6 +113,7 @@ class Emulator:
         self.forward_port = get_free_port()
 
         self._install_adb()
+        self._restart_server()
         self.width, self.height = self._get_width_and_height()
         self._copy_scrcpy()
         self._forward_port()
@@ -200,6 +201,14 @@ class Emulator:
             raise RuntimeError("ADB command failed")
 
         return result.stdout
+
+    def _restart_server(self):
+        self._run_command(
+            [
+                "kill-server",
+            ]
+        )
+        self._run_command(["start-server"])
 
     def _copy_scrcpy(self):
         self._run_command(["push", "scrcpy-server.jar", "/data/local/tmp/"])
