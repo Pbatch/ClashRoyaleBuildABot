@@ -1,7 +1,7 @@
 <div align="center">
 
 📌 This bot is under active development and may experience minor issues.  
-Please report any bugs so we can fix them promptly.
+Please report any bugs on Discord, and we will fix them promptly.
 
 <table>
     <tr>
@@ -82,6 +82,7 @@ This project follows the [all-contributors](https://github.com/all-contributors/
       <td align="center" valign="top" width="14.28%"><a href="http://carlosdubon.dev"><img src="https://avatars.githubusercontent.com/u/69093659?v=4?s=100" width="100px;" alt="Carlos Dubón"/><br /><sub><b>Carlos Dubón</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/issues?q=author%3Acarlos-dubon" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Leviaria"><img src="https://avatars.githubusercontent.com/u/113382526?v=4?s=100" width="100px;" alt="Leviaria"/><br /><sub><b>Leviaria</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=Leviaria" title="Code">💻</a> <a href="#example-Leviaria" title="Examples">💡</a> <a href="#tutorial-Leviaria" title="Tutorials">✅</a> <a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=Leviaria" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/nikita9091239"><img src="https://avatars.githubusercontent.com/u/83181206?v=4?s=100" width="100px;" alt="nikita9091239"/><br /><sub><b>nikita9091239</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/issues?q=author%3Anikita9091239" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/FikryCoder"><img src="https://avatars.githubusercontent.com/u/111184562?v=4?s=100" width="100px;" alt="Fikry 🎯"/><br /><sub><b>Fikry 🎯</b></sub></a><br /><a href="#research-FikryCoder" title="Research">🔬</a></td>
     </tr>
   </tbody>
 </table>
