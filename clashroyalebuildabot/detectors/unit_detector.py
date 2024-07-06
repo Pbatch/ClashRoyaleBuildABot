@@ -14,8 +14,8 @@ from clashroyalebuildabot.constants import TILE_INIT_Y
 from clashroyalebuildabot.constants import TILE_WIDTH
 from clashroyalebuildabot.detectors.onnx_detector import OnnxDetector
 from clashroyalebuildabot.detectors.side_detector import SideDetector
-from clashroyalebuildabot.namespaces.state import Position
-from clashroyalebuildabot.namespaces.units import Unit
+from clashroyalebuildabot.namespaces.units import Position
+from clashroyalebuildabot.namespaces.units import UnitDetection
 
 
 class UnitDetector(OnnxDetector):
@@ -47,8 +47,7 @@ class UnitDetector(OnnxDetector):
         for card in self.cards:
             if card.units is None:
                 continue
-            for unit_ in card.units:
-                unit = Unit(*unit_)
+            for unit in card.units:
                 possible_ally_names.add(unit.name)
         return possible_ally_names
 
@@ -76,24 +75,24 @@ class UnitDetector(OnnxDetector):
     def _post_process(self, pred, height, image):
         pred[:, [1, 3]] *= self.UNIT_Y_END - self.UNIT_Y_START
         pred[:, [1, 3]] += self.UNIT_Y_START * height
-        clean_pred = {"ally": {}, "enemy": {}}
+
+        allies = []
+        enemies = []
         for p in pred:
             l, t, r, b, conf, cls = p
             bbox = (round(l), round(t), round(r), round(b))
             tile_x, tile_y = self._get_tile_xy(bbox)
             position = Position(bbox, conf, tile_x, tile_y)
-            name, category, target, transport = DETECTOR_UNITS[int(cls)]
-            side = self._calculate_side(image, bbox, name)
-            if name not in clean_pred[side]:
-                clean_pred[side][name] = {
-                    "type": category,
-                    "target": target,
-                    "transport": transport,
-                    "positions": [],
-                }
+            unit = DETECTOR_UNITS[int(cls)]
+            unit_detection = UnitDetection(unit, position)
 
-            clean_pred[side][name]["positions"].append(position)
-        return clean_pred
+            side = self._calculate_side(image, bbox, unit.name)
+            if side == "ally":
+                allies.append(unit_detection)
+            else:
+                enemies.append(unit_detection)
+
+        return allies, enemies
 
     def run(self, image):
         height, width = image.height, image.width
@@ -101,5 +100,5 @@ class UnitDetector(OnnxDetector):
         pred = self._infer(np_image)[0]
         pred = pred[pred[:, 4] > self.MIN_CONF]
         pred = self.fix_bboxes(pred, width, height, padding)
-        pred = self._post_process(pred, height, image)
-        return pred
+        allies, enemies = self._post_process(pred, height, image)
+        return allies, enemies
