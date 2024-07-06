@@ -135,6 +135,7 @@ class Bot:
             self.emulator.click(*self.state.screen.click_xy)
             logger.info("Starting game. Waiting for 2 seconds")
             time.sleep(2)
+            return
 
         actions = self.get_actions()
         if not actions:
