@@ -32,6 +32,8 @@ class Bot:
         self.auto_start = auto_start
         self.debug = debug
 
+        self._setup_logger()
+
         cards = [action.CARD for action in actions]
         if len(cards) != 8:
             raise ValueError(f"Must provide 8 cards but was given: {cards}")
@@ -40,9 +42,6 @@ class Bot:
         self.detector = Detector(cards=cards, debug=self.debug)
         self.emulator = Emulator()
         self.state = None
-
-        self._setup_logger()
-        self.end_of_game_clicked = False
 
     @staticmethod
     def _setup_logger():
@@ -111,10 +110,6 @@ class Bot:
     def set_state(self):
         screenshot = self.emulator.take_screenshot()
         self.state = self.detector.run(screenshot)
-        if self.auto_start and self.state.screen != Screens.IN_GAME:
-            self.emulator.click(*self.state.screen.click_xy)
-            logger.info("Starting game. Waiting for 2 seconds")
-            time.sleep(2)
 
     def play_action(self, action):
         card_centre = self._get_card_centre(action.index)
@@ -122,48 +117,17 @@ class Bot:
         self.emulator.click(*card_centre)
         self.emulator.click(*tile_centre)
 
-    def _restart_game(self):
-        self.emulator.stop_game()
-        time.sleep(1)
-        self.emulator.start_game()
-        logger.info("Starting game. Waiting 10 seconds.")
-        time.sleep(10)
-        self.end_of_game_clicked = False
-
-    def _end_of_game(self):
-        self.set_state()
-        actions = self.get_actions()
-        logger.info(f"Actions after end of game: {actions}")
-
-        if self.state.screen == Screens.LOBBY:
-            logger.debug("Lobby detected, resuming normal operation.")
-            return
-
-        logger.info("Can't find Battle button, force game restart.")
-        self._restart_game()
-
     def step(self):
-        if self.end_of_game_clicked:
-            self._end_of_game()
-            return
-
         old_screen = self.state.screen if self.state else None
         self.set_state()
         new_screen = self.state.screen
         if new_screen != old_screen:
             logger.info(f"New screen state: {new_screen}")
 
-        if new_screen == Screens.END_OF_GAME:
-            logger.info(
-                "End of game detected. Waiting 10 seconds for battle button"
-            )
-            self.end_of_game_clicked = True
-            time.sleep(10)
-            return
-
-        if new_screen == Screens.LOBBY:
-            logger.info("In the main menu. Waiting for 1 second")
-            time.sleep(1)
+        if self.auto_start and new_screen != Screens.IN_GAME:
+            self.emulator.click(*self.state.screen.click_xy)
+            logger.info("Starting game. Waiting for 2 seconds")
+            time.sleep(2)
             return
 
         actions = self.get_actions()
