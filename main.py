@@ -39,7 +39,7 @@ def main():
         MinipekkaAction,
         MusketeerAction,
     }
-    bot = Bot(actions=actions, debug=False)
+    bot = Bot(actions=actions, debug=True)
     bot.run()
 
 

@@ -32,25 +32,19 @@ class Debugger:
         os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
         os.makedirs(LABELS_DIR, exist_ok=True)
         self.font = ImageFont.load_default()
-        self.unit_names = [unit[0] for unit in list(NAME2UNIT.values())]
+        self.unit_names = [unit["name"] for unit in list(NAME2UNIT.values())]
 
     @staticmethod
     def _write_label(image, state, basename):
         labels = []
-        unit_names_and_positions = [
-            [unit_name, v["positions"]]
-            for unit_name, v in list(state.allies.items())
-            + list(state.enemies.items())
-        ]
-        for unit_name, positions in unit_names_and_positions:
-            for position in positions:
-                bbox = position.bbox
-                xc = (bbox[0] + bbox[2]) / (2 * image.width)
-                yc = (bbox[1] + bbox[3]) / (2 * image.height)
-                w = (bbox[2] - bbox[0]) / image.width
-                h = (bbox[3] - bbox[1]) / image.height
-                label = f"{unit_name} {xc} {yc} {w} {h}"
-                labels.append(label)
+        for det in state.allies + state.enemies:
+            bbox = det.position.bbox
+            xc = (bbox[0] + bbox[2]) / (2 * image.width)
+            yc = (bbox[1] + bbox[3]) / (2 * image.height)
+            w = (bbox[2] - bbox[0]) / image.width
+            h = (bbox[3] - bbox[1]) / image.height
+            label = f"{det.unit.name} {xc} {yc} {w} {h}"
+            labels.append(label)
 
         with open(
             os.path.join(LABELS_DIR, f"{basename}.txt"), "w", encoding="utf-8"
@@ -69,16 +63,15 @@ class Debugger:
         d.rectangle(tuple(bbox), outline=rgba)
         d.text(tuple(text_bbox[:2]), text=text, fill="white")
 
-    def _draw_unit_bboxes(self, d, units, prefix):
-        for unit_name, v in units.items():
-            colour_idx = self.unit_names.index(unit_name) % len(
+    def _draw_unit_bboxes(self, d, dets, prefix):
+        for det in dets:
+            colour_idx = self.unit_names.index(det.unit.name) % len(
                 self._COLOUR_AND_RGBA
             )
             rgba = self._COLOUR_AND_RGBA[colour_idx][1]
-            for position in v["positions"]:
-                self._draw_text(
-                    d, position.bbox, f"{prefix}_{unit_name}", rgba
-                )
+            self._draw_text(
+                d, det.position.bbox, f"{prefix}_{det.unit.name}", rgba
+            )
 
     def _write_image(self, image, state, basename):
         d = ImageDraw.Draw(image, "RGBA")
