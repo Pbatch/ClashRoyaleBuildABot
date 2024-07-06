@@ -1,5 +1,7 @@
 import os
 
+from loguru import logger
+
 from clashroyalebuildabot.constants import MODELS_DIR
 from clashroyalebuildabot.debugger import Debugger
 from clashroyalebuildabot.detectors.card_detector import CardDetector
@@ -35,14 +37,13 @@ class Detector:
             self.debugger = Debugger()
 
     def run(self, image):
+        logger.debug("Setting state...")
         cards, ready = self.card_detector.run(image)
-        units = self.unit_detector.run(image)
+        allies, enemies = self.unit_detector.run(image)
         numbers = self.number_detector.run(image)
         screen = self.screen_detector.run(image)
 
-        state = State(
-            units["enemy"], units["ally"], numbers, cards, ready, screen
-        )
+        state = State(allies, enemies, numbers, cards, ready, screen)
         if self.debugger is not None:
             self.debugger.run(image, state)
 

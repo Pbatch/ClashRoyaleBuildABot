@@ -2,5 +2,5 @@ from clashroyalebuildabot import Cards
 from clashroyalebuildabot.actions.overhead_action import OverheadAction
 
 
-class MinionsAction(OverheadAction):
-    CARD = Cards.MINIONS
+class BatsAction(OverheadAction):
+    CARD = Cards.BATS

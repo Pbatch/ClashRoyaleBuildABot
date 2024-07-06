@@ -7,10 +7,9 @@ class ArchersAction(Action):
 
     def calculate_score(self, state):
         score = [0.5] if state.numbers["elixir"]["number"] == 10 else [0]
-        for v in state.enemies.values():
-            for position in v["positions"]:
-                lhs = position.tile_x <= 8 and self.tile_x == 7
-                rhs = position.tile_x > 8 and self.tile_x == 10
-                if self.tile_y < position.tile_y <= 14 and (lhs or rhs):
-                    score = [1, self.tile_y - position.tile_y]
+        for det in state.enemies:
+            lhs = det.position.tile_x <= 8 and self.tile_x == 7
+            rhs = det.position.tile_x > 8 and self.tile_x == 10
+            if self.tile_y < det.position.tile_y <= 14 and (lhs or rhs):
+                score = [1, self.tile_y - det.position.tile_y]
         return score

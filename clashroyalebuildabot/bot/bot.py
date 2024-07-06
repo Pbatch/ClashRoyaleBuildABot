@@ -196,6 +196,6 @@ class Bot:
         try:
             while True:
                 self.step()
-        except (KeyboardInterrupt, Exception):
-            self.emulator.quit()
+        except KeyboardInterrupt:
             logger.info("Thanks for using CRBAB, see you next time!")
+            self.emulator.quit()

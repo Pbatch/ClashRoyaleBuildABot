@@ -5,4 +5,3 @@ from clashroyalebuildabot.actions.spell_action import SpellAction
 class FireballAction(SpellAction):
     CARD = Cards.FIREBALL
     RADIUS = 2.5
-    MIN_TO_HIT = 3
