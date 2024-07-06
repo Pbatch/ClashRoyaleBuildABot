@@ -15,7 +15,6 @@ from clashroyalebuildabot.constants import DISPLAY_CARD_INIT_X
 from clashroyalebuildabot.constants import DISPLAY_CARD_WIDTH
 from clashroyalebuildabot.constants import DISPLAY_CARD_Y
 from clashroyalebuildabot.constants import DISPLAY_HEIGHT
-from clashroyalebuildabot.constants import ENEMY_TILES
 from clashroyalebuildabot.constants import LEFT_PRINCESS_TILES
 from clashroyalebuildabot.constants import RIGHT_PRINCESS_TILES
 from clashroyalebuildabot.constants import SRC_DIR
