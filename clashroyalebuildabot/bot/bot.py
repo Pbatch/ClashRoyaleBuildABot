@@ -117,13 +117,6 @@ class Bot:
         self.emulator.click(*card_centre)
         self.emulator.click(*tile_centre)
 
-    def _restart_game(self):
-        self.emulator.stop_game()
-        time.sleep(1)
-        self.emulator.start_game()
-        logger.info("Starting game. Waiting 10 seconds.")
-        time.sleep(10)
-
     def step(self):
         old_screen = self.state.screen if self.state else None
         self.set_state()
