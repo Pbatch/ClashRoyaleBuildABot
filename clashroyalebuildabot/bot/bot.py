@@ -28,10 +28,11 @@ from clashroyalebuildabot.namespaces import Screens
 
 
 class Bot:
-    def __init__(self, actions, auto_start=True, debug=False):
+    def __init__(self, actions, auto_start=True, debug=False, visualize=False):
         self.actions = actions
         self.auto_start = auto_start
         self.debug = debug
+        self.visualize = visualize
 
         self._setup_logger()
 
@@ -40,7 +41,7 @@ class Bot:
             raise ValueError(f"Must provide 8 cards but was given: {cards}")
         self.cards_to_actions = dict(zip(cards, actions))
 
-        self.detector = Detector(cards=cards, debug=self.debug)
+        self.detector = Detector(cards=cards, debug=self.debug, visualize=self.visualize)
         self.emulator = Emulator()
         self.state = None
 
