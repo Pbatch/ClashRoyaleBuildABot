@@ -33,6 +33,7 @@ class Visualizer:
         self.font = ImageFont.load_default()
         self.unit_names = [unit["name"] for unit in list(NAME2UNIT.values())]
         cv2.namedWindow("Visualizer", cv2.WINDOW_NORMAL)
+        logger.info("Visualizer initialized.")
 
 
     def _draw_text(self, d, bbox, text, rgba=(0, 0, 0, 255)):
@@ -74,10 +75,6 @@ class Visualizer:
 
     def run(self, image, state):
         annotated_image = self.annotate_image(image, state)
-        # Convert PIL image to a NumPy array explicitly
         annotated_image = np.array(annotated_image)
-        # Ensure the window is initialized
         cv2.imshow("Visualizer", cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR))
-        #Log the window size
-        logger.info(f"Visualizer window size: {cv2.getWindowImageRect('Visualizer')}")
-        cv2.waitKey(0)
+        cv2.waitKey(1)
