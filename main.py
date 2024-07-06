@@ -7,6 +7,9 @@ import time
 from clashroyalebuildabot.actions.archers_action import ArchersAction
 from clashroyalebuildabot.actions.fireball_action import FireballAction
 from clashroyalebuildabot.actions.giant_action import GiantAction
+from clashroyalebuildabot.actions.goblin_barrel_action import (
+    GoblinBarrelAction,
+)
 from clashroyalebuildabot.actions.knight_action import KnightAction
 from clashroyalebuildabot.actions.minions_action import MinionsAction
 from clashroyalebuildabot.actions.minipekka_action import MinipekkaAction
@@ -32,7 +35,7 @@ def main():
     actions = {
         ArchersAction,
         ZapAction,
-        FireballAction,
+        GoblinBarrelAction,
         GiantAction,
         KnightAction,
         MinionsAction,

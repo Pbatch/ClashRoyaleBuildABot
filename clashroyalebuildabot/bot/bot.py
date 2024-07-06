@@ -6,6 +6,7 @@ import time
 from loguru import logger
 import yaml
 
+from clashroyalebuildabot.constants import ALL_TILES
 from clashroyalebuildabot.constants import ALLY_TILES
 from clashroyalebuildabot.constants import DEBUG_DIR
 from clashroyalebuildabot.constants import DISPLAY_CARD_DELTA_X
@@ -14,6 +15,7 @@ from clashroyalebuildabot.constants import DISPLAY_CARD_INIT_X
 from clashroyalebuildabot.constants import DISPLAY_CARD_WIDTH
 from clashroyalebuildabot.constants import DISPLAY_CARD_Y
 from clashroyalebuildabot.constants import DISPLAY_HEIGHT
+from clashroyalebuildabot.constants import ENEMY_TILES
 from clashroyalebuildabot.constants import LEFT_PRINCESS_TILES
 from clashroyalebuildabot.constants import RIGHT_PRINCESS_TILES
 from clashroyalebuildabot.constants import SRC_DIR
@@ -92,7 +94,6 @@ class Bot:
     def get_actions(self):
         if not self.state:
             return []
-        all_tiles = ALLY_TILES + LEFT_PRINCESS_TILES + RIGHT_PRINCESS_TILES
         valid_tiles = self._get_valid_tiles()
         actions = []
         for i in self.state.ready:
@@ -100,10 +101,11 @@ class Bot:
             if int(self.state.numbers["elixir"]["number"]) < card.cost:
                 continue
 
-            tiles = all_tiles if card.target_anywhere else valid_tiles
-            actions.extend(
-                [self.cards_to_actions[card](i, x, y) for (x, y) in tiles]
-            )
+            tiles = ALL_TILES if card.target_anywhere else valid_tiles
+            card_actions = [
+                self.cards_to_actions[card](i, x, y) for (x, y) in tiles
+            ]
+            actions.extend(card_actions)
 
         return actions
 

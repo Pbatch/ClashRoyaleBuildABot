@@ -32,6 +32,8 @@ ALLY_TILES = [[x, 0] for x in range(N_WIDE_TILES // 3, 2 * N_WIDE_TILES // 3)]
 ALLY_TILES += [
     [x, y] for x in range(N_WIDE_TILES) for y in range(1, N_HEIGHT_TILES)
 ]
+ENEMY_TILES = [[x, 31 - y] for x, y in ALLY_TILES]
+ALL_TILES = ALLY_TILES + ENEMY_TILES
 LEFT_PRINCESS_TILES = [[3, N_HEIGHT_TILES], [3, N_HEIGHT_TILES + 1]]
 LEFT_PRINCESS_TILES += [
     [x, y]
