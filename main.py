@@ -5,7 +5,6 @@ import threading
 import time
 
 from clashroyalebuildabot.actions.archers_action import ArchersAction
-from clashroyalebuildabot.actions.fireball_action import FireballAction
 from clashroyalebuildabot.actions.giant_action import GiantAction
 from clashroyalebuildabot.actions.goblin_barrel_action import (
     GoblinBarrelAction,

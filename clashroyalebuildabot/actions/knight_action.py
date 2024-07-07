@@ -6,7 +6,7 @@ class KnightAction(Action):
     CARD = Cards.KNIGHT
 
     def calculate_score(self, state):
-        score = [0.5] if state.numbers["elixir"]["number"] == 10 else [0]
+        score = [0.5] if state.numbers.elixir.number == 10 else [0]
         for det in state.enemies:
             lhs = det.position.tile_x <= 8 and self.tile_x == 8
             rhs = det.position.tile_x > 8 and self.tile_x == 9
