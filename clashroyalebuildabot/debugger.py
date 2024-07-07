@@ -77,7 +77,7 @@ class Debugger:
 
     def _write_image(self, image, state, basename):
         d = ImageDraw.Draw(image, "RGBA")
-        for k, det in asdict(state.numbers).items():
+        for det in asdict(state.numbers).values():
             det = NumberDetection(**det)
             d.rectangle(det.bbox)
             self._draw_text(d, det.bbox, str(det.number))
