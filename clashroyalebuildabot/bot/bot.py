@@ -84,9 +84,9 @@ class Bot:
 
     def _get_valid_tiles(self):
         tiles = ALLY_TILES
-        if self.state.numbers["left_enemy_princess_hp"]["number"] == 0:
+        if self.state.numbers.left_enemy_princess_hp.number == 0:
             tiles += LEFT_PRINCESS_TILES
-        if self.state.numbers["right_enemy_princess_hp"]["number"] == 0:
+        if self.state.numbers.right_enemy_princess_hp.number == 0:
             tiles += RIGHT_PRINCESS_TILES
         return tiles
 
@@ -97,7 +97,7 @@ class Bot:
         actions = []
         for i in self.state.ready:
             card = self.state.cards[i + 1]
-            if int(self.state.numbers["elixir"]["number"]) < card.cost:
+            if self.state.numbers.elixir.number < card.cost:
                 continue
 
             tiles = ALL_TILES if card.target_anywhere else valid_tiles

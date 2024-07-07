@@ -7,6 +7,8 @@ from clashroyalebuildabot.constants import NUMBER_CONFIG
 from clashroyalebuildabot.constants import NUMBER_HEIGHT
 from clashroyalebuildabot.constants import NUMBER_WIDTH
 from clashroyalebuildabot.detectors.onnx_detector import OnnxDetector
+from clashroyalebuildabot.namespaces.numbers import NumberDetection
+from clashroyalebuildabot.namespaces.numbers import Numbers
 
 
 class NumberDetector(OnnxDetector):
@@ -18,7 +20,11 @@ class NumberDetector(OnnxDetector):
         std = np.array(crop).std(axis=(0, 2))
         rolling_std = np.convolve(std, np.ones(10) / 10, mode="valid")
         change_points = np.nonzero(rolling_std < 50)[0]
-        return (change_points[0] + 10) // 25 if len(change_points) > 0 else 10
+        if len(change_points) == 0:
+            elixir = 10
+        else:
+            elixir = (change_points[0] + 10) // 25
+        return elixir
 
     @staticmethod
     def _clean_king_levels(pred):
@@ -49,11 +55,15 @@ class NumberDetector(OnnxDetector):
     def _calculate_confidence_and_number(self, pred):
         pred = [p for p in pred.tolist() if p[4] > self.MIN_CONF][:4]
         pred.sort(key=lambda x: x[0])
+
         confidence = [p[4] for p in pred]
+        if len(confidence) == 0:
+            confidence = -1
+
         number = "".join([str(int(p[5])) for p in pred])
-        return confidence if confidence else [-1], (
-            int(number) if number else -1
-        )
+        number = int(number) if len(number) > 0 else 0
+
+        return confidence, number
 
     def _post_process(self, pred):
         clean_pred = {}
@@ -90,9 +100,14 @@ class NumberDetector(OnnxDetector):
             )
 
         pred = self._post_process(preds)
-        pred["elixir"] = {
-            "bounding_box": ELIXIR_BOUNDING_BOX,
-            "confidence": 1.0,
-            "number": self._calculate_elixir(image),
+        pred = {
+            k: NumberDetection(
+                tuple(v["bounding_box"]), v["confidence"], v["number"]
+            )
+            for k, v in pred.items()
         }
-        return pred
+        pred["elixir"] = NumberDetection(
+            tuple(ELIXIR_BOUNDING_BOX), [1.0], self._calculate_elixir(image)
+        )
+        numbers = Numbers(**pred)
+        return numbers

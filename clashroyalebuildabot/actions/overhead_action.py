@@ -9,7 +9,7 @@ class OverheadAction(Action):
     """
 
     def calculate_score(self, state):
-        score = [0.5] if state.numbers["elixir"]["number"] == 10 else [0]
+        score = [0.5] if state.numbers.elixir.number == 10 else [0]
         for det in state.enemies:
             distance = math.hypot(
                 det.position.tile_x - self.tile_x,

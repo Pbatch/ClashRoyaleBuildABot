@@ -1,3 +1,4 @@
+from dataclasses import asdict
 import os
 
 from PIL import ImageDraw
@@ -6,6 +7,7 @@ from PIL import ImageFont
 from clashroyalebuildabot.constants import CARD_CONFIG
 from clashroyalebuildabot.constants import LABELS_DIR
 from clashroyalebuildabot.constants import SCREENSHOTS_DIR
+from clashroyalebuildabot.namespaces.numbers import NumberDetection
 from clashroyalebuildabot.namespaces.units import NAME2UNIT
 
 
@@ -75,9 +77,10 @@ class Debugger:
 
     def _write_image(self, image, state, basename):
         d = ImageDraw.Draw(image, "RGBA")
-        for v in state.numbers.values():
-            d.rectangle(tuple(v["bounding_box"]))
-            self._draw_text(d, v["bounding_box"], str(v["number"]))
+        for det in asdict(state.numbers).values():
+            det = NumberDetection(**det)
+            d.rectangle(det.bbox)
+            self._draw_text(d, det.bbox, str(det.number))
 
         self._draw_unit_bboxes(d, state.allies, "ally")
         self._draw_unit_bboxes(d, state.enemies, "enemy")
