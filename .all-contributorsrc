@@ -178,6 +178,16 @@
       "contributions": [
         "research"
       ]
+    },
+    {
+      "login": "EnderBenjy",
+      "name": "EnderBenjy",
+      "avatar_url": "https://avatars.githubusercontent.com/u/68610598?v=4",
+      "profile": "https://github.com/EnderBenjy",
+      "contributions": [
+        "code",
+        "design"
+      ]
     }
   ],
   "contributorsPerLine": 7,
