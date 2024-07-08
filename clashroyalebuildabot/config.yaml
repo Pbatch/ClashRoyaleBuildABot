@@ -13,3 +13,8 @@ adb:
   # The serial number of your device
   # Use adb devices to obtain it
   device_serial: emulator-5554
+
+visuals:
+  save_labels: False
+  save_images: False
+  show_images: False

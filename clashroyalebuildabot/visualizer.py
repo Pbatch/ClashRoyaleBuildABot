@@ -1,6 +1,9 @@
 from dataclasses import asdict
 import os
 
+import cv2
+from loguru import logger
+import numpy as np
 from PIL import ImageDraw
 from PIL import ImageFont
 
@@ -11,7 +14,7 @@ from clashroyalebuildabot.namespaces.numbers import NumberDetection
 from clashroyalebuildabot.namespaces.units import NAME2UNIT
 
 
-class Debugger:
+class Visualizer:
     _COLOUR_AND_RGBA = [
         ["navy", (0, 38, 63, 127)],
         ["blue", (0, 120, 210, 127)],
@@ -30,11 +33,20 @@ class Debugger:
         ["silver", (220, 220, 220, 127)],
     ]
 
-    def __init__(self):
-        os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
-        os.makedirs(LABELS_DIR, exist_ok=True)
+    def __init__(self, save_labels, save_images, show_images):
+        self.save_labels = save_labels
+        self.save_images = save_images
+        self.show_images = show_images
+
         self.font = ImageFont.load_default()
         self.unit_names = [unit["name"] for unit in list(NAME2UNIT.values())]
+
+        os.makedirs(LABELS_DIR, exist_ok=True)
+        os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
+
+        if self.show_images:
+            cv2.namedWindow("Visualizer", cv2.WINDOW_NORMAL)
+            logger.info("Visualizer initialized")
 
     @staticmethod
     def _write_label(image, state, basename):
@@ -75,7 +87,7 @@ class Debugger:
                 d, det.position.bbox, f"{prefix}_{det.unit.name}", rgba
             )
 
-    def _write_image(self, image, state, basename):
+    def _annotate_image(self, image, state):
         d = ImageDraw.Draw(image, "RGBA")
         for det in asdict(state.numbers).values():
             det = NumberDetection(**det)
@@ -89,12 +101,26 @@ class Debugger:
             d.rectangle(tuple(position))
             self._draw_text(d, position, card.name)
 
-        image.save(os.path.join(SCREENSHOTS_DIR, f"{basename}.png"))
+        return image
 
     def run(self, image, state):
         n_screenshots = len(os.listdir(SCREENSHOTS_DIR))
         n_labels = len(os.listdir(LABELS_DIR))
         basename = max(n_labels, n_screenshots) + 1
 
-        self._write_image(image, state, basename)
-        self._write_label(image, state, basename)
+        if self.save_labels:
+            self._write_label(image, state, basename)
+
+        if not self.save_images and not self.show_images:
+            return
+
+        annotated_image = self._annotate_image(image, state)
+
+        if self.save_images:
+            annotated_image.save(
+                os.path.join(SCREENSHOTS_DIR, f"{basename}.png")
+            )
+
+        if self.show_images:
+            cv2.imshow("Visualizer", np.array(annotated_image)[..., ::-1])
+            cv2.waitKey(1)

@@ -14,14 +14,12 @@ import zipfile
 import av
 from loguru import logger
 import requests
-import yaml
 
 from clashroyalebuildabot.constants import ADB_DIR
 from clashroyalebuildabot.constants import ADB_PATH
 from clashroyalebuildabot.constants import EMULATOR_DIR
 from clashroyalebuildabot.constants import SCREENSHOT_HEIGHT
 from clashroyalebuildabot.constants import SCREENSHOT_WIDTH
-from clashroyalebuildabot.constants import SRC_DIR
 
 
 class KThread(threading.Thread):
@@ -98,13 +96,9 @@ def ignored(*exceptions):
 
 
 class Emulator:
-    def __init__(self):
-        config_path = os.path.join(SRC_DIR, "config.yaml")
-        with open(config_path, encoding="utf-8") as file:
-            config = yaml.safe_load(file)
-
-        adb_config = config["adb"]
-        self.serial, self.ip = [adb_config[s] for s in ["device_serial", "ip"]]
+    def __init__(self, device_serial, ip):
+        self.device_serial = device_serial
+        self.ip = ip
 
         self.video_socket = None
         self.screenshot_thread = None
@@ -195,7 +189,7 @@ class Emulator:
             kill_pid(self.scrcpy_proc.pid)
 
     def _run_command(self, command):
-        command = [ADB_PATH, "-s", self.serial, *command]
+        command = [ADB_PATH, "-s", self.device_serial, *command]
         logger.debug(" ".join(command))
         try:
             start_time = time.time()
@@ -239,7 +233,7 @@ class Emulator:
         command = [
             ADB_PATH,
             "-s",
-            self.serial,
+            self.device_serial,
             "shell",
             "CLASSPATH=/data/local/tmp/scrcpy-server.jar",
             "app_process",
