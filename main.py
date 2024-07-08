@@ -4,6 +4,8 @@ import sys
 import threading
 import time
 
+from loguru import logger
+
 from clashroyalebuildabot.actions.archers_action import ArchersAction
 from clashroyalebuildabot.actions.giant_action import GiantAction
 from clashroyalebuildabot.actions.goblin_barrel_action import (
@@ -17,6 +19,14 @@ from clashroyalebuildabot.actions.zap_action import ZapAction
 from clashroyalebuildabot.bot import Bot
 
 start_time = datetime.now()
+
+logger.remove()
+logger.add(
+    sys.stderr,
+    format="{time} {level} {message}",
+    backtrace=False,
+    diagnose=False,
+)
 
 
 def update_terminal_title():
@@ -41,8 +51,12 @@ def main():
         MinipekkaAction,
         MusketeerAction,
     }
-    bot = Bot(actions=actions)
-    bot.run()
+    try:
+        bot = Bot(actions=actions)
+        bot.run()
+    except Exception as e:
+        logger.error(f"An error occurred: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
