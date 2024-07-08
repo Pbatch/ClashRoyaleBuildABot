@@ -25,6 +25,7 @@ from clashroyalebuildabot.constants import TILE_WIDTH
 from clashroyalebuildabot.detectors.detector import Detector
 from clashroyalebuildabot.emulator.emulator import Emulator
 from clashroyalebuildabot.namespaces import Screens
+from clashroyalebuildabot.visualizer import Visualizer
 
 
 class Bot:
@@ -41,8 +42,13 @@ class Bot:
             raise ValueError(f"Must provide 8 cards but was given: {cards}")
         self.cards_to_actions = dict(zip(cards, actions))
 
-        self.detector = Detector(cards=cards, debug=self.debug, visualize=self.visualize)
-        self.emulator = Emulator()
+        config_path = os.path.join(SRC_DIR, "config.yaml")
+        with open(config_path, encoding="utf-8") as file:
+            config = yaml.safe_load(file)
+
+        self.visualizer = Visualizer(**config["visuals"])
+        self.emulator = Emulator(**config["adb"])
+        self.detector = Detector(cards=cards)
         self.state = None
 
     @staticmethod
@@ -112,6 +118,8 @@ class Bot:
     def set_state(self):
         screenshot = self.emulator.take_screenshot()
         self.state = self.detector.run(screenshot)
+        if self.visualizer is not None:
+            self.visualizer.run(screenshot, self.state)
 
     def play_action(self, action):
         card_centre = self._get_card_centre(action.index)

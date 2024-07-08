@@ -1,6 +1,5 @@
 # Exports for clashroyalebuildabot
 from . import constants
-from . import debugger
 from .bot import Bot
 from .detectors import CardDetector
 from .detectors import Detector
@@ -13,9 +12,11 @@ from .namespaces import Cards
 from .namespaces import Screens
 from .namespaces import State
 from .namespaces import Units
+from .visualizer import Visualizer
 
 __all__ = [
     "constants",
+    "Visualizer",
     "Cards",
     "Units",
     "State",
