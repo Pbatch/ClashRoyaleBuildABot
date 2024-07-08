@@ -29,11 +29,9 @@ from clashroyalebuildabot.visualizer import Visualizer
 
 
 class Bot:
-    def __init__(self, actions, auto_start=True, debug=False, visualize=False):
+    def __init__(self, actions, auto_start=True):
         self.actions = actions
         self.auto_start = auto_start
-        self.debug = debug
-        self.visualize = visualize
 
         self._setup_logger()
 
