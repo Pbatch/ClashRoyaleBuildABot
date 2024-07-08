@@ -6,6 +6,7 @@ import os
 import platform
 import socket
 import subprocess
+import sys
 import threading
 import time
 import zipfile
@@ -133,13 +134,34 @@ class Emulator:
         response = requests.get(adb_url, stream=True, timeout=60)
         response.raise_for_status()
 
+        total_size = int(response.headers.get("content-length", 0))
+        downloaded_size = 0
+
         with open(zip_path, "wb") as file:
             for chunk in response.iter_content(chunk_size=1024):
                 if chunk:
                     file.write(chunk)
+                    downloaded_size += len(chunk)
+                    done = int(50 * downloaded_size / total_size)
+                    progress_message = (
+                        f"\r[{'█' * done}{'.' * (50-done)}] "
+                        f"{downloaded_size} of {total_size} bytes "
+                        f"({downloaded_size/total_size*100:.2f}%) Downloading Platform-Tools"
+                    )
+                    sys.stdout.write(progress_message)
+                    sys.stdout.flush()
+
+        logger.info("\nDownload completed. Extracting files...")
 
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
             zip_ref.extractall(EMULATOR_DIR)
+
+        logger.info("Extraction completed.")
+
+        with zipfile.ZipFile(zip_path, "r") as zip_ref:
+            zip_ref.extractall(EMULATOR_DIR)
+
+        logger.info("Extraction completed.")
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.quit()
