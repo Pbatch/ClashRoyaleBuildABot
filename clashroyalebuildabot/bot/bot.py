@@ -116,8 +116,7 @@ class Bot:
     def set_state(self):
         screenshot = self.emulator.take_screenshot()
         self.state = self.detector.run(screenshot)
-        if self.visualizer is not None:
-            self.visualizer.run(screenshot, self.state)
+        self.visualizer.run(screenshot, self.state)
 
     def play_action(self, action):
         card_centre = self._get_card_centre(action.index)
