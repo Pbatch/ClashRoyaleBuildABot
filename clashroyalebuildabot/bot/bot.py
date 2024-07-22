@@ -169,4 +169,3 @@ class Bot:
                 self.step()
         except KeyboardInterrupt:
             logger.info("Thanks for using CRBAB, see you next time!")
-            self.emulator.quit()

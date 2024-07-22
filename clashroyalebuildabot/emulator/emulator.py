@@ -1,10 +1,8 @@
 # pylint: disable=consider-using-with
 
-import atexit
-from contextlib import contextmanager
+import base64
 import os
 import platform
-import socket
 import subprocess
 import sys
 import threading
@@ -14,6 +12,7 @@ import zipfile
 import av
 from loguru import logger
 import requests
+from tqdm import tqdm
 
 from clashroyalebuildabot.constants import ADB_DIR
 from clashroyalebuildabot.constants import ADB_PATH
@@ -22,171 +21,76 @@ from clashroyalebuildabot.constants import SCREENSHOT_HEIGHT
 from clashroyalebuildabot.constants import SCREENSHOT_WIDTH
 
 
-class KThread(threading.Thread):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._kill = threading.Event()
-
-    def start(self):
-        self._kill.clear()
-        super().start()
-
-    def run(self):
-        while not self._kill.is_set():
-            super().run()
-
-    def kill(self):
-        self._kill.set()
-
-
-def get_free_port():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(("", 0))
-        return s.getsockname()[1]
-
-
-def kill_pid(pid):
-    try:
-        os.kill(pid, 9)
-    except OSError as e:
-        logger.error(f"Error killing pid {pid}: {e}")
-
-
-def kill_process_children_parents(pid):
-    try:
-        for child_pid in get_child_processes(pid):
-            kill_pid(child_pid)
-        kill_pid(pid)
-    except Exception as e:
-        logger.error(f"Error killing process tree for pid {pid}: {e}")
-
-
-def get_child_processes(pid):
-    try:
-        child_pids = []
-        with subprocess.Popen(
-            ["ps", "-o", "pid", "--ppid", str(pid), "--noheaders"],
-            stdout=subprocess.PIPE,
-        ) as ps_command:
-            ps_output = ps_command.stdout.read()
-        for line in ps_output.splitlines():
-            child_pids.append(int(line))
-        return child_pids
-    except Exception as e:
-        logger.error(f"Error getting child processes for pid {pid}: {e}")
-        return []
-
-
-@atexit.register
-def kill_them_all():
-    try:
-        parent_pids = get_child_processes(os.getpid())
-        for parent_pid in parent_pids:
-            kill_process_children_parents(parent_pid)
-    except Exception as e:
-        logger.error(f"Error in kill_them_all: {e}")
-
-
-@contextmanager
-def ignored(*exceptions):
-    try:
-        yield
-    except exceptions:
-        pass
-
-
 class Emulator:
     def __init__(self, device_serial, ip):
         self.device_serial = device_serial
         self.ip = ip
 
-        self.video_socket = None
-        self.screenshot_thread = None
+        self.frame_thread = None
+        self.video_thread = None
         self.frame = None
-        self.scrcpy_proc = None
         self.codec = av.codec.CodecContext.create("h264", "r")
-        self.forward_port = get_free_port()
+        self.os_name = platform.system().lower()
 
         self._install_adb()
         self._restart_server()
         self.width, self.height = self._get_width_and_height()
-        self._copy_scrcpy()
-        self._forward_port()
-        self._start_scrcpy()
-        self._connect_to_server()
-        self._start_capturing()
+        self._start_recording()
+        self._start_updating_frame()
 
-    @staticmethod
-    def _install_adb():
+    def _start_recording(self):
+        cmd = f"""#!/bin/bash
+        record() {{
+            screenrecord --output-format=h264 --time-limit "$1" --size "$2" --bit-rate "$3" -
+        }}
+
+        time_interval=179
+        size="{self.width}x{self.height}"
+        bitrate="20M"
+        #screenrecord --output-format=h264 --time-limit 1 --size "$size" --bit-rate "$bitrate" -
+        while true; do
+            record $time_interval "$size" "$bitrate"
+        done\n"""
+        cmd = base64.standard_b64encode(cmd.encode("utf-8")).decode("utf-8")
+        cmd = ["echo", cmd, "|", "base64", "-d", "|", "sh"]
+        cmd = " ".join(cmd) + "\n"
+        self.video_thread = subprocess.Popen(
+            [ADB_PATH, "-s", self.device_serial, "shell", cmd],
+            stderr=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stdin=subprocess.DEVNULL,
+            bufsize=0,
+        )
+
+    def _install_adb(self):
         if os.path.isdir(ADB_DIR):
             return
 
-        os_name = platform.system().lower()
-        adb_url = f"https://dl.google.com/android/repository/platform-tools-latest-{os_name}.zip"
-        zip_path = f"platform-tools-latest-{os_name}.zip"
+        basename = f"platform-tools-latest-{self.os_name}.zip"
+        zip_path = os.path.join(EMULATOR_DIR, basename)
+        adb_url = f"https://dl.google.com/android/repository/{basename}"
 
         response = requests.get(adb_url, stream=True, timeout=60)
         response.raise_for_status()
-
         total_size = int(response.headers.get("content-length", 0))
-        downloaded_size = 0
+        chunk_size = 1024 * 1024  # 1 MB chunks
+        total_size_mb = total_size / chunk_size
 
         with open(zip_path, "wb") as file:
-            for chunk in response.iter_content(chunk_size=1024):
-                if chunk:
-                    file.write(chunk)
-                    downloaded_size += len(chunk)
-                    done = int(50 * downloaded_size / total_size)
-                    progress_message = (
-                        f"\r[{'█' * done}{'.' * (50-done)}] "
-                        f"{downloaded_size} of {total_size} bytes "
-                        f"({downloaded_size/total_size*100:.2f}%) Downloading Platform-Tools"
-                    )
-                    sys.stdout.write(progress_message)
-                    sys.stdout.flush()
-
-        logger.info("\nDownload completed. Extracting files...")
-
+            with tqdm(
+                unit="MB",
+                desc="Downloading ADB",
+                unit_scale=True,
+                unit_divisor=1024,
+                total=total_size_mb,
+            ) as pbar:
+                for chunk in response.iter_content(chunk_size=chunk_size):
+                    if chunk:
+                        size = file.write(chunk)
+                        pbar.update(size / chunk_size)
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
             zip_ref.extractall(EMULATOR_DIR)
-
-        logger.info("Extraction completed.")
-
-        with zipfile.ZipFile(zip_path, "r") as zip_ref:
-            zip_ref.extractall(EMULATOR_DIR)
-
-        logger.info("Extraction completed.")
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.quit()
-
-    def quit(self):
-        while self.screenshot_thread.is_alive():
-            with ignored(Exception):
-                self.screenshot_thread.kill()
-        self.video_socket.close()
-
-        with ignored(Exception):
-            self.scrcpy_proc.stdout.close()
-
-        with ignored(Exception):
-            self.scrcpy_proc.stdin.close()
-
-        with ignored(Exception):
-            self.scrcpy_proc.stderr.close()
-
-        with ignored(Exception):
-            self.scrcpy_proc.wait(timeout=2)
-
-        with ignored(Exception):
-            self.scrcpy_proc.kill()
-
-        with ignored(Exception):
-            kill_process_children_parents(pid=self.scrcpy_proc.pid)
-            time.sleep(2)
-
-        with ignored(Exception):
-            kill_pid(self.scrcpy_proc.pid)
+        os.remove(zip_path)
 
     def _run_command(self, command):
         command = [ADB_PATH, "-s", self.device_serial, *command]
@@ -208,12 +112,10 @@ class Emulator:
             logger.error(f"Error executing command: {e}")
             logger.error(f"Output: {e.stdout}")
             logger.error(f"Error output: {e.stderr}")
-            self.quit()
             raise
 
         if result.returncode != 0:
             logger.error(f"Error executing command: {result.stderr}")
-            self.quit()
             raise RuntimeError("ADB command failed")
 
         return result.stdout
@@ -226,85 +128,37 @@ class Emulator:
         )
         self._run_command(["start-server"])
 
-    def _copy_scrcpy(self):
-        self._run_command(["push", "scrcpy-server.jar", "/data/local/tmp/"])
-
-    def _start_scrcpy(self):
-        command = [
-            ADB_PATH,
-            "-s",
-            self.device_serial,
-            "shell",
-            "CLASSPATH=/data/local/tmp/scrcpy-server.jar",
-            "app_process",
-            "/",
-            "com.genymobile.scrcpy.Server",
-            "2.0",
-            "tunnel_forward=true",
-            "control=false",
-            "cleanup=true",
-            "clipboard_autosync=false",
-            "video_bit_rate=8000000",
-            "audio=false",
-            "lock_video_orientation=0",
-            "downsize_on_error=false",
-            "send_dummy_byte=true",
-            "raw_video_stream=true",
-            f"max_size={self.width}",
-        ]
-        logger.debug("Starting scrcpy process")
+    def _update_frame(self):
+        lines = []
         try:
-            self.scrcpy_proc = subprocess.Popen(
-                command,
-                stderr=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                cwd=EMULATOR_DIR,
-            )
-            logger.debug("scrcpy process started")
+            for line in iter(self.video_thread.stdout.readline, b""):
+                if self.os_name == "windows":
+                    line = line.replace(b"\r\n", b"\n")
+                if line:
+                    lines.append(line)
+                if len(lines) == 0:
+                    continue
+
+                try:
+                    packets = self.codec.parse(b"".join(lines))
+                    if len(packets) == 0:
+                        continue
+
+                    frames = self.codec.decode(packets[-1])
+                    if len(frames) == 0:
+                        continue
+
+                    self.frame = frames[-1]
+                    lines.clear()
+                except Exception as e:
+                    sys.stderr.write(f"{e}\n")
         except Exception as e:
-            logger.error(f"Failed to start scrcpy process: {e}")
-            self.quit()
-            raise
+            sys.stderr.write(f"{e}\n")
 
-    def _forward_port(self):
-        self._run_command(
-            ["forward", f"tcp:{self.forward_port}", "localabstract:scrcpy"]
-        )
-
-    def _connect_to_server(self):
-        dummy_byte = b""
-        while not dummy_byte:
-            with ignored(Exception):
-                self.video_socket = socket.socket(
-                    socket.AF_INET, socket.SOCK_STREAM
-                )
-                self.video_socket.connect((self.ip, self.forward_port))
-
-                self.video_socket.setblocking(False)
-                self.video_socket.settimeout(1)
-                dummy_byte = self.video_socket.recv(1)
-                if len(dummy_byte) == 0:
-                    self.video_socket.close()
-
-    def _start_capturing(self):
-        self.screenshot_thread = KThread(
-            target=self._update_screenshot, name="update_screenshot_thread"
-        )
-        self.screenshot_thread.start()
-
-    def _update_screenshot(self):
-        while True:
-            with ignored(Exception):
-                packets = self.codec.parse(self.video_socket.recv(131072))
-                if len(packets) == 0:
-                    continue
-
-                frames = self.codec.decode(packets[-1])
-                if len(frames) == 0:
-                    continue
-
-                self.frame = frames[-1]
-                time.sleep(0.001)
+    def _start_updating_frame(self):
+        self.frame_thread = threading.Thread(target=self._update_frame)
+        self.frame_thread.daemon = True
+        self.frame_thread.start()
 
     def _get_width_and_height(self):
         window_size = self._run_command(["shell", "wm", "size"])
