@@ -4,7 +4,6 @@ import base64
 import os
 import platform
 import subprocess
-import sys
 import threading
 import time
 import zipfile
@@ -40,16 +39,8 @@ class Emulator:
 
     def _start_recording(self):
         cmd = f"""#!/bin/bash
-        record() {{
-            screenrecord --output-format=h264 --time-limit "$1" --size "$2" --bit-rate "$3" -
-        }}
-
-        time_interval=179
-        size="{self.width}x{self.height}"
-        bitrate="20M"
-        #screenrecord --output-format=h264 --time-limit 1 --size "$size" --bit-rate "$bitrate" -
         while true; do
-            record $time_interval "$size" "$bitrate"
+            screenrecord --output-format=h264 --time-limit "179" --size "{self.width}x{self.height}" --bit-rate "5M" -
         done\n"""
         cmd = base64.standard_b64encode(cmd.encode("utf-8")).decode("utf-8")
         cmd = ["echo", cmd, "|", "base64", "-d", "|", "sh"]
@@ -109,9 +100,9 @@ class Emulator:
                 f"Command executed in {end_time - start_time} seconds"
             )
         except subprocess.CalledProcessError as e:
-            logger.error(f"Error executing command: {e}")
-            logger.error(f"Output: {e.stdout}")
-            logger.error(f"Error output: {e.stderr}")
+            logger.error(str(e))
+            logger.error(f"stdout: {e.stdout}")
+            logger.error(f"stderr: {e.stderr}")
             raise
 
         if result.returncode != 0:
@@ -129,31 +120,34 @@ class Emulator:
         self._run_command(["start-server"])
 
     def _update_frame(self):
-        lines = []
-        try:
-            for line in iter(self.video_thread.stdout.readline, b""):
-                if self.os_name == "windows":
-                    line = line.replace(b"\r\n", b"\n")
-                if line:
-                    lines.append(line)
-                if len(lines) == 0:
+        for line in iter(self.video_thread.stdout.readline, b""):
+            try:
+                if not line:
                     continue
 
-                try:
-                    packets = self.codec.parse(b"".join(lines))
-                    if len(packets) == 0:
-                        continue
+                if self.os_name == "windows":
+                    line = line.replace(b"\r\n", b"\n")
 
-                    frames = self.codec.decode(packets[-1])
-                    if len(frames) == 0:
-                        continue
+                packets = self.codec.parse(line)
+                if len(packets) == 0:
+                    continue
 
-                    self.frame = frames[-1]
-                    lines.clear()
-                except Exception as e:
-                    sys.stderr.write(f"{e}\n")
-        except Exception as e:
-            sys.stderr.write(f"{e}\n")
+                frames = self.codec.decode(packets[-1])
+                if len(frames) == 0:
+                    continue
+
+                self.frame = (
+                    frames[-1]
+                    .reformat(
+                        width=SCREENSHOT_WIDTH,
+                        height=SCREENSHOT_HEIGHT,
+                        format="rgb24",
+                    )
+                    .to_image()
+                )
+
+            except Exception as e:
+                logger.error(str(e))
 
     def _start_updating_frame(self):
         self.frame_thread = threading.Thread(target=self._update_frame)
@@ -188,10 +182,9 @@ class Emulator:
     def take_screenshot(self):
         logger.debug("Starting to take screenshot...")
         while self.frame is None:
-            time.sleep(0.001)
-        frame, self.frame = self.frame, None
-        screenshot = frame.reformat(
-            width=SCREENSHOT_WIDTH, height=SCREENSHOT_HEIGHT, format="rgb24"
-        ).to_image()
+            time.sleep(0.01)
+            continue
+
+        screenshot, self.frame = self.frame, None
 
         return screenshot
