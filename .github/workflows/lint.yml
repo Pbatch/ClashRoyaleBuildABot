@@ -19,7 +19,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
     - name: Install dependencies
-      run: pip install .[dev]
+      run: pip install .[cpu]
     - name: Run isort
       run: isort --check .
     - name: Run flake8

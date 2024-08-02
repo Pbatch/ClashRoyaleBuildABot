@@ -20,8 +20,8 @@ jobs:
         cache: 'pip'
     - name: Install dependencies
       run: |
-        pip install .
-        pip install .[dev]
+        pip install .[cpu]
+        pip install .[gpu]
     - name: Verify installation
       run: |
         python -m pip check
