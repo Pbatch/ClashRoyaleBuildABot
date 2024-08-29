@@ -60,14 +60,14 @@ class Emulator:
                 devices_output = subprocess.check_output(
                     [ADB_PATH, "devices"]
                 ).decode("utf-8")
-                available_devices = []
-
-                for line in devices_output.splitlines():
-                    if "\tdevice" in line:
-                        available_devices.append(line.split()[0])
+                available_devices = [
+                    line.split()[0]
+                    for line in devices_output.splitlines()
+                    if "\tdevice" in line
+                ]
 
                 if not available_devices:
-                    raise RuntimeError("No connected devices found")
+                    raise RuntimeError("No connected devices found") from e
 
                 fallback_device_serial = available_devices[0]
                 logger.info(
@@ -80,13 +80,16 @@ class Emulator:
                 )
                 raise RuntimeError(
                     "Could not find a valid device to connect to."
-                )
+                ) from adb_error
 
     def _start_recording(self):
-        cmd = f"""#!/bin/bash
-        while true; do
-            screenrecord --output-format=h264 --time-limit "179" --size "{self.width}x{self.height}" --bit-rate "5M" -
-        done\n"""
+        cmd = (
+            f"""#!/bin/bash
+            while true; do
+                screenrecord --output-format=h264 --time-limit "179" """
+            f"""--size "{self.width}x{self.height}" --bit-rate "5M" -
+            done\n"""
+        )
         cmd = base64.standard_b64encode(cmd.encode("utf-8")).decode("utf-8")
         cmd = ["echo", cmd, "|", "base64", "-d", "|", "sh"]
         cmd = " ".join(cmd) + "\n"
