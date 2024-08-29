@@ -33,9 +33,54 @@ class Emulator:
 
         self._install_adb()
         self._restart_server()
+        self.device_serial = self._get_valid_device_serial()
         self.width, self.height = self._get_width_and_height()
         self._start_recording()
         self._start_updating_frame()
+
+    def _get_valid_device_serial(self):
+        try:
+            logger.info(
+                f"Trying to connect to device '{self.device_serial}' from config."
+            )
+            self._run_command(["get-state"])
+            logger.info(
+                f"Successfully connected to the device '{self.device_serial}' from config."
+            )
+            return self.device_serial
+        except Exception as e:
+            logger.warning(
+                f"Device '{self.device_serial}' not found or not accessible: {str(e)}"
+            )
+            logger.warning(
+                "Trying to find a connected device via adb devices..."
+            )
+
+            try:
+                devices_output = subprocess.check_output(
+                    [ADB_PATH, "devices"]
+                ).decode("utf-8")
+                available_devices = []
+
+                for line in devices_output.splitlines():
+                    if "\tdevice" in line:
+                        available_devices.append(line.split()[0])
+
+                if not available_devices:
+                    raise RuntimeError("No connected devices found")
+
+                fallback_device_serial = available_devices[0]
+                logger.info(
+                    f"Using the first available device: {fallback_device_serial}"
+                )
+                return fallback_device_serial
+            except subprocess.CalledProcessError as adb_error:
+                logger.error(
+                    f"Failed to execute adb devices: {str(adb_error)}"
+                )
+                raise RuntimeError(
+                    "Could not find a valid device to connect to."
+                )
 
     def _start_recording(self):
         cmd = f"""#!/bin/bash
