@@ -168,6 +168,7 @@ class Emulator:
         self._run_command(["start-server"])
 
     def _update_frame(self):
+        logger.debug("Starting to update frames...")
         for line in iter(self.video_thread.stdout.readline, b""):
             try:
                 if not line:
@@ -177,11 +178,11 @@ class Emulator:
                     line = line.replace(b"\r\n", b"\n")
 
                 packets = self.codec.parse(line)
-                if len(packets) == 0:
+                if not packets:
                     continue
 
                 frames = self.codec.decode(packets[-1])
-                if len(frames) == 0:
+                if not frames:
                     continue
 
                 self.frame = (
@@ -194,8 +195,10 @@ class Emulator:
                     .to_image()
                 )
 
+            except av.AVError as av_error:
+                logger.error(f"Error while decoding video stream: {av_error}")
             except Exception as e:
-                logger.error(str(e))
+                logger.error(f"Unexpected error in frame update: {str(e)}")
 
     def _start_updating_frame(self):
         self.frame_thread = threading.Thread(target=self._update_frame)

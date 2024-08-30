@@ -1,4 +1,5 @@
 import os
+import time
 
 from loguru import logger
 
@@ -32,11 +33,22 @@ class Detector:
 
     def run(self, image):
         logger.debug("Setting state...")
-        cards, ready = self.card_detector.run(image)
-        allies, enemies = self.unit_detector.run(image)
-        numbers = self.number_detector.run(image)
-        screen = self.screen_detector.run(image)
+        retries = 3
+        for attempt in range(retries):
+            try:
+                cards, ready = self.card_detector.run(image)
+                allies, enemies = self.unit_detector.run(image)
+                numbers = self.number_detector.run(image)
+                screen = self.screen_detector.run(image)
 
-        state = State(allies, enemies, numbers, cards, ready, screen)
+                state = State(allies, enemies, numbers, cards, ready, screen)
+                return state
+            except Exception as e:
+                logger.error(
+                    f"Detection failed on attempt {attempt + 1}: {str(e)}"
+                )
+                if attempt < retries - 1:
+                    time.sleep(1)
 
-        return state
+        logger.error("All detection attempts failed. Returning default state.")
+        return State([], [], [], [], False, None)
