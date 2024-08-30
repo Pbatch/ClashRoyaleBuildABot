@@ -2,7 +2,7 @@ bot:
   # The logging level for the bot.
   # Use "DEBUG" for detailed debugging information, "INFO" for general information,
   # "WARNING" for warning messages, "ERROR" for error messages, and "CRITICAL" for critical issues.
-  log_level: "INFO"
+  log_level: "DEBUG"
 
 adb:
   # The IP address of your device or emulator.
@@ -15,6 +15,15 @@ adb:
   device_serial: emulator-5554
 
 visuals:
+  # show_images displays the bot's current view in a GUI.
+  # save_images saves the images seen by the bot.
+  # save_labels saves the images along with the labels and the bot's perspective.
   save_labels: False
   save_images: False
   show_images: False
+
+ingame:
+  # The delay between actions.
+  # The default is 1. For faster action execution on high-performance PCs, you can set this to 0.5.
+  # For lower-performance PCs, consider using 1.25 to 1.5.
+  play_action: 1
