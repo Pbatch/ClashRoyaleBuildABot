@@ -8,7 +8,7 @@ from clashroyalebuildabot.namespaces import Screens
 
 
 class ScreenDetector:
-    def __init__(self, hash_size=8, threshold=20):
+    def __init__(self, hash_size=8, threshold=30):
         self.hash_size = hash_size
         self.threshold = threshold
         self.screen_hashes = self._calculate_screen_hashes()
