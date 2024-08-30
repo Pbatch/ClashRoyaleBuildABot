@@ -59,6 +59,7 @@ class Bot:
         self.emulator = Emulator(**config["adb"])
         self.detector = Detector(cards=cards)
         self.state = None
+        self.play_action_delay = config.get("ingame", {}).get("play_action", 1)
 
         keyboard_thread = threading.Thread(
             target=self._handle_keyboard_shortcut, daemon=True
@@ -176,7 +177,7 @@ class Bot:
                 self.emulator.click(*self.state.screen.click_xy)
                 self.end_of_game_clicked = True
                 logger.debug(
-                    "Clicked END_OF_GAME screen. Waiting for 2 seconds."
+                    "Clicked END_OF_GAME screen. Waiting for 2 Seconds."
                 )
                 time.sleep(2)
             return
@@ -185,15 +186,18 @@ class Bot:
 
         if self.auto_start and new_screen == Screens.LOBBY:
             self.emulator.click(*self.state.screen.click_xy)
-            logger.info("Starting game. Waiting for 2 seconds")
+            logger.info("Starting game. Waiting for 2 Seconds.")
             self.end_of_game_clicked = False
             time.sleep(2)
             return
 
         actions = self.get_actions()
         if not actions:
-            logger.debug("No actions available. Waiting for 1 second")
-            time.sleep(1)
+            logger.debug(
+                f"No actions available. Waiting for {self.play_action_delay} "
+                f"{'Second' if self.play_action_delay == 1 else 'Seconds'}."
+            )
+            time.sleep(self.play_action_delay)
             return
 
         random.shuffle(actions)
@@ -206,15 +210,19 @@ class Bot:
                 best_score = score
 
         if best_score[0] == 0:
-            logger.info("No good actions available. Waiting for 1 second")
-            time.sleep(1)
+            logger.info(
+                f"No good actions available. Waiting for {self.play_action_delay} "
+                f"{'Second' if self.play_action_delay == 1 else 'Seconds'}."
+            )
+            time.sleep(self.play_action_delay)
             return
 
         self.play_action(best_action)
         logger.info(
-            f"Playing {best_action} with score {best_score}. Waiting for 1 second"
+            f"Playing {best_action} with score {best_score}. Waiting for {self.play_action_delay} "
+            f"{'Second' if self.play_action_delay == 1 else 'Seconds'}."
         )
-        time.sleep(1)
+        time.sleep(self.play_action_delay)
 
     def run(self):
         try:
