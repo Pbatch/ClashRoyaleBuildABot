@@ -1,8 +1,10 @@
 import os
 import random
 import sys
+import threading
 import time
 
+import keyboard
 from loguru import logger
 import yaml
 
@@ -27,8 +29,16 @@ from clashroyalebuildabot.emulator.emulator import Emulator
 from clashroyalebuildabot.namespaces import Screens
 from clashroyalebuildabot.visualizer import Visualizer
 
+pause_event = threading.Event()
+pause_event.set()
+is_paused_logged = False
+is_resumed_logged = True
+
 
 class Bot:
+    is_paused_logged = False
+    is_resumed_logged = True
+
     def __init__(self, actions, auto_start=True):
         self.actions = actions
         self.auto_start = auto_start
@@ -49,6 +59,11 @@ class Bot:
         self.detector = Detector(cards=cards)
         self.state = None
 
+        keyboard_thread = threading.Thread(
+            target=self._handle_keyboard_shortcut, daemon=True
+        )
+        keyboard_thread.start()
+
     @staticmethod
     def _setup_logger():
         config_path = os.path.join(SRC_DIR, "config.yaml")
@@ -62,6 +77,20 @@ class Bot:
             rotation="500 MB",
             level=log_level,
         )
+
+    def _handle_keyboard_shortcut(self):
+        while True:
+            keyboard.wait("ctrl+p")
+            if pause_event.is_set():
+                logger.info("Bot paused.")
+                pause_event.clear()
+                Bot.is_paused_logged = True
+                Bot.is_resumed_logged = False
+            else:
+                logger.info("Bot resumed.")
+                pause_event.set()
+                Bot.is_resumed_logged = True
+                Bot.is_paused_logged = False
 
     @staticmethod
     def _get_nearest_tile(x, y):
@@ -125,6 +154,16 @@ class Bot:
         self.emulator.click(*tile_centre)
 
     def step(self):
+        if not pause_event.is_set():
+            if not Bot.is_paused_logged:
+                logger.info("Bot paused.")
+                Bot.is_paused_logged = True
+            time.sleep(0.1)
+            return
+        if not Bot.is_resumed_logged:
+            logger.info("Bot resumed.")
+            Bot.is_resumed_logged = True
+
         old_screen = self.state.screen if self.state else None
         self.set_state()
         new_screen = self.state.screen
@@ -166,6 +205,10 @@ class Bot:
     def run(self):
         try:
             while True:
+                if not pause_event.is_set():
+                    time.sleep(0.1)
+                    continue
+
                 self.step()
         except KeyboardInterrupt:
             logger.info("Thanks for using CRBAB, see you next time!")
