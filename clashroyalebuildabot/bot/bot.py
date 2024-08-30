@@ -42,6 +42,7 @@ class Bot:
     def __init__(self, actions, auto_start=True):
         self.actions = actions
         self.auto_start = auto_start
+        self.end_of_game_clicked = False
 
         self._setup_logger()
 
@@ -170,9 +171,22 @@ class Bot:
         if new_screen != old_screen:
             logger.info(f"New screen state: {new_screen}")
 
-        if self.auto_start and new_screen != Screens.IN_GAME:
+        if new_screen == Screens.END_OF_GAME:
+            if not self.end_of_game_clicked:
+                self.emulator.click(*self.state.screen.click_xy)
+                self.end_of_game_clicked = True
+                logger.debug(
+                    "Clicked END_OF_GAME screen. Waiting for 2 seconds."
+                )
+                time.sleep(2)
+            return
+
+        self.end_of_game_clicked = False
+
+        if self.auto_start and new_screen == Screens.LOBBY:
             self.emulator.click(*self.state.screen.click_xy)
             logger.info("Starting game. Waiting for 2 seconds")
+            self.end_of_game_clicked = False
             time.sleep(2)
             return
 
