@@ -23,9 +23,7 @@ class Detector:
         self.cards = cards
 
         self.card_detector = CardDetector(self.cards)
-        self.number_detector = NumberDetector(
-            os.path.join(MODELS_DIR, "numbers_S_128x32.onnx")
-        )
+        self.number_detector = NumberDetector()
         self.unit_detector = UnitDetector(
             os.path.join(MODELS_DIR, "units_M_480x352.onnx"), self.cards
         )
