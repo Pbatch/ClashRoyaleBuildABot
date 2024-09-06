@@ -82,99 +82,45 @@ CARD_CONFIG = [
 ]
 
 # Numbers
-NUMBER_WIDTH = 32
-NUMBER_HEIGHT = 8
-KING_HP_X = 188
+HP_WIDTH = 40
+HP_HEIGHT = 8
 LEFT_PRINCESS_HP_X = 74
 RIGHT_PRINCESS_HP_X = 266
 ALLY_PRINCESS_HP_Y = 403
 ENEMY_PRINCESS_HP_Y = 95
-ALLY_KING_LEVEL_Y = 487
-ENEMY_KING_LEVEL_Y = 19
-KING_LEVEL_X = 134
-KING_LEVEL_2_X = KING_LEVEL_X + NUMBER_WIDTH
 ELIXIR_BOUNDING_BOX = (100, 628, 350, 643)
-NUMBER_CONFIG = [
-    [
-        "enemy_king_level",
-        KING_LEVEL_X,
-        ENEMY_KING_LEVEL_Y,
-    ],
-    [
-        "enemy_king_level_2",
-        KING_LEVEL_2_X,
-        ENEMY_KING_LEVEL_Y,
-    ],
-    [
-        "ally_king_level",
-        KING_LEVEL_X,
-        ALLY_KING_LEVEL_Y,
-    ],
-    [
-        "ally_king_level_2",
-        KING_LEVEL_2_X,
-        ALLY_KING_LEVEL_Y,
-    ],
-    ["enemy_king_hp", KING_HP_X, 15],
-    ["ally_king_hp", KING_HP_X, 495],
-    [
-        "right_ally_princess_hp",
+ALLY_HP_LHS_COLOUR = (111, 208, 252)
+ALLY_HP_RHS_COLOUR = (63, 79, 112)
+ENEMY_HP_LHS_COLOUR = (224, 35, 93)
+ENEMY_HP_RHS_COLOUR = (90, 49, 68)
+NUMBER_CONFIG = {
+    "right_ally_princess_hp": [
         RIGHT_PRINCESS_HP_X,
         ALLY_PRINCESS_HP_Y,
+        ALLY_HP_LHS_COLOUR,
+        ALLY_HP_RHS_COLOUR,
     ],
-    [
-        "left_ally_princess_hp",
+    "left_ally_princess_hp": [
         LEFT_PRINCESS_HP_X,
         ALLY_PRINCESS_HP_Y,
+        ALLY_HP_LHS_COLOUR,
+        ALLY_HP_RHS_COLOUR,
     ],
-    [
-        "right_enemy_princess_hp",
+    "right_enemy_princess_hp": [
         RIGHT_PRINCESS_HP_X,
         ENEMY_PRINCESS_HP_Y,
+        ENEMY_HP_LHS_COLOUR,
+        ENEMY_HP_RHS_COLOUR,
     ],
-    [
-        "left_enemy_princess_hp",
+    "left_enemy_princess_hp": [
         LEFT_PRINCESS_HP_X,
         ENEMY_PRINCESS_HP_Y,
+        ENEMY_HP_LHS_COLOUR,
+        ENEMY_HP_RHS_COLOUR,
     ],
-]
-
-# HP
-KING_HP = [
-    2400,
-    2568,
-    2736,
-    2904,
-    3096,
-    3312,
-    3528,
-    3768,
-    4008,
-    4392,
-    4824,
-    5304,
-    5832,
-    6408,
-]
-PRINCESS_HP = [
-    1400,
-    1512,
-    1624,
-    1750,
-    1890,
-    2030,
-    2184,
-    2352,
-    2534,
-    2786,
-    3052,
-    3346,
-    3668,
-    4032,
-]
+}
 
 # Units
-
 DETECTOR_UNITS = [
     Units.ARCHER,
     Units.ARCHER_QUEEN,
