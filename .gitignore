@@ -9,3 +9,4 @@ __pycache__/
 clashroyalebuildabot/debug
 clashroyalebuildabot/emulator/platform-tools
 env/
+crbab-venv/
