@@ -92,7 +92,7 @@ class Visualizer:
         for det in asdict(state.numbers).values():
             det = NumberDetection(**det)
             d.rectangle(det.bbox)
-            self._draw_text(d, det.bbox, str(det.number))
+            self._draw_text(d, det.bbox, f"{det.number:.2f}")
 
         self._draw_unit_bboxes(d, state.allies, "ally")
         self._draw_unit_bboxes(d, state.enemies, "enemy")
