@@ -1,10 +1,14 @@
 import math
 
-from clashroyalebuildabot.actions.action import Action
+from clashroyalebuildabot.actions.generic.action import Action
 from clashroyalebuildabot.namespaces.units import Units
 
 
 class SpellAction(Action):
+    """
+    Play the spell to hit as many enemy units as possible
+    """
+
     RADIUS = None
     MIN_SCORE = 5
     UNIT_TO_SCORE = {Units.SKELETON: 1}
