@@ -31,7 +31,7 @@ class ScreenDetector:
         return screen_hashes
 
     def run(self, image):
-        current_screen = Screens.IN_GAME
+        current_screen = Screens.UNKNOWN
         best_diff = self.threshold
 
         for screen in Screens.__dict__.values():
