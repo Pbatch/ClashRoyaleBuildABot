@@ -67,6 +67,15 @@ class Bot:
         keyboard_thread.start()
 
     @staticmethod
+    def _log_and_wait(prefix, delay):
+        suffix = ""
+        if delay > 1:
+            suffix = "s"
+        message = f"{prefix}. Waiting for {delay} second{suffix}."
+        logger.info(message)
+        time.sleep(delay)
+
+    @staticmethod
     def _setup_logger():
         config_path = os.path.join(SRC_DIR, "config.yaml")
         with open(config_path, encoding="utf-8") as file:
@@ -80,7 +89,8 @@ class Bot:
             level=log_level,
         )
 
-    def _handle_keyboard_shortcut(self):
+    @staticmethod
+    def _handle_keyboard_shortcut():
         while True:
             keyboard.wait("ctrl+p")
             if pause_event.is_set():
@@ -172,32 +182,28 @@ class Bot:
         if new_screen != old_screen:
             logger.info(f"New screen state: {new_screen}")
 
+        if new_screen == Screens.UNKNOWN:
+            self._log_and_wait("Unknown screen", 2)
+            return
+
         if new_screen == Screens.END_OF_GAME:
             if not self.end_of_game_clicked:
                 self.emulator.click(*self.state.screen.click_xy)
                 self.end_of_game_clicked = True
-                logger.debug(
-                    "Clicked END_OF_GAME screen. Waiting for 2 Seconds."
-                )
-                time.sleep(2)
+                self._log_and_wait("Clicked END_OF_GAME screen", 2)
             return
 
         self.end_of_game_clicked = False
 
         if self.auto_start and new_screen == Screens.LOBBY:
             self.emulator.click(*self.state.screen.click_xy)
-            logger.info("Starting game. Waiting for 2 Seconds.")
             self.end_of_game_clicked = False
-            time.sleep(2)
+            self._log_and_wait("Starting game", 2)
             return
 
         actions = self.get_actions()
         if not actions:
-            logger.debug(
-                f"No actions available. Waiting for {self.play_action_delay} "
-                f"{'Second' if self.play_action_delay == 1 else 'Seconds'}."
-            )
-            time.sleep(self.play_action_delay)
+            self._log_and_wait("No actions available", self.play_action_delay)
             return
 
         random.shuffle(actions)
@@ -210,19 +216,16 @@ class Bot:
                 best_score = score
 
         if best_score[0] == 0:
-            logger.info(
-                f"No good actions available. Waiting for {self.play_action_delay} "
-                f"{'Second' if self.play_action_delay == 1 else 'Seconds'}."
+            self._log_and_wait(
+                "No good actions available", self.play_action_delay
             )
-            time.sleep(self.play_action_delay)
             return
 
         self.play_action(best_action)
-        logger.info(
-            f"Playing {best_action} with score {best_score}. Waiting for {self.play_action_delay} "
-            f"{'Second' if self.play_action_delay == 1 else 'Seconds'}."
+        self._log_and_wait(
+            f"Playing {best_action} with score {best_score}",
+            self.play_action_delay,
         )
-        time.sleep(self.play_action_delay)
 
     def run(self):
         try:

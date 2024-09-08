@@ -1,14 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional, Tuple
 
-CHEST_SIZE = 62
-CHEST_X = 0
-CHEST_Y = 590
-OK_X = 143
-OK_Y = 558
-OK_WIDTH = 82
-OK_HEIGHT = 30
-
 
 @dataclass(frozen=True)
 class Screen:
@@ -19,15 +11,16 @@ class Screen:
 
 @dataclass(frozen=True)
 class _ScreensNamespace:
-    IN_GAME: Screen = Screen("in_game", None, None)
+    UNKNOWN: Screen = Screen("unknown", None, None)
+    IN_GAME: Screen = Screen("in_game", (315, 5, 365, 15), None)
     LOBBY: Screen = Screen(
         "lobby",
-        (CHEST_X, CHEST_Y, CHEST_X + CHEST_SIZE, CHEST_Y + CHEST_SIZE),
+        (315, 48, 356, 89),
         (220, 830),
     )
     END_OF_GAME: Screen = Screen(
         "end_of_game",
-        (OK_X, OK_Y, OK_X + OK_WIDTH, OK_Y + OK_HEIGHT),
+        (143, 558, 225, 588),
         (360, 1125),
     )
 
