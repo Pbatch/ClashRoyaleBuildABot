@@ -22,6 +22,7 @@ class _CardsNamespace:
     ARCHER_QUEEN: Card = Card("archer_queen", False, 5, [Units.ARCHER_QUEEN])
     ARCHERS: Card = Card("archers", False, 3, [Units.ARCHER])
     ARROWS: Card = Card("arrows", True, 3)
+    BABY_DRAGON: Card = Card("baby_dragon", False, 4, [Units.BABY_DRAGON])
     BALLOON: Card = Card("balloon", False, 5, [Units.BALLOON])
     BANDIT: Card = Card("bandit", False, 3, [Units.BANDIT])
     BARBARIAN_BARREL: Card = Card(
@@ -112,9 +113,6 @@ class _CardsNamespace:
     GUARDS: Card = Card("guards", False, 3, [Units.GUARD])
     HEAL_SPIRIT: Card = Card("heal_spirit", False, 1, [Units.HEAL_SPIRIT])
     HOG_RIDER: Card = Card("hog_rider", False, 4, [Units.HOG_RIDER])
-    HUNGRY_DRAGON: Card = Card(
-        "hungry_dragon", False, 4, [Units.HUNGRY_DRAGON]
-    )
     HUNTER: Card = Card("hunter", False, 4, [Units.HUNTER])
     ICE_GOLEM: Card = Card("ice_golem", False, 2, [Units.ICE_GOLEM])
     ICE_SPIRIT: Card = Card("ice_spirit", False, 1, [Units.ICE_SPIRIT])

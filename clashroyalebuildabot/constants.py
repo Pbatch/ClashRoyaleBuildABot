@@ -168,7 +168,7 @@ DETECTOR_UNITS = [
     Units.HEAL_SPIRIT,
     Units.HOG,
     Units.HOG_RIDER,
-    Units.HUNGRY_DRAGON,
+    Units.BABY_DRAGON,
     Units.HUNTER,
     Units.ICE_GOLEM,
     Units.ICE_SPIRIT,

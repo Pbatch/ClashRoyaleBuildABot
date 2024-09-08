@@ -1,11 +1,11 @@
 from .archers_action import ArchersAction
 from .arrows_action import ArrowsAction
+from .baby_dragon_action import BabyDragonAction
 from .bats_action import BatsAction
 from .cannon_action import CannonAction
 from .fireball_action import FireballAction
 from .giant_action import GiantAction
 from .goblin_barrel_action import GoblinBarrelAction
-from .hungry_dragon_action import HungryDragonAction
 from .knight_action import KnightAction
 from .minions_action import MinionsAction
 from .minipekka_action import MinipekkaAction
@@ -21,7 +21,7 @@ __all__ = [
     "FireballAction",
     "GiantAction",
     "GoblinBarrelAction",
-    "HungryDragonAction",
+    "BabyDragonAction",
     "KnightAction",
     "MinionsAction",
     "MinipekkaAction",
