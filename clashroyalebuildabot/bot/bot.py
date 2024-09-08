@@ -68,14 +68,12 @@ class Bot:
 
     @staticmethod
     def _log_and_wait(prefix, delay):
-        if delay == 1:
-            suffix = "second."
-        else:
-            suffix = "seconds."
-        message = f"{prefix}. Waiting for {delay} {suffix}"
+        suffix = ""
+        if delay > 1:
+            suffix = "s"
+        message = f"{prefix}. Waiting for {delay} second{suffix}."
         logger.info(message)
         time.sleep(delay)
-        return None
 
     @staticmethod
     def _setup_logger():
