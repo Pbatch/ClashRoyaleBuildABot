@@ -1,6 +1,6 @@
 import math
 
-from clashroyalebuildabot.actions.action import Action
+from clashroyalebuildabot.actions.generic.action import Action
 
 
 class OverheadAction(Action):

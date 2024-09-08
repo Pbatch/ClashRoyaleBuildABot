@@ -6,16 +6,14 @@ import time
 
 from loguru import logger
 
-from clashroyalebuildabot.actions.archers_action import ArchersAction
-from clashroyalebuildabot.actions.giant_action import GiantAction
-from clashroyalebuildabot.actions.goblin_barrel_action import (
-    GoblinBarrelAction,
-)
-from clashroyalebuildabot.actions.knight_action import KnightAction
-from clashroyalebuildabot.actions.minions_action import MinionsAction
-from clashroyalebuildabot.actions.minipekka_action import MinipekkaAction
-from clashroyalebuildabot.actions.musketeer_action import MusketeerAction
-from clashroyalebuildabot.actions.zap_action import ZapAction
+from clashroyalebuildabot.actions import ArchersAction
+from clashroyalebuildabot.actions import CannonAction
+from clashroyalebuildabot.actions import GoblinBarrelAction
+from clashroyalebuildabot.actions import HungryDragonAction
+from clashroyalebuildabot.actions import KnightAction
+from clashroyalebuildabot.actions import MinipekkaAction
+from clashroyalebuildabot.actions import MusketeerAction
+from clashroyalebuildabot.actions import WitchAction
 from clashroyalebuildabot.bot import Bot
 
 start_time = datetime.now()
@@ -43,13 +41,13 @@ def update_terminal_title():
 def main():
     actions = {
         ArchersAction,
-        ZapAction,
+        CannonAction,
         GoblinBarrelAction,
-        GiantAction,
         KnightAction,
-        MinionsAction,
+        HungryDragonAction,
         MinipekkaAction,
         MusketeerAction,
+        WitchAction,
     }
     try:
         bot = Bot(actions=actions)

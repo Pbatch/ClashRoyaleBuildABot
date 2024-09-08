@@ -1,5 +1,5 @@
 from clashroyalebuildabot import Cards
-from clashroyalebuildabot.actions.action import Action
+from clashroyalebuildabot.actions.generic.action import Action
 
 
 class GiantAction(Action):

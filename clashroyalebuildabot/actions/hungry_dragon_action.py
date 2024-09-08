@@ -4,8 +4,8 @@ from clashroyalebuildabot import Cards
 from clashroyalebuildabot.actions.generic.action import Action
 
 
-class MusketeerAction(Action):
-    CARD = Cards.MUSKETEER
+class HungryDragonAction(Action):
+    CARD = Cards.HUNGRY_DRAGON
 
     def calculate_score(self, state):
         for det in state.enemies:

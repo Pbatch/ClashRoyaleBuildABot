@@ -1,5 +1,5 @@
 from clashroyalebuildabot import Cards
-from clashroyalebuildabot.actions.overhead_action import OverheadAction
+from clashroyalebuildabot.actions.generic.overhead_action import OverheadAction
 
 
 class MinionsAction(OverheadAction):
