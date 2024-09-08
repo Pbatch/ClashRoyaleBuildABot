@@ -1,11 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional, Tuple
 
-IN_GAME_X = 143
-IN_GAME_Y = 558
-IN_GAME_WIDTH = 82
-IN_GAME_HEIGHT = 30
-
 
 @dataclass(frozen=True)
 class Screen:
