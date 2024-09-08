@@ -7,9 +7,9 @@ import time
 from loguru import logger
 
 from clashroyalebuildabot.actions import ArchersAction
+from clashroyalebuildabot.actions import BabyDragonAction
 from clashroyalebuildabot.actions import CannonAction
 from clashroyalebuildabot.actions import GoblinBarrelAction
-from clashroyalebuildabot.actions import HungryDragonAction
 from clashroyalebuildabot.actions import KnightAction
 from clashroyalebuildabot.actions import MinipekkaAction
 from clashroyalebuildabot.actions import MusketeerAction
@@ -41,10 +41,10 @@ def update_terminal_title():
 def main():
     actions = {
         ArchersAction,
+        BabyDragonAction,
         CannonAction,
         GoblinBarrelAction,
         KnightAction,
-        HungryDragonAction,
         MinipekkaAction,
         MusketeerAction,
         WitchAction,

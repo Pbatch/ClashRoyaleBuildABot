@@ -53,6 +53,9 @@ class _UnitsNamespace:
     ARCHER_QUEEN: Unit = Unit(
         "archer_queen", UnitCategory.TROOP, Target.ALL, Transport.GROUND
     )
+    BABY_DRAGON: Unit = Unit(
+        "baby_dragon", UnitCategory.TROOP, Target.ALL, Transport.AIR
+    )
     BALLOON: Unit = Unit(
         "balloon", UnitCategory.TROOP, Target.BUILDINGS, Transport.AIR
     )
@@ -189,9 +192,6 @@ class _UnitsNamespace:
     )
     HOG_RIDER: Unit = Unit(
         "hog_rider", UnitCategory.TROOP, Target.BUILDINGS, Transport.GROUND
-    )
-    HUNGRY_DRAGON: Unit = Unit(
-        "hungry_dragon", UnitCategory.TROOP, Target.ALL, Transport.AIR
     )
     HUNTER: Unit = Unit(
         "hunter", UnitCategory.TROOP, Target.ALL, Transport.GROUND
