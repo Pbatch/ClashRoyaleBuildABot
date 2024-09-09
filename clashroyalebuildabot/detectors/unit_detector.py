@@ -45,8 +45,6 @@ class UnitDetector(OnnxDetector):
     def _get_possible_ally_names(self):
         possible_ally_names = set()
         for card in self.cards:
-            if card.units is None:
-                continue
             for unit in card.units:
                 possible_ally_names.add(unit.name)
         return possible_ally_names

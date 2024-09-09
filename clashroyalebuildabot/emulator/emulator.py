@@ -239,3 +239,29 @@ class Emulator:
         screenshot, self.frame = self.frame, None
 
         return screenshot
+
+    def load_deck(self, cards):
+        id_str = ";".join([str(card.id_) for card in cards])
+        slot_str = ";".join("0" for _ in range(len(cards)))
+        url = "&".join(
+            [
+                f"https://link.clashroyale.com/en/?clashroyale://copyDeck?deck={id_str}",
+                f"slots={slot_str}",
+                "tt=159000000",
+                "l=Royals",
+                "id=JR2RU0L90",
+            ]
+        )
+
+        self._run_command(
+            [
+                "shell",
+                "am",
+                "start",
+                "-n",
+                "com.android.chrome/com.google.android.apps.chrome.Main",
+                "-d",
+                f"'{url}'",
+            ]
+        )
+        input("Press a key when you've finished copying the deck ")
