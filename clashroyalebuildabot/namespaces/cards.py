@@ -1,6 +1,6 @@
 from dataclasses import asdict
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
 
 from clashroyalebuildabot.namespaces.units import Unit
 from clashroyalebuildabot.namespaces.units import Units
