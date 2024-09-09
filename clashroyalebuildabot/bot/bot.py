@@ -66,6 +66,8 @@ class Bot:
         )
         keyboard_thread.start()
 
+        self.emulator.load_deck(cards)
+
     @staticmethod
     def _log_and_wait(prefix, delay):
         suffix = ""
