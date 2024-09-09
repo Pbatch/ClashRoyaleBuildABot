@@ -39,16 +39,16 @@ def update_terminal_title():
 
 
 def main():
-    actions = {
+    actions = [
         ArchersAction,
+        GoblinBarrelAction,
         BabyDragonAction,
         CannonAction,
-        GoblinBarrelAction,
         KnightAction,
         MinipekkaAction,
         MusketeerAction,
         WitchAction,
-    }
+    ]
     try:
         bot = Bot(actions=actions)
         bot.run()
