@@ -1,3 +1,4 @@
+from copy import deepcopy
 import os
 import time
 
@@ -20,7 +21,7 @@ class Detector:
                 f"You must specify all {self.DECK_SIZE} of your cards"
             )
 
-        self.cards = cards
+        self.cards = deepcopy(cards)
 
         self.card_detector = CardDetector(self.cards)
         self.number_detector = NumberDetector()
