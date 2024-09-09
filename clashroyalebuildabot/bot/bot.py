@@ -66,7 +66,8 @@ class Bot:
         )
         keyboard_thread.start()
 
-        self.emulator.load_deck(cards)
+        if config["load_deck"]:
+            self.emulator.load_deck(cards)
 
     @staticmethod
     def _log_and_wait(prefix, delay):

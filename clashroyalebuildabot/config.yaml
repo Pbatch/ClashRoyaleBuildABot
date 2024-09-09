@@ -4,6 +4,9 @@ bot:
   # "WARNING" for warning messages, "ERROR" for error messages, and "CRITICAL" for critical issues.
   log_level: "DEBUG"
 
+  # Create a deck code when the game starts
+  load_deck: True
+
 adb:
   # The IP address of your device or emulator.
   # Use 127.0.0.1 for a local emulator. If you're connecting to a physical device,
