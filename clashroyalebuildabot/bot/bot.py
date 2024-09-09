@@ -66,7 +66,7 @@ class Bot:
         )
         keyboard_thread.start()
 
-        if config["load_deck"]:
+        if config["bot"]["load_deck"]:
             self.emulator.load_deck(cards)
 
     @staticmethod
