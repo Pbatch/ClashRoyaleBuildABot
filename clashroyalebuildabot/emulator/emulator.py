@@ -264,4 +264,4 @@ class Emulator:
                 f"'{url}'",
             ]
         )
-        input("Press a key when you've finished copying the deck")
+        input("Press a key when you've finished copying the deck ")
