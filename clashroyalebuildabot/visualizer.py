@@ -2,7 +2,7 @@ from dataclasses import asdict
 import os
 
 import cv2
-from loguru import logger
+from PyQt6.QtCore import pyqtSignal, QObject
 import numpy as np
 from PIL import ImageDraw
 from PIL import ImageFont
@@ -14,7 +14,7 @@ from clashroyalebuildabot.namespaces.numbers import NumberDetection
 from clashroyalebuildabot.namespaces.units import NAME2UNIT
 
 
-class Visualizer:
+class Visualizer(QObject):
     _COLOUR_AND_RGBA = [
         ["navy", (0, 38, 63, 127)],
         ["blue", (0, 120, 210, 127)],
@@ -33,7 +33,9 @@ class Visualizer:
         ["silver", (220, 220, 220, 127)],
     ]
 
+    frame_ready = pyqtSignal(np.ndarray)
     def __init__(self, save_labels, save_images, show_images):
+        super().__init__()
         self.save_labels = save_labels
         self.save_images = save_images
         self.show_images = show_images
@@ -43,10 +45,6 @@ class Visualizer:
 
         os.makedirs(LABELS_DIR, exist_ok=True)
         os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
-
-        if self.show_images:
-            cv2.namedWindow("Visualizer", cv2.WINDOW_NORMAL)
-            logger.info("Visualizer initialized")
 
     @staticmethod
     def _write_label(image, state, basename):
@@ -122,5 +120,4 @@ class Visualizer:
             )
 
         if self.show_images:
-            cv2.imshow("Visualizer", np.array(annotated_image)[..., ::-1])
-            cv2.waitKey(1)
+            self.frame_ready.emit(np.array(annotated_image))

@@ -16,6 +16,8 @@ from PyQt6.QtWidgets import QTextEdit
 from PyQt6.QtWidgets import QVBoxLayout
 from PyQt6.QtWidgets import QWidget
 
+from clashroyalebuildabot.gui.gameplay_widget import ImageStreamWindow
+
 
 def setup_top_bar(main_window):
     top_bar = QFrame()
@@ -109,12 +111,15 @@ def setup_tabs(main_window):
     logs_layout = QVBoxLayout(logs_tab)
     main_window.log_display = QTextEdit()
     main_window.log_display.setReadOnly(True)
-    main_window.log_display.setText("Lorem Ipsum - Press Start for Text")
     main_window.log_display.setStyleSheet(
         "background-color: #1e1e1e; color: lightgrey; font-family: monospace;"
     )
     logs_layout.addWidget(main_window.log_display)
     tab_widget.addTab(logs_tab, "Logs")
+
+    main_window.visualize_tab = ImageStreamWindow()
+    tab_widget.addTab(main_window.visualize_tab, "Visualize")
+
 
     settings_tab = QWidget()
     settings_layout = QGridLayout(settings_tab)
@@ -125,12 +130,13 @@ def setup_tabs(main_window):
     main_window.log_level_dropdown.addItems(
         ["INFO", "DEBUG", "WARNING", "ERROR", "CRITICAL"]
     )
+    main_window.log_level_dropdown.setCurrentText(main_window.config["bot"]["log_level"])
     bot_layout.addRow("Log Level:", main_window.log_level_dropdown)
 
     main_window.adb_ip_input = QLineEdit()
-    main_window.adb_ip_input.setPlaceholderText("127.0.0.1")
+    main_window.adb_ip_input.setText(main_window.config["adb"]["ip"])
     main_window.device_serial_input = QLineEdit()
-    main_window.device_serial_input.setPlaceholderText("emulator-5554")
+    main_window.device_serial_input.setText(main_window.config["adb"]["device_serial"])
     bot_layout.addRow("ADB IP Address:", main_window.adb_ip_input)
     bot_layout.addRow("Device Serial:", main_window.device_serial_input)
 
@@ -139,8 +145,11 @@ def setup_tabs(main_window):
     visuals_group = QGroupBox("Visuals Settings")
     visuals_layout = QFormLayout()
     main_window.save_labels_checkbox = QCheckBox("Save labels")
+    main_window.save_labels_checkbox.setChecked(main_window.config["visuals"]["save_labels"])
     main_window.save_images_checkbox = QCheckBox("Save images")
+    main_window.save_images_checkbox.setChecked(main_window.config["visuals"]["save_images"])
     main_window.show_images_checkbox = QCheckBox("Show images")
+    main_window.show_images_checkbox.setChecked(main_window.config["visuals"]["show_images"])
     visuals_layout.addRow(main_window.save_labels_checkbox)
     visuals_layout.addRow(main_window.save_images_checkbox)
     visuals_layout.addRow(main_window.show_images_checkbox)
@@ -152,7 +161,7 @@ def setup_tabs(main_window):
     main_window.play_action_delay_input = QDoubleSpinBox()
     main_window.play_action_delay_input.setRange(0.1, 5.0)
     main_window.play_action_delay_input.setSingleStep(0.1)
-    main_window.play_action_delay_input.setValue(0.5)
+    main_window.play_action_delay_input.setValue(main_window.config["ingame"]["play_action"])
     ingame_layout.addRow(
         "Action Delay (sec):", main_window.play_action_delay_input
     )
@@ -160,9 +169,11 @@ def setup_tabs(main_window):
     main_window.load_deck_checkbox = QCheckBox(
         "Create deck code on game start"
     )
+    main_window.load_deck_checkbox.setChecked(main_window.config["bot"]["load_deck"])
     ingame_layout.addRow(main_window.load_deck_checkbox)
 
     main_window.auto_start_game_checkbox = QCheckBox("Auto start game")
+    main_window.auto_start_game_checkbox.setChecked(main_window.config["bot"]["auto_start_game"])
     ingame_layout.addRow(main_window.auto_start_game_checkbox)
 
     ingame_group.setLayout(ingame_layout)

@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import QVBoxLayout
 from PyQt6.QtWidgets import QWidget
 
 from clashroyalebuildabot import Bot
+from clashroyalebuildabot.gui.gameplay_widget import ImageStreamWindow
 from clashroyalebuildabot.gui.layout_setup import setup_tabs
 from clashroyalebuildabot.gui.layout_setup import setup_top_bar
 from clashroyalebuildabot.gui.styles import set_styles
@@ -15,6 +16,7 @@ from clashroyalebuildabot.gui.styles import set_styles
 class MainWindow(QMainWindow):
     def __init__(self, config, actions):
         super().__init__()
+
 
         self.config = config
         self.actions = actions
@@ -94,6 +96,7 @@ class MainWindow(QMainWindow):
 
     def bot_task(self):
         self.bot = Bot(actions=self.actions, config=self.config)
+        self.bot.visualizer.frame_ready.connect(self.visualize_tab.update_frame)
         self.bot.run()
 
     def append_log(self, message):

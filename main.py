@@ -17,7 +17,6 @@ from clashroyalebuildabot.actions import WitchAction
 from clashroyalebuildabot.gui.main_window import MainWindow
 from clashroyalebuildabot.gui.utils import load_config
 from clashroyalebuildabot.constants import SRC_DIR
-from clashroyalebuildabot.gui.new_gui import MainWindow, QTextEditLogger
 
 logger.remove()
 logger.add(
