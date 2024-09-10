@@ -1,13 +1,12 @@
 from threading import Thread
 
-from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QMainWindow
-from PyQt6.QtWidgets import QTabWidget
 from PyQt6.QtWidgets import QVBoxLayout
 from PyQt6.QtWidgets import QWidget
 
 from clashroyalebuildabot import Bot
 from clashroyalebuildabot.bot.bot import pause_event
+from clashroyalebuildabot.gui.animations import start_play_button_animation
 from clashroyalebuildabot.gui.layout_setup import setup_tabs
 from clashroyalebuildabot.gui.layout_setup import setup_top_bar
 from clashroyalebuildabot.gui.styles import set_styles
@@ -16,8 +15,6 @@ from clashroyalebuildabot.gui.styles import set_styles
 class MainWindow(QMainWindow):
     def __init__(self, config, actions):
         super().__init__()
-
-
         self.config = config
         self.actions = actions
         self.bot = None
@@ -39,12 +36,15 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(tab_widget)
 
         set_styles(self)
+        start_play_button_animation(self)
 
     def toggle_start_stop(self):
         if self.is_running:
             self.stop_bot()
+            self.glow_animation.start()
         else:
             self.start_bot()
+            self.glow_animation.stop()
 
     def toggle_pause_resume_and_display(self):
         if not self.bot:
