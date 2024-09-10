@@ -1,10 +1,9 @@
-from datetime import datetime
+import logging
 import signal
 import sys
-import threading
-import time
 
 from loguru import logger
+from PyQt6.QtWidgets import QApplication
 
 from clashroyalebuildabot.actions import ArchersAction
 from clashroyalebuildabot.actions import BabyDragonAction
@@ -15,8 +14,9 @@ from clashroyalebuildabot.actions import MinipekkaAction
 from clashroyalebuildabot.actions import MusketeerAction
 from clashroyalebuildabot.actions import WitchAction
 from clashroyalebuildabot.bot import Bot
-
-start_time = datetime.now()
+from clashroyalebuildabot.gui.log_handler import QTextEditLogger
+from clashroyalebuildabot.gui.main_window import MainWindow
+from clashroyalebuildabot.gui.utils import load_config
 
 logger.remove()
 logger.add(
@@ -25,17 +25,6 @@ logger.add(
     backtrace=False,
     diagnose=False,
 )
-
-
-def update_terminal_title():
-    while True:
-        elapsed_time = datetime.now() - start_time
-        hours, remainder = divmod(elapsed_time.total_seconds(), 3600)
-        minutes, seconds = divmod(remainder, 60)
-        formatted_time = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
-        sys.stdout.write(f"\x1b]2;{formatted_time} | BuildABot\x07")
-        sys.stdout.flush()
-        time.sleep(1)
 
 
 def main():
@@ -50,17 +39,23 @@ def main():
         WitchAction,
     ]
     try:
-        bot = Bot(actions=actions)
-        bot.run()
+        config = load_config()
+
+        app = QApplication(sys.argv)
+        window = MainWindow(config, actions)
+
+        log_handler = QTextEditLogger(window.log_display)
+        log_handler.setFormatter(
+            logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+        )
+        logger.add(log_handler)
+
+        window.show()
+        sys.exit(app.exec())
+
     except Exception as e:
-        logger.error(f"An error occurred: {e}")
+        logger.error(f"An error occurred in main loop: {e}")
         sys.exit(1)
 
 
-if __name__ == "__main__":
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
-
-    title_thread = threading.Thread(target=update_terminal_title, daemon=True)
-    title_thread.start()
-
-    main()
+main()
