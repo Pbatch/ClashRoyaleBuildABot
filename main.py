@@ -1,9 +1,11 @@
+import os
 from datetime import datetime
 import signal
 import sys
 import threading
 import time
 
+import yaml
 from loguru import logger
 
 from clashroyalebuildabot.actions import ArchersAction
@@ -15,6 +17,8 @@ from clashroyalebuildabot.actions import MinipekkaAction
 from clashroyalebuildabot.actions import MusketeerAction
 from clashroyalebuildabot.actions import WitchAction
 from clashroyalebuildabot.bot import Bot
+from clashroyalebuildabot.constants import SRC_DIR
+from clashroyalebuildabot.gui.gui import Gui
 
 start_time = datetime.now()
 
@@ -37,6 +41,13 @@ def update_terminal_title():
         sys.stdout.flush()
         time.sleep(1)
 
+def load_config():
+    try:
+        config_path = os.path.join(SRC_DIR, "config.yaml")
+        with open(config_path, encoding="utf-8") as file:
+            return yaml.safe_load(file)
+    except Exception as e:
+        logger.error(f"Can't parse config, stacktrace: {e}")
 
 def main():
     actions = [
@@ -50,10 +61,18 @@ def main():
         WitchAction,
     ]
     try:
-        bot = Bot(actions=actions)
-        bot.run()
+        config = load_config()
+
+        # GUI MODE
+        if config["bot"]["enable_gui"]:
+            gui = Gui(config=config, actions=actions)
+            gui.run()
+        else:
+            # REGULAR MODE
+            bot = Bot(actions=actions, config=config)
+            bot.run()
     except Exception as e:
-        logger.error(f"An error occurred: {e}")
+        logger.error(f"An error occurred in main loop: {e}")
         sys.exit(1)
 
 

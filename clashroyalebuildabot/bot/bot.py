@@ -39,10 +39,11 @@ class Bot:
     is_paused_logged = False
     is_resumed_logged = True
 
-    def __init__(self, actions, auto_start=True):
+    def __init__(self, actions, config):
         self.actions = actions
-        self.auto_start = auto_start
+        self.auto_start = config["bot"]["auto_start_game"]
         self.end_of_game_clicked = False
+        self.should_run = True # always true unless GUI mode is used
 
         self._setup_logger()
 
@@ -50,10 +51,6 @@ class Bot:
         if len(cards) != 8:
             raise ValueError(f"Must provide 8 cards but was given: {cards}")
         self.cards_to_actions = dict(zip(cards, actions))
-
-        config_path = os.path.join(SRC_DIR, "config.yaml")
-        with open(config_path, encoding="utf-8") as file:
-            config = yaml.safe_load(file)
 
         self.visualizer = Visualizer(**config["visuals"])
         self.emulator = Emulator(**config["adb"])
@@ -96,16 +93,20 @@ class Bot:
     def _handle_keyboard_shortcut():
         while True:
             keyboard.wait("ctrl+p")
-            if pause_event.is_set():
-                logger.info("Bot paused.")
-                pause_event.clear()
-                Bot.is_paused_logged = True
-                Bot.is_resumed_logged = False
-            else:
-                logger.info("Bot resumed.")
-                pause_event.set()
-                Bot.is_resumed_logged = True
-                Bot.is_paused_logged = False
+            Bot.pause_or_resume()
+
+    @staticmethod
+    def pause_or_resume():
+        if pause_event.is_set():
+            logger.info("Bot paused.")
+            pause_event.clear()
+            Bot.is_paused_logged = True
+            Bot.is_resumed_logged = False
+        else:
+            logger.info("Bot resumed.")
+            pause_event.set()
+            Bot.is_resumed_logged = True
+            Bot.is_paused_logged = False
 
     @staticmethod
     def _get_nearest_tile(x, y):
@@ -232,11 +233,15 @@ class Bot:
 
     def run(self):
         try:
-            while True:
+            while self.should_run:
                 if not pause_event.is_set():
                     time.sleep(0.1)
                     continue
 
                 self.step()
+            logger.info("Thanks for using CRBAB, see you next time!")
         except KeyboardInterrupt:
             logger.info("Thanks for using CRBAB, see you next time!")
+
+    def stop(self):
+        self.should_run = False
