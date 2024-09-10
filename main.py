@@ -1,3 +1,4 @@
+import logging
 import os
 from datetime import datetime
 import signal
@@ -6,6 +7,7 @@ import threading
 import time
 
 import yaml
+from PyQt6.QtWidgets import QApplication
 from loguru import logger
 
 from clashroyalebuildabot.actions import ArchersAction
@@ -19,6 +21,7 @@ from clashroyalebuildabot.actions import WitchAction
 from clashroyalebuildabot.bot import Bot
 from clashroyalebuildabot.constants import SRC_DIR
 from clashroyalebuildabot.gui.gui import Gui
+from clashroyalebuildabot.gui.new_gui import MainWindow, QTextEditLogger
 
 start_time = datetime.now()
 
@@ -65,8 +68,18 @@ def main():
 
         # GUI MODE
         if config["bot"]["enable_gui"]:
-            gui = Gui(config=config, actions=actions)
-            gui.run()
+            # gui = Gui(config=config, actions=actions)
+            # gui.run()
+            app = QApplication(sys.argv)
+            window = MainWindow(config, actions)
+
+            # Create and add the custom logging handler
+            log_handler = QTextEditLogger(window.log_display)
+            log_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+            logger.add(log_handler)
+
+            window.show()
+            sys.exit(app.exec())
         else:
             # REGULAR MODE
             bot = Bot(actions=actions, config=config)
