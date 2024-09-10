@@ -15,5 +15,11 @@ def set_styles(window):
         QFrame {
             background-color: #1E272E;
         }
+        QGroupBox {
+        color: white;
+        }
+        QCheckBox {
+            color: white;
+        }   
     """
     )
