@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QVBoxLayout
 from PyQt6.QtWidgets import QWidget
 
 from clashroyalebuildabot import Bot
-from clashroyalebuildabot.gui.gameplay_widget import ImageStreamWindow
+from clashroyalebuildabot.bot.bot import pause_event
 from clashroyalebuildabot.gui.layout_setup import setup_tabs
 from clashroyalebuildabot.gui.layout_setup import setup_top_bar
 from clashroyalebuildabot.gui.styles import set_styles
@@ -46,6 +46,15 @@ class MainWindow(QMainWindow):
         else:
             self.start_bot()
 
+    def toggle_pause_resume_and_display(self):
+        if not self.bot:
+            return
+        if pause_event.is_set():
+            self.play_pause_button.setText("▶")
+        else:
+            self.play_pause_button.setText("⏸️")
+        self.bot.pause_or_resume()
+
     def start_bot(self):
         if self.is_running:
             return
@@ -55,6 +64,7 @@ class MainWindow(QMainWindow):
         self.bot_thread.daemon = True
         self.bot_thread.start()
         self.start_stop_button.setText("■")
+        self.play_pause_button.show()
         self.server_id_label.setText("Status - Running")
         self.append_log("Bot started")
 
@@ -64,6 +74,7 @@ class MainWindow(QMainWindow):
         self.bot.stop()
         self.is_running = False
         self.start_stop_button.setText("▶")
+        self.play_pause_button.hide()
         self.server_id_label.setText("Status - Stopped")
         self.append_log("Bot stopped")
 

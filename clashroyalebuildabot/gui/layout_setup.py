@@ -58,6 +58,32 @@ def setup_top_bar(main_window):
     button_layout = QHBoxLayout()
     button_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
 
+
+    main_window.play_pause_button = QPushButton("⏸️")
+    main_window.play_pause_button.setFont(QFont("Arial", 18))
+    main_window.play_pause_button.setStyleSheet(
+        """
+        QPushButton {
+            background-color: #4B6EAF;
+            color: white;
+            min-width: 32px;
+            max-width: 32px;
+            min-height: 32px;
+            max-height: 32px;
+            border-radius: 5px;
+        }
+        QPushButton:hover {
+            background-color: #5C7EBF;
+        }
+    """
+    )
+    main_window.play_pause_button.clicked.connect(
+        main_window.toggle_pause_resume_and_display
+    )
+
+    button_layout.addWidget(main_window.play_pause_button)
+    main_window.play_pause_button.hide()
+
     main_window.start_stop_button = QPushButton("▶")
     main_window.start_stop_button.setFont(QFont("Arial", 18))
     main_window.start_stop_button.setStyleSheet(
