@@ -5,7 +5,9 @@ bot:
   log_level: "DEBUG"
 
   # Create a deck code when the game starts
-  load_deck: True
+  load_deck: False
+  auto_start_game: False
+  enable_gui: True
 
 adb:
   # The IP address of your device or emulator.

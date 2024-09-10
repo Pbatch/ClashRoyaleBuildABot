@@ -1,7 +1,8 @@
-import logging
+import os
 import signal
 import sys
 
+import yaml
 from loguru import logger
 from PyQt6.QtWidgets import QApplication
 
@@ -13,10 +14,10 @@ from clashroyalebuildabot.actions import KnightAction
 from clashroyalebuildabot.actions import MinipekkaAction
 from clashroyalebuildabot.actions import MusketeerAction
 from clashroyalebuildabot.actions import WitchAction
-from clashroyalebuildabot.bot import Bot
-from clashroyalebuildabot.gui.log_handler import QTextEditLogger
 from clashroyalebuildabot.gui.main_window import MainWindow
 from clashroyalebuildabot.gui.utils import load_config
+from clashroyalebuildabot.constants import SRC_DIR
+from clashroyalebuildabot.gui.new_gui import MainWindow, QTextEditLogger
 
 logger.remove()
 logger.add(
@@ -26,6 +27,14 @@ logger.add(
     diagnose=False,
 )
 
+
+def load_config():
+    try:
+        config_path = os.path.join(SRC_DIR, "config.yaml")
+        with open(config_path, encoding="utf-8") as file:
+            return yaml.safe_load(file)
+    except Exception as e:
+        logger.error(f"Can't parse config, stacktrace: {e}")
 
 def main():
     actions = [
@@ -44,18 +53,13 @@ def main():
         app = QApplication(sys.argv)
         window = MainWindow(config, actions)
 
-        log_handler = QTextEditLogger(window.log_display)
-        log_handler.setFormatter(
-            logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-        )
-        logger.add(log_handler)
-
         window.show()
         sys.exit(app.exec())
-
     except Exception as e:
         logger.error(f"An error occurred in main loop: {e}")
         sys.exit(1)
 
 
-main()
+if __name__ == "__main__":
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+    main()
