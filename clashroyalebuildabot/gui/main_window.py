@@ -107,7 +107,9 @@ class MainWindow(QMainWindow):
 
     def bot_task(self):
         self.bot = Bot(actions=self.actions, config=self.config)
-        self.bot.visualizer.frame_ready.connect(self.visualize_tab.update_frame)
+        self.bot.visualizer.frame_ready.connect(
+            self.visualize_tab.update_frame
+        )
         self.bot.run()
 
     def append_log(self, message):

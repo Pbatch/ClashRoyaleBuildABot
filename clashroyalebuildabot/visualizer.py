@@ -1,11 +1,11 @@
 from dataclasses import asdict
 import os
 
-import cv2
-from PyQt6.QtCore import pyqtSignal, QObject
 import numpy as np
 from PIL import ImageDraw
 from PIL import ImageFont
+from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtCore import QObject
 
 from clashroyalebuildabot.constants import CARD_CONFIG
 from clashroyalebuildabot.constants import LABELS_DIR
@@ -34,6 +34,7 @@ class Visualizer(QObject):
     ]
 
     frame_ready = pyqtSignal(np.ndarray)
+
     def __init__(self, save_labels, save_images, show_images):
         super().__init__()
         self.save_labels = save_labels
