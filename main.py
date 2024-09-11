@@ -15,6 +15,7 @@ from clashroyalebuildabot.actions import MinipekkaAction
 from clashroyalebuildabot.actions import MusketeerAction
 from clashroyalebuildabot.actions import WitchAction
 from clashroyalebuildabot.bot import Bot
+from clashroyalebuildabot.utils.git_utils import check_and_pull_updates
 
 start_time = datetime.now()
 
@@ -39,6 +40,7 @@ def update_terminal_title():
 
 
 def main():
+    check_and_pull_updates()
     actions = [
         ArchersAction,
         GoblinBarrelAction,
