@@ -109,8 +109,8 @@ class MainWindow(QMainWindow):
             "auto_start_game"
         ] = self.auto_start_game_checkbox.isChecked()
         self.config["bot"]["log_level"] = self.log_level_dropdown.currentText()
-        self.config["ingame"]["play_action"] = float(
-            self.play_action_delay_input.value()
+        self.config["ingame"]["play_action"] = round(
+            float(self.play_action_delay_input.value()), 2
         )
         self.config["adb"]["ip"] = self.adb_ip_input.text()
         self.config["adb"]["device_serial"] = self.device_serial_input.text()
