@@ -16,10 +16,13 @@ def set_styles(window):
             background-color: #1E272E;
         }
         QGroupBox {
-        color: white;
+            color: white;
         }
         QCheckBox {
             color: white;
-        }   
+        }
+        QPushButton {
+            color: white;
+        }
     """
     )

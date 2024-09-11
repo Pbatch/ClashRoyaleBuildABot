@@ -94,7 +94,7 @@ class MainWindow(QMainWindow):
         self.update_config()
         self.start_bot()
 
-    def update_config(self):
+    def update_config(self) -> dict:
         self.config["visuals"][
             "save_labels"
         ] = self.save_labels_checkbox.isChecked()
@@ -114,6 +114,7 @@ class MainWindow(QMainWindow):
         )
         self.config["adb"]["ip"] = self.adb_ip_input.text()
         self.config["adb"]["device_serial"] = self.device_serial_input.text()
+        return self.config
 
     def bot_task(self):
         try:

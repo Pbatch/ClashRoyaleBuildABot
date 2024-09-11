@@ -17,6 +17,7 @@ from PyQt6.QtWidgets import QVBoxLayout
 from PyQt6.QtWidgets import QWidget
 
 from clashroyalebuildabot.gui.gameplay_widget import ImageStreamWindow
+from clashroyalebuildabot.gui.utils import save_config
 
 
 def setup_top_bar(main_window):
@@ -189,6 +190,16 @@ def setup_tabs(main_window):
     visuals_layout.addRow(main_window.show_images_checkbox)
     visuals_group.setLayout(visuals_layout)
 
+    save_config_group = QGroupBox()
+    save_config_layout = QHBoxLayout()
+    save_config_button = QPushButton("Save Config")
+    save_config_button.clicked.connect(
+        lambda: save_config(main_window.update_config())
+    )
+    save_config_layout.addWidget(save_config_button)
+    save_config_group.setLayout(save_config_layout)
+    save_config_group.setMaximumHeight(50)
+
     ingame_group = QGroupBox("Ingame Settings")
     ingame_layout = QFormLayout()
 
@@ -220,7 +231,8 @@ def setup_tabs(main_window):
 
     settings_layout.addWidget(bot_group, 0, 0)
     settings_layout.addWidget(visuals_group, 1, 0)
-    settings_layout.addWidget(ingame_group, 0, 1, 2, 1)
+    settings_layout.addWidget(save_config_group, 2, 0)
+    settings_layout.addWidget(ingame_group, 0, 1, 3, 1)
 
     tab_widget.addTab(settings_tab, "Settings")
 

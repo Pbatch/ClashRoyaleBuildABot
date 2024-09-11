@@ -1,16 +1,12 @@
-import os
 import random
-import sys
 import threading
 import time
 
 import keyboard
 from loguru import logger
-import yaml
 
 from clashroyalebuildabot.constants import ALL_TILES
 from clashroyalebuildabot.constants import ALLY_TILES
-from clashroyalebuildabot.constants import DEBUG_DIR
 from clashroyalebuildabot.constants import DISPLAY_CARD_DELTA_X
 from clashroyalebuildabot.constants import DISPLAY_CARD_HEIGHT
 from clashroyalebuildabot.constants import DISPLAY_CARD_INIT_X
@@ -19,7 +15,6 @@ from clashroyalebuildabot.constants import DISPLAY_CARD_Y
 from clashroyalebuildabot.constants import DISPLAY_HEIGHT
 from clashroyalebuildabot.constants import LEFT_PRINCESS_TILES
 from clashroyalebuildabot.constants import RIGHT_PRINCESS_TILES
-from clashroyalebuildabot.constants import SRC_DIR
 from clashroyalebuildabot.constants import TILE_HEIGHT
 from clashroyalebuildabot.constants import TILE_INIT_X
 from clashroyalebuildabot.constants import TILE_INIT_Y

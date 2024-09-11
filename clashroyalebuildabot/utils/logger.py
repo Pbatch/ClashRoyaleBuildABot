@@ -2,18 +2,13 @@ import os
 import sys
 
 from loguru import logger
-import yaml
 
 from clashroyalebuildabot.constants import DEBUG_DIR
-from clashroyalebuildabot.constants import SRC_DIR
 
 COLORS = dict(context_info="#118aa2", time="#459028")
 
 
-def setup_logger(main_window):
-    config_path = os.path.join(SRC_DIR, "config.yaml")
-    with open(config_path, encoding="utf-8") as file:
-        config = yaml.safe_load(file)
+def setup_logger(main_window, config: dict):
     log_level = config.get("bot", {}).get("log_level", "INFO").upper()
     logger.remove()
     logger.add(sys.stdout, level=log_level)

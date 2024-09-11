@@ -33,7 +33,7 @@ def main():
 
         app = QApplication(sys.argv)
         window = MainWindow(config, actions)
-        setup_logger(window)
+        setup_logger(window, config)
 
         window.show()
         sys.exit(app.exec())
