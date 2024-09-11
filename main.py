@@ -14,14 +14,7 @@ from clashroyalebuildabot.actions import MusketeerAction
 from clashroyalebuildabot.actions import WitchAction
 from clashroyalebuildabot.gui.main_window import MainWindow
 from clashroyalebuildabot.gui.utils import load_config
-
-logger.remove()
-logger.add(
-    sys.stderr,
-    format="{time} {level} {message}",
-    backtrace=False,
-    diagnose=False,
-)
+from clashroyalebuildabot.utils.logger import setup_logger
 
 
 def main():
@@ -40,6 +33,7 @@ def main():
 
         app = QApplication(sys.argv)
         window = MainWindow(config, actions)
+        setup_logger(window)
 
         window.show()
         sys.exit(app.exec())

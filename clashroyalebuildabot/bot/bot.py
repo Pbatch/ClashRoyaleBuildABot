@@ -44,7 +44,6 @@ class Bot:
         self.auto_start = config["bot"]["auto_start_game"]
         self.end_of_game_clicked = False
         self.should_run = True
-        self._setup_logger()
 
         cards = [action.CARD for action in actions]
         if len(cards) != 8:
@@ -73,20 +72,6 @@ class Bot:
         message = f"{prefix}. Waiting for {delay} second{suffix}."
         logger.info(message)
         time.sleep(delay)
-
-    @staticmethod
-    def _setup_logger():
-        config_path = os.path.join(SRC_DIR, "config.yaml")
-        with open(config_path, encoding="utf-8") as file:
-            config = yaml.safe_load(file)
-        log_level = config.get("bot", {}).get("log_level", "INFO").upper()
-        logger.remove()
-        logger.add(sys.stdout, level=log_level)
-        logger.add(
-            os.path.join(DEBUG_DIR, "bot.log"),
-            rotation="500 MB",
-            level=log_level,
-        )
 
     @staticmethod
     def _handle_keyboard_shortcut():

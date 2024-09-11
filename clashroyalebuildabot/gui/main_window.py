@@ -1,5 +1,7 @@
 from threading import Thread
 
+from loguru import logger
+from PyQt6.QtWidgets import QApplication
 from PyQt6.QtWidgets import QMainWindow
 from PyQt6.QtWidgets import QVBoxLayout
 from PyQt6.QtWidgets import QWidget
@@ -10,6 +12,7 @@ from clashroyalebuildabot.gui.animations import start_play_button_animation
 from clashroyalebuildabot.gui.layout_setup import setup_tabs
 from clashroyalebuildabot.gui.layout_setup import setup_top_bar
 from clashroyalebuildabot.gui.styles import set_styles
+from clashroyalebuildabot.utils.logger import colorize_log
 
 
 class MainWindow(QMainWindow):
@@ -37,6 +40,14 @@ class MainWindow(QMainWindow):
 
         set_styles(self)
         start_play_button_animation(self)
+
+    def log_handler_function(self, message):
+        formatted_message = colorize_log(message)
+        self.log_display.append(formatted_message)
+        QApplication.processEvents()
+        self.log_display.verticalScrollBar().setValue(
+            self.log_display.verticalScrollBar().maximum()
+        )
 
     def toggle_start_stop(self):
         if self.is_running:
@@ -66,17 +77,16 @@ class MainWindow(QMainWindow):
         self.start_stop_button.setText("■")
         self.play_pause_button.show()
         self.server_id_label.setText("Status - Running")
-        self.append_log("Bot started")
+        logger.info("Starting bot")
 
     def stop_bot(self):
-        if not self.bot:
-            return
-        self.bot.stop()
+        if self.bot:
+            self.bot.stop()
         self.is_running = False
         self.start_stop_button.setText("▶")
         self.play_pause_button.hide()
         self.server_id_label.setText("Status - Stopped")
-        self.append_log("Bot stopped")
+        logger.info("Bot stopped")
 
     def restart_bot(self):
         if self.is_running:
@@ -106,11 +116,18 @@ class MainWindow(QMainWindow):
         self.config["adb"]["device_serial"] = self.device_serial_input.text()
 
     def bot_task(self):
-        self.bot = Bot(actions=self.actions, config=self.config)
-        self.bot.visualizer.frame_ready.connect(
-            self.visualize_tab.update_frame
-        )
-        self.bot.run()
+        try:
+            self.bot = Bot(actions=self.actions, config=self.config)
+            self.bot.visualizer.frame_ready.connect(
+                self.visualize_tab.update_frame
+            )
+            self.bot.run()
+            self.stop_bot()
+        except Exception as e:
+            # output error in logger
+            logger.error(f"Bot crashed: {e}")
+            self.stop_bot()
+            raise
 
     def append_log(self, message):
         self.log_display.append(message)
