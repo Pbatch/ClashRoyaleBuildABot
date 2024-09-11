@@ -5,13 +5,10 @@ from loguru import logger
 
 
 def _is_branch_late() -> bool:
-    # Fetch the latest changes from the remote repository
     subprocess.run(
         ["git", "fetch"], check=True, capture_output=True, text=True
     )
 
-    # Check if the local branch is behind the remote branch
-    # Get the local status to check if it's up to date
     status = subprocess.run(
         ["git", "status", "-uno"],
         capture_output=True,
