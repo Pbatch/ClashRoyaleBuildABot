@@ -192,7 +192,7 @@ def setup_tabs(main_window):
 
     save_config_group = QGroupBox()
     save_config_layout = QHBoxLayout()
-    save_config_button = QPushButton("Save Config")
+    save_config_button = QPushButton("Save config to file")
     save_config_button.clicked.connect(
         lambda: save_config(main_window.update_config())
     )
