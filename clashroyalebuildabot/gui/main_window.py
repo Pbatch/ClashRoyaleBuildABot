@@ -13,6 +13,7 @@ from clashroyalebuildabot.gui.layout_setup import setup_tabs
 from clashroyalebuildabot.gui.layout_setup import setup_top_bar
 from clashroyalebuildabot.gui.styles import set_styles
 from clashroyalebuildabot.utils.logger import colorize_log
+from clashroyalebuildabot.utils.logger import setup_logger
 
 
 class MainWindow(QMainWindow):
@@ -108,7 +109,13 @@ class MainWindow(QMainWindow):
         self.config["bot"][
             "auto_start_game"
         ] = self.auto_start_game_checkbox.isChecked()
+        log_level_changed = (
+            self.config["bot"]["log_level"]
+            != self.log_level_dropdown.currentText()
+        )
         self.config["bot"]["log_level"] = self.log_level_dropdown.currentText()
+        if log_level_changed:
+            setup_logger(self, self.config)
         self.config["ingame"]["play_action"] = round(
             float(self.play_action_delay_input.value()), 2
         )
