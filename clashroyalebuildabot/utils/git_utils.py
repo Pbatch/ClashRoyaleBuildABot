@@ -1,5 +1,6 @@
 import subprocess
 import sys
+from time import sleep
 
 from loguru import logger
 
@@ -34,5 +35,11 @@ def check_and_pull_updates() -> None:
     try:
         _check_and_pull_updates()
     except subprocess.CalledProcessError as e:
+        if "not a git repository" in e.stderr:
+            err = "We recommend getting the project using git."
+            err += "You won't be able to get any updates until you do."
+            logger.warning(err)
+            sleep(3)
+            return
         logger.error(f"Error while checking / pulling updates: {e.stderr}")
         sys.exit(1)
