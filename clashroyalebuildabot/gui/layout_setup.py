@@ -173,15 +173,19 @@ def setup_tabs(main_window):
 
     visuals_group = QGroupBox("Visuals Settings")
     visuals_layout = QFormLayout()
-    main_window.save_labels_checkbox = QCheckBox("Save labels")
+    main_window.save_labels_checkbox = QCheckBox(
+        "Save labels to /debug folder"
+    )
     main_window.save_labels_checkbox.setChecked(
         main_window.config["visuals"]["save_labels"]
     )
-    main_window.save_images_checkbox = QCheckBox("Save images")
+    main_window.save_images_checkbox = QCheckBox(
+        "Save labeled images to /debug folder"
+    )
     main_window.save_images_checkbox.setChecked(
         main_window.config["visuals"]["save_images"]
     )
-    main_window.show_images_checkbox = QCheckBox("Show images")
+    main_window.show_images_checkbox = QCheckBox("Enable visualizer")
     main_window.show_images_checkbox.setChecked(
         main_window.config["visuals"]["show_images"]
     )
@@ -213,15 +217,13 @@ def setup_tabs(main_window):
         "Action Delay (sec):", main_window.play_action_delay_input
     )
 
-    main_window.load_deck_checkbox = QCheckBox(
-        "Create deck code on game start"
-    )
+    main_window.load_deck_checkbox = QCheckBox("Load deck on startup")
     main_window.load_deck_checkbox.setChecked(
         main_window.config["bot"]["load_deck"]
     )
     ingame_layout.addRow(main_window.load_deck_checkbox)
 
-    main_window.auto_start_game_checkbox = QCheckBox("Auto start game")
+    main_window.auto_start_game_checkbox = QCheckBox("Auto start games")
     main_window.auto_start_game_checkbox.setChecked(
         main_window.config["bot"]["auto_start_game"]
     )
