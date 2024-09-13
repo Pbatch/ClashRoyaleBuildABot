@@ -1,16 +1,12 @@
-import os
 import random
-import sys
 import threading
 import time
 
 import keyboard
 from loguru import logger
-import yaml
 
 from clashroyalebuildabot.constants import ALL_TILES
 from clashroyalebuildabot.constants import ALLY_TILES
-from clashroyalebuildabot.constants import DEBUG_DIR
 from clashroyalebuildabot.constants import DISPLAY_CARD_DELTA_X
 from clashroyalebuildabot.constants import DISPLAY_CARD_HEIGHT
 from clashroyalebuildabot.constants import DISPLAY_CARD_INIT_X
@@ -19,7 +15,6 @@ from clashroyalebuildabot.constants import DISPLAY_CARD_Y
 from clashroyalebuildabot.constants import DISPLAY_HEIGHT
 from clashroyalebuildabot.constants import LEFT_PRINCESS_TILES
 from clashroyalebuildabot.constants import RIGHT_PRINCESS_TILES
-from clashroyalebuildabot.constants import SRC_DIR
 from clashroyalebuildabot.constants import TILE_HEIGHT
 from clashroyalebuildabot.constants import TILE_INIT_X
 from clashroyalebuildabot.constants import TILE_INIT_Y
@@ -39,21 +34,16 @@ class Bot:
     is_paused_logged = False
     is_resumed_logged = True
 
-    def __init__(self, actions, auto_start=True):
+    def __init__(self, actions, config):
         self.actions = actions
-        self.auto_start = auto_start
+        self.auto_start = config["bot"]["auto_start_game"]
         self.end_of_game_clicked = False
-
-        self._setup_logger()
+        self.should_run = True
 
         cards = [action.CARD for action in actions]
         if len(cards) != 8:
             raise ValueError(f"Must provide 8 cards but was given: {cards}")
         self.cards_to_actions = dict(zip(cards, actions))
-
-        config_path = os.path.join(SRC_DIR, "config.yaml")
-        with open(config_path, encoding="utf-8") as file:
-            config = yaml.safe_load(file)
 
         self.visualizer = Visualizer(**config["visuals"])
         self.emulator = Emulator(**config["adb"])
@@ -79,33 +69,23 @@ class Bot:
         time.sleep(delay)
 
     @staticmethod
-    def _setup_logger():
-        config_path = os.path.join(SRC_DIR, "config.yaml")
-        with open(config_path, encoding="utf-8") as file:
-            config = yaml.safe_load(file)
-        log_level = config.get("bot", {}).get("log_level", "INFO").upper()
-        logger.remove()
-        logger.add(sys.stdout, level=log_level)
-        logger.add(
-            os.path.join(DEBUG_DIR, "bot.log"),
-            rotation="500 MB",
-            level=log_level,
-        )
-
-    @staticmethod
     def _handle_keyboard_shortcut():
         while True:
             keyboard.wait("ctrl+p")
-            if pause_event.is_set():
-                logger.info("Bot paused.")
-                pause_event.clear()
-                Bot.is_paused_logged = True
-                Bot.is_resumed_logged = False
-            else:
-                logger.info("Bot resumed.")
-                pause_event.set()
-                Bot.is_resumed_logged = True
-                Bot.is_paused_logged = False
+            Bot.pause_or_resume()
+
+    @staticmethod
+    def pause_or_resume():
+        if pause_event.is_set():
+            logger.info("Bot paused.")
+            pause_event.clear()
+            Bot.is_paused_logged = True
+            Bot.is_resumed_logged = False
+        else:
+            logger.info("Bot resumed.")
+            pause_event.set()
+            Bot.is_resumed_logged = True
+            Bot.is_paused_logged = False
 
     @staticmethod
     def _get_nearest_tile(x, y):
@@ -232,11 +212,15 @@ class Bot:
 
     def run(self):
         try:
-            while True:
+            while self.should_run:
                 if not pause_event.is_set():
                     time.sleep(0.1)
                     continue
 
                 self.step()
+            logger.info("Thanks for using CRBAB, see you next time!")
         except KeyboardInterrupt:
             logger.info("Thanks for using CRBAB, see you next time!")
+
+    def stop(self):
+        self.should_run = False
