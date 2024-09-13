@@ -144,6 +144,9 @@ def setup_tabs(main_window):
     tab_widget.addTab(logs_tab, "Logs")
 
     main_window.visualize_tab = ImageStreamWindow()
+    main_window.visualize_tab.update_active_state(
+        main_window.config["visuals"]["show_images"]
+    )
     tab_widget.addTab(main_window.visualize_tab, "Visualize")
 
     settings_tab = QWidget()

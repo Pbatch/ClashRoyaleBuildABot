@@ -9,10 +9,18 @@ class ImageStreamWindow(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.label = QLabel(self)
-
+        self.image = QLabel(self)
+        self.inactiveIndicator = QLabel(self)
+        self.inactiveIndicator.setText(
+            "The visualizer is disabled. Enable it in the Settings tab."
+        )
+        self.inactiveIndicator.setStyleSheet(
+            "background-color: #FFA500; color: white; padding: 5px; height: fit-content; width: fit-content;"
+        )
+        self.inactiveIndicator.setMaximumHeight(30)
         layout = QVBoxLayout()
-        layout.addWidget(self.label)
+        layout.addWidget(self.inactiveIndicator)
+        layout.addWidget(self.image)
         self.setLayout(layout)
 
     def update_frame(self, annotated_image):
@@ -27,4 +35,11 @@ class ImageStreamWindow(QWidget):
         )
 
         pixmap = QPixmap.fromImage(q_image)
-        self.label.setPixmap(pixmap)
+        self.image.setPixmap(pixmap)
+
+    def update_active_state(self, active):
+        if not active:
+            self.inactiveIndicator.show()
+        else:
+            self.inactiveIndicator.hide()
+        self.image.clear()

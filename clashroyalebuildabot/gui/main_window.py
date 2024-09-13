@@ -105,6 +105,9 @@ class MainWindow(QMainWindow):
         self.config["visuals"][
             "show_images"
         ] = self.show_images_checkbox.isChecked()
+        self.visualize_tab.update_active_state(
+            self.config["visuals"]["show_images"]
+        )
         self.config["bot"]["load_deck"] = self.load_deck_checkbox.isChecked()
         self.config["bot"][
             "auto_start_game"
