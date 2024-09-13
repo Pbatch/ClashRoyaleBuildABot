@@ -1,6 +1,9 @@
 from threading import Thread
 
 from loguru import logger
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtWidgets import QMainWindow
 from PyQt6.QtWidgets import QVBoxLayout
@@ -25,14 +28,17 @@ class MainWindow(QMainWindow):
         self.bot_thread = None
         self.is_running = False
 
-        self.setWindowTitle("Clash Royale Build-A-Bot")
+        self.setWindowTitle(" ")
         self.setGeometry(100, 100, 900, 600)
+
+        transparent_pixmap = QPixmap(1, 1)
+        transparent_pixmap.fill(Qt.GlobalColor.transparent)
+        self.setWindowIcon(QIcon(transparent_pixmap))
 
         main_widget = QWidget(self)
         self.setCentralWidget(main_widget)
         main_layout = QVBoxLayout(main_widget)
 
-        # Setup GUI components
         top_bar = setup_top_bar(self)
         tab_widget = setup_tabs(self)
 
@@ -132,7 +138,6 @@ class MainWindow(QMainWindow):
             self.bot.run()
             self.stop_bot()
         except Exception as e:
-            # output error in logger
             logger.error(f"Bot crashed: {e}")
             self.stop_bot()
             raise
