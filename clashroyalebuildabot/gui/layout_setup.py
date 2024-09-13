@@ -1,5 +1,6 @@
-from PyQt6.QtCore import Qt  # Fügen Sie den fehlenden Import für Qt hinzu
+from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QCheckBox
 from PyQt6.QtWidgets import QComboBox
 from PyQt6.QtWidgets import QDoubleSpinBox
@@ -25,33 +26,42 @@ def setup_top_bar(main_window):
     top_bar.setStyleSheet("background-color: #1E272E;")
     top_bar_layout = QHBoxLayout(top_bar)
 
-    left_layout = QVBoxLayout()
-    left_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+    logo_text_layout = QHBoxLayout()
+
+    logo_label = QLabel()
+    logo_pixmap = QPixmap("logo.png").scaled(
+        120,
+        120,
+        Qt.AspectRatioMode.KeepAspectRatio,
+        Qt.TransformationMode.SmoothTransformation,
+    )
+    logo_label.setPixmap(logo_pixmap)
+    logo_label.setFixedSize(120, 120)
+    logo_text_layout.addWidget(logo_label)
+
+    text_layout = QVBoxLayout()
+    text_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
     server_name = QLabel("Clash Royale Build-A-Bot")
     server_name.setStyleSheet(
         "font-weight: bold; font-size: 16pt; color: white;"
     )
-    left_layout.addWidget(server_name)
+    text_layout.addWidget(server_name)
 
     server_details = QLabel(
         '<a href="https://github.com/Pbatch/ClashRoyaleBuildABot">https://github.com/Pbatch/ClashRoyaleBuildABot</a>'
     )
     server_details.setOpenExternalLinks(True)
     server_details.setStyleSheet("color: #57A6FF;")
-    left_layout.addWidget(server_details)
+    text_layout.addWidget(server_details)
 
-    main_window.server_id_label = QLabel("Status")
+    main_window.server_id_label = QLabel("Status: Stopped")
     main_window.server_id_label.setStyleSheet("color: #999;")
-    left_layout.addWidget(main_window.server_id_label)
+    text_layout.addWidget(main_window.server_id_label)
 
-    port_link = QLabel(
-        '<a href="http://localhost:5555" style="color: #57A6FF;">127.0.0.1:5555</a>'
-    )
-    port_link.setOpenExternalLinks(True)
-    left_layout.addWidget(port_link)
+    logo_text_layout.addLayout(text_layout)
 
-    top_bar_layout.addLayout(left_layout)
+    top_bar_layout.addLayout(logo_text_layout)
 
     right_layout = QVBoxLayout()
     right_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
