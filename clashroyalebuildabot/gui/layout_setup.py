@@ -48,9 +48,8 @@ def setup_top_bar(main_window):
     )
     text_layout.addWidget(server_name)
 
-    server_details = QLabel(
-        '<a href="https://github.com/Pbatch/ClashRoyaleBuildABot">https://github.com/Pbatch/ClashRoyaleBuildABot</a>'
-    )
+    url = "https://github.com/Pbatch/ClashRoyaleBuildABot"
+    server_details = QLabel(f'<a href="{url}">{url}</a>')
     server_details.setOpenExternalLinks(True)
     server_details.setStyleSheet("color: #57A6FF;")
     text_layout.addWidget(server_details)

@@ -15,7 +15,15 @@ class ImageStreamWindow(QWidget):
             "The visualizer is disabled. Enable it in the Settings tab."
         )
         self.inactiveIndicator.setStyleSheet(
-            "background-color: #FFA500; color: white; padding: 5px; height: fit-content; width: fit-content;"
+            " ".join(
+                [
+                    "background-color: #FFA500;",
+                    "color: white;",
+                    "padding: 5px;",
+                    "height: fit-content;",
+                    "width: fit-content;",
+                ]
+            )
         )
         self.inactiveIndicator.setMaximumHeight(30)
         layout = QVBoxLayout()
@@ -24,7 +32,7 @@ class ImageStreamWindow(QWidget):
         self.setLayout(layout)
 
     def update_frame(self, annotated_image):
-        height, width, channel = annotated_image.shape
+        height, width, _ = annotated_image.shape
         bytes_per_line = 3 * width
         q_image = QImage(
             annotated_image.data.tobytes(),
