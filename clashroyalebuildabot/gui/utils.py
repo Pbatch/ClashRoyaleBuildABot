@@ -1,20 +1,20 @@
 import os
 
 from loguru import logger
-from ruamel.yaml import YAML
+import yaml
 
 from clashroyalebuildabot.constants import SRC_DIR
 
-yaml = YAML()
-
 
 def load_config():
+    config = None
     try:
         config_path = os.path.join(SRC_DIR, "config.yaml")
         with open(config_path, encoding="utf-8") as file:
-            return yaml.load(file)
+            config = yaml.safe_load(file)
     except Exception as e:
         logger.error(f"Can't parse config, stacktrace: {e}")
+    return config
 
 
 def save_config(config):
