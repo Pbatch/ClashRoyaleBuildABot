@@ -6,6 +6,9 @@ Please report any bugs on Discord, and we will fix them promptly.
 <table>
     <tr>
         <td align="center">
+            <img src="https://github.com/user-attachments/assets/554485fb-5d80-43bd-8096-07b6b38330db" alt="GUI">
+        </td>
+        <td align="center">
             <img src="https://github.com/user-attachments/assets/45165830-caab-4ee3-8552-6c982bf269fa" alt="ClashRoyaleBuildABot">
         </td>
     </tr>
