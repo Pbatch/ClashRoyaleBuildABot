@@ -1,3 +1,5 @@
+import os
+
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 from PyQt6.QtGui import QPixmap
@@ -17,6 +19,7 @@ from PyQt6.QtWidgets import QTextEdit
 from PyQt6.QtWidgets import QVBoxLayout
 from PyQt6.QtWidgets import QWidget
 
+from clashroyalebuildabot.constants import IMAGES_DIR
 from clashroyalebuildabot.gui.gameplay_widget import ImageStreamWindow
 from clashroyalebuildabot.gui.utils import save_config
 
@@ -29,7 +32,8 @@ def setup_top_bar(main_window):
     logo_text_layout = QHBoxLayout()
 
     logo_label = QLabel()
-    logo_pixmap = QPixmap("logo.png").scaled(
+
+    logo_pixmap = QPixmap(os.path.join(IMAGES_DIR, "logo.png")).scaled(
         120,
         120,
         Qt.AspectRatioMode.KeepAspectRatio,
