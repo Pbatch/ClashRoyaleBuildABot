@@ -1,6 +1,3 @@
-# ClashRoyaleBot.spec
-from PyInstaller.utils.hooks import collect_all
-
 a = Analysis(
     ['main.py'],
     binaries=[],
