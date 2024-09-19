@@ -18,6 +18,7 @@ from clashroyalebuildabot.constants import ADB_PATH
 from clashroyalebuildabot.constants import EMULATOR_DIR
 from clashroyalebuildabot.constants import SCREENSHOT_HEIGHT
 from clashroyalebuildabot.constants import SCREENSHOT_WIDTH
+from error_handling import WikifiedError
 
 
 class Emulator:
@@ -67,7 +68,9 @@ class Emulator:
                 ]
 
                 if not available_devices:
-                    raise RuntimeError("No connected devices found") from e
+                    raise WikifiedError(
+                        "006", "No connected devices found"
+                    ) from e
 
                 fallback_device_serial = available_devices[0]
                 logger.info(
@@ -78,8 +81,8 @@ class Emulator:
                 logger.error(
                     f"Failed to execute adb devices: {str(adb_error)}"
                 )
-                raise RuntimeError(
-                    "Could not find a valid device to connect to."
+                raise WikifiedError(
+                    "006", "Could not find a valid device to connect to."
                 ) from adb_error
 
     def _start_recording(self):
@@ -151,11 +154,13 @@ class Emulator:
             logger.error(str(e))
             logger.error(f"stdout: {e.stdout}")
             logger.error(f"stderr: {e.stderr}")
-            raise
+            raise WikifiedError("007", "ADB command failed.") from e
 
         if result.returncode != 0:
             logger.error(f"Error executing command: {result.stderr}")
-            raise RuntimeError("ADB command failed")
+            raise WikifiedError(
+                "007", "ADB command failed."
+            ) from RuntimeError(result.stderr)
 
         return result.stdout
 
@@ -171,34 +176,36 @@ class Emulator:
         logger.debug("Starting to update frames...")
         for line in iter(self.video_thread.stdout.readline, b""):
             try:
-                if not line:
+                last_frame = self._get_last_frame(line)
+                if not last_frame:
                     continue
 
-                if self.os_name == "windows":
-                    line = line.replace(b"\r\n", b"\n")
-
-                packets = self.codec.parse(line)
-                if not packets:
-                    continue
-
-                frames = self.codec.decode(packets[-1])
-                if not frames:
-                    continue
-
-                self.frame = (
-                    frames[-1]
-                    .reformat(
-                        width=SCREENSHOT_WIDTH,
-                        height=SCREENSHOT_HEIGHT,
-                        format="rgb24",
-                    )
-                    .to_image()
-                )
+                self.frame = last_frame.reformat(
+                    width=SCREENSHOT_WIDTH,
+                    height=SCREENSHOT_HEIGHT,
+                    format="rgb24",
+                ).to_image()
 
             except av.AVError as av_error:
                 logger.error(f"Error while decoding video stream: {av_error}")
             except Exception as e:
                 logger.error(f"Unexpected error in frame update: {str(e)}")
+
+    def _get_last_frame(self, line):
+        if not line:
+            return None
+
+        if self.os_name == "windows":
+            line = line.replace(b"\r\n", b"\n")
+
+        packets = self.codec.parse(line)
+        if not packets:
+            return None
+
+        frames = self.codec.decode(packets[-1])
+        if not frames:
+            return None
+        return frames[-1]
 
     def _start_updating_frame(self):
         self.frame_thread = threading.Thread(target=self._update_frame)

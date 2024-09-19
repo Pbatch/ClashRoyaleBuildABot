@@ -10,6 +10,7 @@ from clashroyalebuildabot.detectors.number_detector import NumberDetector
 from clashroyalebuildabot.detectors.screen_detector import ScreenDetector
 from clashroyalebuildabot.detectors.unit_detector import UnitDetector
 from clashroyalebuildabot.namespaces import State
+from error_handling import WikifiedError
 
 
 class Detector:
@@ -17,8 +18,8 @@ class Detector:
 
     def __init__(self, cards):
         if len(cards) != self.DECK_SIZE:
-            raise ValueError(
-                f"You must specify all {self.DECK_SIZE} of your cards"
+            raise WikifiedError(
+                "005", f"You must specify all {self.DECK_SIZE} of your cards"
             )
 
         self.cards = deepcopy(cards)
