@@ -23,6 +23,7 @@ from clashroyalebuildabot.detectors.detector import Detector
 from clashroyalebuildabot.emulator.emulator import Emulator
 from clashroyalebuildabot.namespaces import Screens
 from clashroyalebuildabot.visualizer import Visualizer
+from error_handling import WikifiedError
 
 pause_event = threading.Event()
 pause_event.set()
@@ -42,7 +43,9 @@ class Bot:
 
         cards = [action.CARD for action in actions]
         if len(cards) != 8:
-            raise ValueError(f"Must provide 8 cards but was given: {cards}")
+            raise WikifiedError(
+                "005", f"Must provide 8 cards but {len(cards)} was given"
+            )
         self.cards_to_actions = dict(zip(cards, actions))
 
         self.visualizer = Visualizer(**config["visuals"])
@@ -148,7 +151,7 @@ class Bot:
         self.emulator.click(*card_centre)
         self.emulator.click(*tile_centre)
 
-    def step(self):
+    def _handle_play_pause_in_step(self):
         if not pause_event.is_set():
             if not Bot.is_paused_logged:
                 logger.info("Bot paused.")
@@ -159,6 +162,8 @@ class Bot:
             logger.info("Bot resumed.")
             Bot.is_resumed_logged = True
 
+    def step(self):
+        self._handle_play_pause_in_step()
         old_screen = self.state.screen if self.state else None
         self.set_state()
         new_screen = self.state.screen
@@ -184,6 +189,9 @@ class Bot:
             self._log_and_wait("Starting game", 2)
             return
 
+        self._handle_game_step()
+
+    def _handle_game_step(self):
         actions = self.get_actions()
         if not actions:
             self._log_and_wait("No actions available", self.play_action_delay)

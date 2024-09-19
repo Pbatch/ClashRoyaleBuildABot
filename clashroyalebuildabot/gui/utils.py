@@ -1,20 +1,18 @@
 import os
 
-from loguru import logger
 import yaml
 
 from clashroyalebuildabot.constants import SRC_DIR
+from error_handling import WikifiedError
 
 
 def load_config():
-    config = None
     try:
         config_path = os.path.join(SRC_DIR, "config.yaml")
         with open(config_path, encoding="utf-8") as file:
-            config = yaml.safe_load(file)
+            return yaml.safe_load(file)
     except Exception as e:
-        logger.error(f"Can't parse config, stacktrace: {e}")
-    return config
+        raise WikifiedError("002", "Can't parse config.") from e
 
 
 def save_config(config):
@@ -23,4 +21,4 @@ def save_config(config):
         with open(config_path, "w", encoding="utf-8") as file:
             yaml.dump(config, file)
     except Exception as e:
-        logger.error(f"Can't save config, stacktrace: {e}")
+        raise WikifiedError("000", "Can't save config.") from e

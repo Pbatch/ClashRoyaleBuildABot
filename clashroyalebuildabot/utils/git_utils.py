@@ -1,8 +1,9 @@
 import subprocess
-import sys
 from time import sleep
 
 from loguru import logger
+
+from error_handling import WikifiedError
 
 
 def _is_branch_late() -> bool:
@@ -42,4 +43,6 @@ def check_and_pull_updates() -> None:
             sleep(3)
             return
         logger.error(f"Error while checking / pulling updates: {e.stderr}")
-        sys.exit(1)
+        raise WikifiedError(
+            "000", "Error while checking / pulling updates"
+        ) from e

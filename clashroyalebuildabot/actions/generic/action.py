@@ -12,9 +12,6 @@ class Action(ABC):
         self.tile_x = tile_x
         self.tile_y = tile_y
 
-        if self.CARD is None:
-            raise ValueError("Each action must set the CARD attribute")
-
     def __repr__(self):
         return f"{self.CARD.name} at ({self.tile_x}, {self.tile_y})"
 

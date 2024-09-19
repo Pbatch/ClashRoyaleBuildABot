@@ -7,6 +7,7 @@ from scipy.optimize import linear_sum_assignment
 from clashroyalebuildabot.constants import CARD_CONFIG
 from clashroyalebuildabot.constants import IMAGES_DIR
 from clashroyalebuildabot.namespaces.cards import Cards
+from error_handling import WikifiedError
 
 
 class CardDetector:
@@ -53,15 +54,19 @@ class CardDetector:
             ),
             dtype=np.float32,
         )
-        for i, card in enumerate(self.cards):
-            path = os.path.join(IMAGES_DIR, "cards", f"{card.name}.jpg")
-            pil_image = Image.open(path)
+        try:
+            for i, card in enumerate(self.cards):
+                path = os.path.join(IMAGES_DIR, "cards", f"{card.name}.jpg")
+                pil_image = Image.open(path)
 
-            multi_hash = self._calculate_multi_hash(pil_image)
-            card_hashes[i] = np.tile(
-                np.expand_dims(multi_hash, axis=2), (1, 1, self.HAND_SIZE)
-            )
-
+                multi_hash = self._calculate_multi_hash(pil_image)
+                card_hashes[i] = np.tile(
+                    np.expand_dims(multi_hash, axis=2), (1, 1, self.HAND_SIZE)
+                )
+        except Exception as e:
+            raise WikifiedError(
+                "005", "Can't load cards and their images."
+            ) from e
         return card_hashes
 
     def _detect_cards(self, image):

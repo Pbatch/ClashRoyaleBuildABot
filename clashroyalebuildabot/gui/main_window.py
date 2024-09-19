@@ -17,36 +17,40 @@ from clashroyalebuildabot.gui.layout_setup import setup_top_bar
 from clashroyalebuildabot.gui.styles import set_styles
 from clashroyalebuildabot.utils.logger import colorize_log
 from clashroyalebuildabot.utils.logger import setup_logger
+from error_handling import WikifiedError
 
 
 class MainWindow(QMainWindow):
     def __init__(self, config, actions):
-        super().__init__()
-        self.config = config
-        self.actions = actions
-        self.bot = None
-        self.bot_thread = None
-        self.is_running = False
+        try:
+            super().__init__()
+            self.config = config
+            self.actions = actions
+            self.bot = None
+            self.bot_thread = None
+            self.is_running = False
 
-        self.setWindowTitle(" ")
-        self.setGeometry(100, 100, 900, 600)
+            self.setWindowTitle(" ")
+            self.setGeometry(100, 100, 900, 600)
 
-        transparent_pixmap = QPixmap(1, 1)
-        transparent_pixmap.fill(Qt.GlobalColor.transparent)
-        self.setWindowIcon(QIcon(transparent_pixmap))
+            transparent_pixmap = QPixmap(1, 1)
+            transparent_pixmap.fill(Qt.GlobalColor.transparent)
+            self.setWindowIcon(QIcon(transparent_pixmap))
 
-        main_widget = QWidget(self)
-        self.setCentralWidget(main_widget)
-        main_layout = QVBoxLayout(main_widget)
+            main_widget = QWidget(self)
+            self.setCentralWidget(main_widget)
+            main_layout = QVBoxLayout(main_widget)
 
-        top_bar = setup_top_bar(self)
-        tab_widget = setup_tabs(self)
+            top_bar = setup_top_bar(self)
+            tab_widget = setup_tabs(self)
 
-        main_layout.addWidget(top_bar)
-        main_layout.addWidget(tab_widget)
+            main_layout.addWidget(top_bar)
+            main_layout.addWidget(tab_widget)
 
-        set_styles(self)
-        start_play_button_animation(self)
+            set_styles(self)
+            start_play_button_animation(self)
+        except Exception as e:
+            raise WikifiedError("004", "Error in GUI initialization.") from e
 
     def log_handler_function(self, message):
         formatted_message = colorize_log(message)
@@ -140,10 +144,12 @@ class MainWindow(QMainWindow):
             )
             self.bot.run()
             self.stop_bot()
-        except Exception as e:
-            logger.error(f"Bot crashed: {e}")
+        except WikifiedError:
             self.stop_bot()
             raise
+        except Exception as e:
+            self.stop_bot()
+            raise WikifiedError("003", "Bot crashed.") from e
 
     def append_log(self, message):
         self.log_display.append(message)
