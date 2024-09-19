@@ -1,5 +1,4 @@
 import os
-
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 from PyQt6.QtGui import QPixmap
@@ -22,6 +21,7 @@ from PyQt6.QtWidgets import QWidget
 from clashroyalebuildabot.constants import IMAGES_DIR
 from clashroyalebuildabot.gui.gameplay_widget import ImageStreamWindow
 from clashroyalebuildabot.gui.utils import save_config
+from clashroyalebuildabot.gui.stats_window import StatsWindow
 
 
 def setup_top_bar(main_window):
@@ -32,7 +32,6 @@ def setup_top_bar(main_window):
     logo_text_layout = QHBoxLayout()
 
     logo_label = QLabel()
-
     logo_pixmap = QPixmap(os.path.join(IMAGES_DIR, "logo.png")).scaled(
         120,
         120,
@@ -164,6 +163,9 @@ def setup_tabs(main_window):
 
     settings_tab = QWidget()
     settings_layout = QGridLayout(settings_tab)
+
+    main_window.stats_tab = StatsWindow(main_window.config)
+    tab_widget.addTab(main_window.stats_tab, "Stats")
 
     bot_group = QGroupBox("Bot ")
     bot_layout = QFormLayout()

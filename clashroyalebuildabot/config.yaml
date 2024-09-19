@@ -1,34 +1,16 @@
-bot:
-  # The logging level for the bot.
-  # Use "DEBUG" for detailed debugging information, "INFO" for general information,
-  # "WARNING" for warning messages, "ERROR" for error messages, and "CRITICAL" for critical issues.
-  log_level: "DEBUG"
-
-  # Create a deck code when the game starts
-  load_deck: False
-  auto_start_game: False
-  enable_gui: True
-
 adb:
-  # The IP address of your device or emulator.
-  # Use 127.0.0.1 for a local emulator. If you're connecting to a physical device,
-  # make sure to use the device's IP address.
-  ip: "127.0.0.1"
-
-  # The serial number of your device
-  # Use adb devices to obtain it
   device_serial: emulator-5554
-
-visuals:
-  # show_images displays the bot's current view in a GUI.
-  # save_images saves the images seen by the bot.
-  # save_labels saves the images along with the labels and the bot's perspective.
-  save_labels: False
-  save_images: False
-  show_images: False
-
+  ip: 127.0.0.1
+bot:
+  auto_start_game: true
+  enable_gui: true
+  load_deck: false
+  log_level: DEBUG
 ingame:
-  # The delay between actions.
-  # The default is 1. For faster action execution on high-performance PCs, you can set this to 0.5.
-  # For lower-performance PCs, consider using 1.25 to 1.5.
-  play_action: 1
+  play_action: 0.5
+visuals:
+  save_images: false
+  save_labels: false
+  show_images: true
+api_config:
+  player_tag: EXAMPLE123
