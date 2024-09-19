@@ -1,3 +1,4 @@
+import os
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 from PyQt6.QtGui import QPixmap
@@ -17,6 +18,7 @@ from PyQt6.QtWidgets import QTextEdit
 from PyQt6.QtWidgets import QVBoxLayout
 from PyQt6.QtWidgets import QWidget
 
+from clashroyalebuildabot.constants import IMAGES_DIR
 from clashroyalebuildabot.gui.gameplay_widget import ImageStreamWindow
 from clashroyalebuildabot.gui.utils import save_config
 from clashroyalebuildabot.gui.stats_window import StatsWindow
