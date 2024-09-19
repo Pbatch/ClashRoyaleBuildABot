@@ -30,7 +30,7 @@ def setup_top_bar(main_window):
     logo_text_layout = QHBoxLayout()
 
     logo_label = QLabel()
-    logo_pixmap = QPixmap("logo.png").scaled(
+    logo_pixmap = QPixmap(os.path.join(IMAGES_DIR, "logo.png")).scaled(
         120,
         120,
         Qt.AspectRatioMode.KeepAspectRatio,
