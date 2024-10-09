@@ -28,7 +28,7 @@ Welcome to Clash Royale Build-A-Bot! This project provides an advanced state gen
 
 ---
 
-## Getting Started with Your Clash Royale Bot
+## Getting Started with Your Clash Royale Bot 🛠️
 
 Follow these steps to set up your environment:
 <!--
@@ -44,9 +44,41 @@ Need help? Join our [Discord server](https://discord.gg/K4UfbsfcMa).
 
 ---
 
-## Contributors ✨
+## Current Features ⚙️
 
-A big thank you to all contributors!  
+Our bot is equipped with a variety of functionalities designed for educational and research purposes. We will be updating the comprehensive list of features soon, as the bot has expanded significantly. 
+
+---
+
+## Upcoming Features 🚀
+
+We're continuously working to enhance the bot. Here’s what you can expect in future updates:
+
+- **Improve Error Handling**: [#252](https://github.com/Pbatch/ClashRoyaleBuildABot/issues/252)
+- **Open Chests**: [#250](https://github.com/Pbatch/ClashRoyaleBuildABot/issues/250)
+- **Mobile Tutorial**: Add a tutorial for using the bot on your phone. [#249](https://github.com/Pbatch/ClashRoyaleBuildABot/issues/249)
+- **Unit Detection Counts**: Integrate unit detection counts into the GUI. [#248](https://github.com/Pbatch/ClashRoyaleBuildABot/issues/248)
+- **Deck Swapping**: Ability to swap decks directly from the GUI. [#247](https://github.com/Pbatch/ClashRoyaleBuildABot/issues/247)
+- **Synthetic Data Generation**: Enhance data generation capabilities. [#246](https://github.com/Pbatch/ClashRoyaleBuildABot/issues/246)
+- **HP Detector Fix**: Improve the HP detector functionality. [#245](https://github.com/Pbatch/ClashRoyaleBuildABot/issues/245)
+- **Ignore Regions**: Add ignore regions to the object detector. [#244](https://github.com/Pbatch/ClashRoyaleBuildABot/issues/244)
+- **Tracking Algorithm**: Develop a new tracking algorithm. [#146](https://github.com/Pbatch/ClashRoyaleBuildABot/issues/146)
+
+---
+
+## Legal Disclaimer ⚖️
+
+This open-source bot is intended solely for **educational and research purposes**. It is not affiliated with, authorized, or endorsed by Supercell Oy. **The use of this bot in connection with Supercell Oy's Clash Royale game is strictly prohibited.** Such use may violate Supercell Oy's Terms of Service and may result in penalties such as account suspension or termination.
+
+The author and contributors of this project do not assume any responsibility for your use of this bot. While this bot primarily affects only the account it is run on, it may still harm the competitive gameplay experience of other players. By using this software, you acknowledge that you are solely responsible for your actions and any consequences that may arise from your use.
+
+**This software is provided "as is" without any warranties of any kind.**
+
+---
+
+## Creative Minds Behind This ✨
+
+A big thank you to all contributors! You are welcome to modify and distribute this project under the terms of the applicable open-source license, provided you give appropriate credit to the original authors. If you develop this project further, please ensure to acknowledge the original project and provide the corresponding credits.  
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification.
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
