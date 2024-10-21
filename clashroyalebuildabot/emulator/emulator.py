@@ -10,6 +10,7 @@ import zipfile
 
 import av
 from loguru import logger
+from PIL.Image import Image
 import requests
 from tqdm import tqdm
 
@@ -237,7 +238,7 @@ class Emulator:
     def click(self, x, y):
         self._run_command(["shell", "input", "tap", str(x), str(y)])
 
-    def take_screenshot(self):
+    def take_screenshot(self) -> Image:
         logger.debug("Starting to take screenshot...")
         while self.frame is None:
             time.sleep(0.01)
