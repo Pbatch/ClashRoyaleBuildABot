@@ -186,9 +186,6 @@ class Emulator:
                     height=SCREENSHOT_HEIGHT,
                     format="rgb24",
                 ).to_image()
-
-            except av.AVError as av_error:
-                logger.error(f"Error while decoding video stream: {av_error}")
             except Exception as e:
                 logger.error(f"Unexpected error in frame update: {str(e)}")
 

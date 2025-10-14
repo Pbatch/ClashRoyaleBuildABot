@@ -39,6 +39,7 @@ class Bot:
         self.actions = actions
         self.auto_start = config["bot"]["auto_start_game"]
         self.end_of_game_clicked = False
+        self.bypass_end_of_game_clicked = False
         self.should_run = True
 
         cards = [action.CARD for action in actions]
@@ -156,7 +157,7 @@ class Bot:
             if not Bot.is_paused_logged:
                 logger.info("Bot paused.")
                 Bot.is_paused_logged = True
-            time.sleep(0.1)
+            time.sleep(0.2)
             return
         if not Bot.is_resumed_logged:
             logger.info("Bot resumed.")
@@ -180,12 +181,18 @@ class Bot:
                 self.end_of_game_clicked = True
                 self._log_and_wait("Clicked END_OF_GAME screen", 2)
             return
-
         self.end_of_game_clicked = False
+
+        if new_screen == Screens.BYPASS_END_OF_GAME:
+            if not self.bypass_end_of_game_clicked:
+                self.emulator.click(*self.state.screen.click_xy)
+                self.bypass_end_of_game_clicked = True
+                self._log_and_wait("Clicked BYPASS_END_OF_GAME screen", 2)
+            return
+        self.bypass_end_of_game_clicked = False
 
         if self.auto_start and new_screen == Screens.LOBBY:
             self.emulator.click(*self.state.screen.click_xy)
-            self.end_of_game_clicked = False
             self._log_and_wait("Starting game", 2)
             return
 

@@ -17,12 +17,18 @@ class _ScreensNamespace:
     LOBBY: Screen = Screen(
         "lobby",
         (424, 126, 506, 181),
-        (360, 820),
+        (360, 1000),
     )
     END_OF_GAME: Screen = Screen(
         "end_of_game",
-        (279, 1095, 440, 1154),
-        (360, 1125),
+        (379, 1122, 560, 1201),
+        (243, 1158),
+    )
+
+    BYPASS_END_OF_GAME: Screen = Screen(
+        "bypass_end_of_game",
+        (269, 1123, 451, 1201),
+        (360, 1161),
     )
 
 
