@@ -9,7 +9,7 @@ class SpellAction(Action):
     Play the spell to hit as many enemy units as possible
     """
 
-    RADIUS = None
+    RADIUS = 1
     MIN_SCORE = 5
     UNIT_TO_SCORE = {Units.SKELETON: 1}
 

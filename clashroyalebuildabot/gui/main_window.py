@@ -1,22 +1,17 @@
+# ty: ignore
 from threading import Thread
 
 from loguru import logger
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QIcon
-from PyQt6.QtGui import QPixmap
-from PyQt6.QtWidgets import QApplication
-from PyQt6.QtWidgets import QMainWindow
-from PyQt6.QtWidgets import QVBoxLayout
-from PyQt6.QtWidgets import QWidget
+from PyQt6.QtGui import QIcon, QPixmap
+from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
 
 from clashroyalebuildabot import Bot
 from clashroyalebuildabot.bot.bot import pause_event
 from clashroyalebuildabot.gui.animations import start_play_button_animation
-from clashroyalebuildabot.gui.layout_setup import setup_tabs
-from clashroyalebuildabot.gui.layout_setup import setup_top_bar
+from clashroyalebuildabot.gui.layout_setup import setup_tabs, setup_top_bar
 from clashroyalebuildabot.gui.styles import set_styles
-from clashroyalebuildabot.utils.logger import colorize_log
-from clashroyalebuildabot.utils.logger import setup_logger
+from clashroyalebuildabot.utils.logger import colorize_log, setup_logger
 from error_handling import WikifiedError
 
 
@@ -106,22 +101,22 @@ class MainWindow(QMainWindow):
         self.start_bot()
 
     def update_config(self) -> dict:
-        self.config["visuals"][
-            "save_labels"
-        ] = self.save_labels_checkbox.isChecked()
-        self.config["visuals"][
-            "save_images"
-        ] = self.save_images_checkbox.isChecked()
-        self.config["visuals"][
-            "show_images"
-        ] = self.show_images_checkbox.isChecked()
+        self.config["visuals"]["save_labels"] = (
+            self.save_labels_checkbox.isChecked()
+        )
+        self.config["visuals"]["save_images"] = (
+            self.save_images_checkbox.isChecked()
+        )
+        self.config["visuals"]["show_images"] = (
+            self.show_images_checkbox.isChecked()
+        )
         self.visualize_tab.update_active_state(
             self.config["visuals"]["show_images"]
         )
         self.config["bot"]["load_deck"] = self.load_deck_checkbox.isChecked()
-        self.config["bot"][
-            "auto_start_game"
-        ] = self.auto_start_game_checkbox.isChecked()
+        self.config["bot"]["auto_start_game"] = (
+            self.auto_start_game_checkbox.isChecked()
+        )
         log_level_changed = (
             self.config["bot"]["log_level"]
             != self.log_level_dropdown.currentText()

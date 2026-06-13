@@ -17,7 +17,7 @@ Please report any bugs on Discord, and we will fix them promptly.
 Welcome to Clash Royale Build-A-Bot! This project provides an advanced state generator that accurately returns detailed information using cutting-edge technologies.
 
 [![Discord](https://img.shields.io/badge/Discord-00c8d6?logo=discord&logoColor=white&style=flat)](https://discord.gg/K4UfbsfcMa)
-[![Python 3.10.0](https://img.shields.io/badge/python-3.10.0-00c8d6?style=flat&logo=python&logoColor=white)](https://www.python.org/downloads/release/python-3100/)
+[![Python 3.12.0](https://img.shields.io/badge/python-3.10.0-00c8d6?style=flat&logo=python&logoColor=white)](https://www.python.org/downloads/release/python-3100/)
 [![All Contributors](https://img.shields.io/badge/all_contributors-17-00c8d6?style=flat)](#contributors-)
 
 [**Getting Started**](#getting-started-with-your-clash-royale-bot) |
@@ -37,7 +37,7 @@ Follow these steps to set up your environment:
 **or:**
 -->
 1. **Install and Configure the Emulator:** Follow our [Emulator Setup Guide](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/Emulator-Setup-Guide).
-2. **Install Python, PIP, and Git:** Go through our [Python, PIP & Git Setup Guide](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/Python,-PIP,-&-Git-Setup-Guide).
+2. **Install uv, Python and Git:** Go through our [uv & Git Setup Guide](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/uv-&-Git-Setup-Guide).
 3. **Install and Configure Your Bot:** Use our [Bot Installation Guide](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/Bot-Installation-Setup-Guide).
 
 Need help? Join our [Discord server](https://discord.gg/K4UfbsfcMa).

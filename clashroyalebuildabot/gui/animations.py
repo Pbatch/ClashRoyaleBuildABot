@@ -1,6 +1,4 @@
-from PyQt6.QtCore import QEasingCurve
-from PyQt6.QtCore import QPropertyAnimation
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QEasingCurve, QPropertyAnimation, Qt
 from PyQt6.QtWidgets import QGraphicsDropShadowEffect
 
 

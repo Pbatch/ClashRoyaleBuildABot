@@ -10,60 +10,45 @@ authors = [
 ]
 description = "A platform for creating bots to play Clash Royale"
 readme = "README.md"
-requires-python = ">= 3.9"
+requires-python = "==3.12.*"
 dependencies = [
-    "flatbuffers>=2.0",
-    "numpy>=1.23.5,<2",
-    "Pillow>=10.1.0",
-    "protobuf>=3.20.3",
-	"keyboard>=0.13.5",
-    "scipy>=1.13.1",
-    "rich>=13.7.1",
-    "loguru>=0.7.2",
-    "PyYAML>=6.0.1",
-    "pybind11>=2.12",
-    "requests>=2.25.1",
-    "PyQt6>=6.7.1",
-    "av",
-    "tqdm",
-    "opencv-python==4.10.0.84",
-    "pre-commit==3.5.0",
-    "black==24.4.0",
-    "flake8==7.0.0",
-    "isort==5.13.2",
-    "pylint==3.1.0",
-
+    "flatbuffers==2.0",
+    "numpy==2.4.6",
+    "pillow==12.2.0",
+    "protobuf==7.35.1",
+	"keyboard==0.13.5",
+    "scipy==1.17.1",
+    "rich==13.7.1",
+    "loguru==0.7.3",
+    "PyYAML==6.0.3",
+    "pybind11==3.0.4",
+    "requests==2.34.2",
+    "pyqt6==6.11.0",
+    "av==17.1.0",
+    "tqdm==4.68.2",
+    "opencv-python==4.13.0.92",
 ]
 [project.optional-dependencies]
 cpu = [
-    "onnxruntime>=1.18.0"
+    "onnxruntime==1.26.0",
 ]
 gpu = [
-    "onnxruntime-gpu>=1.18.0",
+    "onnxruntime-gpu==1.26.0",
+]
+dev = [
+    "pre-commit==4.6.0",
+    "ruff==0.15.17",
+    "ty==0.0.49",
 ]
 
-[tool.black]
+[tool.ruff]
 line-length = 79
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-)/
-'''
+target-version = "py312"
 
-[tool.isort]
-profile = "black"
-line_length = 79
-force_single_line = true
-force_sort_within_sections = true
-lexicographical = true
-single_line_exclusions = ["typing"]
-order_by_type = false
-group_by_package = true
-skip_glob = ["venv/*"]
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+ignore = ["E501", "E231", "E222"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

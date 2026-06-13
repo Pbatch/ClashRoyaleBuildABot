@@ -45,4 +45,4 @@ def colorize_log(message):
     else:
         color = "black"
 
-    return f"""<span style="color:{COLORS['time']}">[{time}]</span>  <span style="color:{color}">{level}</span>     | <span style="color:{COLORS['context_info']}">{module}:{function}:{line}</span> - <span style="color:{color}">{log_message}</span></span>"""
+    return f"""<span style="color:{COLORS["time"]}">[{time}]</span>  <span style="color:{color}">{level}</span>     | <span style="color:{COLORS["context_info"]}">{module}:{function}:{line}</span> - <span style="color:{color}">{log_message}</span></span>"""

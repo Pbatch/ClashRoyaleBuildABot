@@ -1,34 +1,31 @@
-from dataclasses import asdict
 from dataclasses import dataclass
-from typing import Literal, Optional, Tuple
+from enum import StrEnum, auto
+from typing import Optional, Tuple
 
 
-@dataclass(frozen=True)
-class UnitCategory:
-    TROOP: str = "troop"
-    BUILDING: str = "building"
+class UnitCategory(StrEnum):
+    TROOP = auto()
+    BUILDING = auto()
 
 
-@dataclass(frozen=True)
-class Target:
-    AIR: str = "air"
-    GROUND: str = "ground"
-    BUILDINGS: str = "buildings"
-    ALL: str = "all"
+class Target(StrEnum):
+    AIR = auto()
+    GROUND = auto()
+    BUILDINGS = auto()
+    ALL = auto()
 
 
-@dataclass(frozen=True)
-class Transport:
-    AIR: str = "air"
-    GROUND: str = "ground"
+class Transport(StrEnum):
+    AIR = auto()
+    GROUND = auto()
 
 
 @dataclass(frozen=True)
 class Unit:
     name: str
-    category: Literal[UnitCategory.TROOP, UnitCategory.BUILDING]
-    target: Optional[Literal[Target.GROUND, Target.BUILDINGS, Target.ALL]]
-    transport: Optional[Literal[Transport.AIR, Transport.GROUND]]
+    category: UnitCategory
+    target: Optional[Target]
+    transport: Optional[Transport]
 
 
 @dataclass(frozen=True)
@@ -75,7 +72,7 @@ class _UnitsNamespace:
     BATTLE_RAM: Unit = Unit(
         "battle_ram",
         UnitCategory.TROOP,
-        UnitCategory.BUILDING,
+        Target.BUILDINGS,
         Transport.GROUND,
     )
     BOMB_TOWER: Unit = Unit(
@@ -344,4 +341,8 @@ class _UnitsNamespace:
 
 
 Units = _UnitsNamespace()
-NAME2UNIT = dict(asdict(Units).items())
+NAME2UNIT = {
+    name: attr
+    for name, attr in _UnitsNamespace.__dict__.items()
+    if isinstance(attr, Unit)
+}

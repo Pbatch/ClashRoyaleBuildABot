@@ -1,6 +1,6 @@
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.6.0
+  rev: v5.0.0
   hooks:
       - id: check-added-large-files
       - id: check-case-conflict
@@ -16,21 +16,21 @@ repos:
       - id: mixed-line-ending
       - id: trailing-whitespace
         files: \.(py|sh|rst|yml|yaml)$
--   repo: https://github.com/psf/black
-    rev: 24.4.2
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.9.9
+  hooks:
+    - id: ruff
+      args: [--fix]
+    - id: ruff-format
+-   repo: local
     hooks:
-    - id: black
-      language_version: python3.10
--   repo: https://github.com/PyCQA/flake8
-    rev: 5.0.4
-    hooks:
-    - id: flake8
--   repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        name: isort (python)
-        args: ["--profile", "black", "--filter-files"]
+    -   id: ty
+        name: ty
+        entry: uv run ty check
+        language: system
+        pass_filenames: false
+        always_run: true
+
 ci:
     autofix_prs: true
     autoupdate_commit_msg: '[pre-commit.ci] autoupdate'

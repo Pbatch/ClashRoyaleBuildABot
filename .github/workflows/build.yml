@@ -10,22 +10,26 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11"]
+        python-version: ["3.12"]
     steps:
     - uses: actions/checkout@v4
-    - name: Set Up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
       with:
-        python-version: ${{ matrix.python-version }}
-        cache: 'pip'
+        enable-cache: true
+        cache-dependency-glob: "pyproject.toml"
+
+    - name: Set up Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
+
     - name: Install dependencies
-      run: |
-        pip install .[cpu]
-        pip install .[gpu]
+      run: uv sync --extra cpu
+
     - name: Verify installation
-      run: |
-        python -m pip check
-    - name: Clean up build artifacts
+      run: uv pip check
+
+    - name: Clean up
       run: |
         rm -rf build
         rm -rf *.egg-info

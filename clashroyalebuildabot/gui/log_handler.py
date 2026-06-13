@@ -1,8 +1,6 @@
 import logging
 
-from PyQt6.QtCore import Q_ARG
-from PyQt6.QtCore import QMetaObject
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Q_ARG, QMetaObject, Qt
 
 
 class QTextEditLogger(logging.Handler):

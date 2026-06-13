@@ -4,9 +4,8 @@ import numpy as np
 from PIL import Image
 from scipy.optimize import linear_sum_assignment
 
-from clashroyalebuildabot.constants import CARD_CONFIG
-from clashroyalebuildabot.constants import IMAGES_DIR
-from clashroyalebuildabot.namespaces.cards import Cards
+from clashroyalebuildabot.constants import CARD_CONFIG, IMAGES_DIR
+from clashroyalebuildabot.namespaces.cards import Card, Cards
 from error_handling import WikifiedError
 
 
@@ -15,7 +14,12 @@ class CardDetector:
     MULTI_HASH_SCALE = 0.355
     MULTI_HASH_INTERCEPT = 163
 
-    def __init__(self, cards, hash_size=8, grey_std_threshold=5):
+    def __init__(
+        self,
+        cards: list[Card],
+        hash_size: int = 8,
+        grey_std_threshold: int = 5,
+    ):
         self.cards = cards
         self.hash_size = hash_size
         self.grey_std_threshold = grey_std_threshold

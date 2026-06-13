@@ -1,12 +1,11 @@
 from dataclasses import dataclass
-from typing import Optional, Tuple
 
 
 @dataclass(frozen=True)
 class Screen:
     name: str
-    ltrb: Optional[Tuple[float, float, float, float]]
-    click_xy: Optional[Tuple[int, int]]
+    ltrb: tuple[float, float, float, float] | None
+    click_xy: tuple[int, int] | None
 
 
 # coords are scaled to 720x1280

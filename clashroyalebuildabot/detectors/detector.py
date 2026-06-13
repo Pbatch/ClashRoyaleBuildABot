@@ -1,6 +1,6 @@
-from copy import deepcopy
 import os
 import time
+from copy import deepcopy
 
 from loguru import logger
 
@@ -31,7 +31,7 @@ class Detector:
         )
         self.screen_detector = ScreenDetector()
 
-    def run(self, image):
+    def run(self, image) -> State | None:
         logger.debug("Setting state...")
         retries = 3
         for attempt in range(retries):
@@ -50,5 +50,5 @@ class Detector:
                 if attempt < retries - 1:
                     time.sleep(1)
 
-        logger.error("All detection attempts failed. Returning default state.")
-        return State([], [], [], [], False, None)
+        logger.error("All detection attempts failed.")
+        return None

@@ -93,31 +93,32 @@ ALLY_HP_LHS_COLOUR = (111, 208, 252)
 ALLY_HP_RHS_COLOUR = (63, 79, 112)
 ENEMY_HP_LHS_COLOUR = (224, 35, 93)
 ENEMY_HP_RHS_COLOUR = (90, 49, 68)
-NUMBER_CONFIG = {
-    "right_ally_princess_hp": [
+HPConfig = tuple[int, int, tuple[int, int, int], tuple[int, int, int]]
+NUMBER_CONFIG: dict[str, HPConfig] = {
+    "right_ally_princess_hp": (
         RIGHT_PRINCESS_HP_X,
         ALLY_PRINCESS_HP_Y,
         ALLY_HP_LHS_COLOUR,
         ALLY_HP_RHS_COLOUR,
-    ],
-    "left_ally_princess_hp": [
+    ),
+    "left_ally_princess_hp": (
         LEFT_PRINCESS_HP_X,
         ALLY_PRINCESS_HP_Y,
         ALLY_HP_LHS_COLOUR,
         ALLY_HP_RHS_COLOUR,
-    ],
-    "right_enemy_princess_hp": [
+    ),
+    "right_enemy_princess_hp": (
         RIGHT_PRINCESS_HP_X,
         ENEMY_PRINCESS_HP_Y,
         ENEMY_HP_LHS_COLOUR,
         ENEMY_HP_RHS_COLOUR,
-    ],
-    "left_enemy_princess_hp": [
+    ),
+    "left_enemy_princess_hp": (
         LEFT_PRINCESS_HP_X,
         ENEMY_PRINCESS_HP_Y,
         ENEMY_HP_LHS_COLOUR,
         ENEMY_HP_RHS_COLOUR,
-    ],
+    ),
 }
 
 # Units
