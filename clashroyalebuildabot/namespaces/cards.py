@@ -1,9 +1,6 @@
-from dataclasses import asdict
 from dataclasses import dataclass
-from typing import List
 
-from clashroyalebuildabot.namespaces.units import Unit
-from clashroyalebuildabot.namespaces.units import Units
+from clashroyalebuildabot.namespaces.units import Unit, Units
 
 
 @dataclass(frozen=True)
@@ -11,7 +8,7 @@ class Card:
     name: str
     target_anywhere: bool
     cost: int
-    units: List[Unit]
+    units: list[Unit]
     id_: int
 
     def __hash__(self):
@@ -284,4 +281,4 @@ class _CardsNamespace:
 
 
 Cards = _CardsNamespace()
-NAME2CARD = dict(asdict(Cards).items())
+NAME2CARD = {k: v for k, v in vars(Cards).items() if isinstance(v, Card)}

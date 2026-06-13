@@ -31,7 +31,7 @@ class ScreenDetector:
             screen_hashes[screen] = self._image_hash(image)
         return screen_hashes
 
-    def run(self, image: Image) -> Screen:
+    def run(self, image: Image.Image) -> Screen:
         current_screen = Screens.UNKNOWN
         best_diff = self.threshold
 

@@ -1,23 +1,24 @@
 import os
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont
-from PyQt6.QtGui import QPixmap
-from PyQt6.QtWidgets import QCheckBox
-from PyQt6.QtWidgets import QComboBox
-from PyQt6.QtWidgets import QDoubleSpinBox
-from PyQt6.QtWidgets import QFormLayout
-from PyQt6.QtWidgets import QFrame
-from PyQt6.QtWidgets import QGridLayout
-from PyQt6.QtWidgets import QGroupBox
-from PyQt6.QtWidgets import QHBoxLayout
-from PyQt6.QtWidgets import QLabel
-from PyQt6.QtWidgets import QLineEdit
-from PyQt6.QtWidgets import QPushButton
-from PyQt6.QtWidgets import QTabWidget
-from PyQt6.QtWidgets import QTextEdit
-from PyQt6.QtWidgets import QVBoxLayout
-from PyQt6.QtWidgets import QWidget
+from PyQt6.QtGui import QFont, QPixmap
+from PyQt6.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QDoubleSpinBox,
+    QFormLayout,
+    QFrame,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QTabWidget,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
 
 from clashroyalebuildabot.constants import IMAGES_DIR
 from clashroyalebuildabot.gui.gameplay_widget import ImageStreamWindow

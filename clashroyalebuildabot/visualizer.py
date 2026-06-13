@@ -1,16 +1,17 @@
-from dataclasses import asdict
 import os
+from dataclasses import asdict
 
 import numpy as np
-from PIL import ImageDraw
-from PIL import ImageFont
-from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtCore import QObject
+from PIL import ImageDraw, ImageFont
+from PyQt6.QtCore import QObject, pyqtSignal
 
-from clashroyalebuildabot.constants import CARD_CONFIG
-from clashroyalebuildabot.constants import LABELS_DIR
-from clashroyalebuildabot.constants import SCREENSHOTS_DIR
+from clashroyalebuildabot.constants import (
+    CARD_CONFIG,
+    LABELS_DIR,
+    SCREENSHOTS_DIR,
+)
 from clashroyalebuildabot.namespaces.numbers import NumberDetection
+from clashroyalebuildabot.namespaces.state import State
 from clashroyalebuildabot.namespaces.units import NAME2UNIT
 
 
@@ -42,7 +43,7 @@ class Visualizer(QObject):
         self.show_images = show_images
 
         self.font = ImageFont.load_default()
-        self.unit_names = [unit["name"] for unit in list(NAME2UNIT.values())]
+        self.unit_names = [unit.name for unit in list(NAME2UNIT.values())]
 
         os.makedirs(LABELS_DIR, exist_ok=True)
         os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
@@ -96,13 +97,13 @@ class Visualizer(QObject):
         self._draw_unit_bboxes(d, state.allies, "ally")
         self._draw_unit_bboxes(d, state.enemies, "enemy")
 
-        for card, position in zip(state.cards, CARD_CONFIG):
+        for card, position in zip(state.cards, CARD_CONFIG, strict=False):
             d.rectangle(tuple(position))
             self._draw_text(d, position, card.name)
 
         return image
 
-    def run(self, image, state):
+    def run(self, image, state: State):
         n_screenshots = len(os.listdir(SCREENSHOTS_DIR))
         n_labels = len(os.listdir(LABELS_DIR))
         basename = max(n_labels, n_screenshots) + 1

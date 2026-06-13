@@ -1,27 +1,31 @@
 import random
 import threading
 import time
+from typing import cast
 
 import keyboard
 from loguru import logger
 
-from clashroyalebuildabot.constants import ALL_TILES
-from clashroyalebuildabot.constants import ALLY_TILES
-from clashroyalebuildabot.constants import DISPLAY_CARD_DELTA_X
-from clashroyalebuildabot.constants import DISPLAY_CARD_HEIGHT
-from clashroyalebuildabot.constants import DISPLAY_CARD_INIT_X
-from clashroyalebuildabot.constants import DISPLAY_CARD_WIDTH
-from clashroyalebuildabot.constants import DISPLAY_CARD_Y
-from clashroyalebuildabot.constants import DISPLAY_HEIGHT
-from clashroyalebuildabot.constants import LEFT_PRINCESS_TILES
-from clashroyalebuildabot.constants import RIGHT_PRINCESS_TILES
-from clashroyalebuildabot.constants import TILE_HEIGHT
-from clashroyalebuildabot.constants import TILE_INIT_X
-from clashroyalebuildabot.constants import TILE_INIT_Y
-from clashroyalebuildabot.constants import TILE_WIDTH
+from clashroyalebuildabot.constants import (
+    ALL_TILES,
+    ALLY_TILES,
+    DISPLAY_CARD_DELTA_X,
+    DISPLAY_CARD_HEIGHT,
+    DISPLAY_CARD_INIT_X,
+    DISPLAY_CARD_WIDTH,
+    DISPLAY_CARD_Y,
+    DISPLAY_HEIGHT,
+    LEFT_PRINCESS_TILES,
+    RIGHT_PRINCESS_TILES,
+    TILE_HEIGHT,
+    TILE_INIT_X,
+    TILE_INIT_Y,
+    TILE_WIDTH,
+)
 from clashroyalebuildabot.detectors.detector import Detector
 from clashroyalebuildabot.emulator.emulator import Emulator
 from clashroyalebuildabot.namespaces import Screens
+from clashroyalebuildabot.namespaces.state import State
 from clashroyalebuildabot.visualizer import Visualizer
 from error_handling import WikifiedError
 
@@ -47,12 +51,11 @@ class Bot:
             raise WikifiedError(
                 "005", f"Must provide 8 cards but {len(cards)} was given"
             )
-        self.cards_to_actions = dict(zip(cards, actions))
+        self.cards_to_actions = dict(zip(cards, actions, strict=False))
 
         self.visualizer = Visualizer(**config["visuals"])
         self.emulator = Emulator(**config["adb"])
         self.detector = Detector(cards=cards)
-        self.state = None
         self.play_action_delay = config.get("ingame", {}).get("play_action", 1)
 
         keyboard_thread = threading.Thread(
@@ -115,44 +118,8 @@ class Bot:
         y = DISPLAY_CARD_Y + DISPLAY_CARD_HEIGHT / 2
         return x, y
 
-    def _get_valid_tiles(self):
-        tiles = ALLY_TILES
-        if self.state.numbers.left_enemy_princess_hp.number == 0:
-            tiles += LEFT_PRINCESS_TILES
-        if self.state.numbers.right_enemy_princess_hp.number == 0:
-            tiles += RIGHT_PRINCESS_TILES
-        return tiles
-
-    def get_actions(self):
-        if not self.state:
-            return []
-        valid_tiles = self._get_valid_tiles()
-        actions = []
-        for i in self.state.ready:
-            card = self.state.cards[i + 1]
-            if self.state.numbers.elixir.number < card.cost:
-                continue
-
-            tiles = ALL_TILES if card.target_anywhere else valid_tiles
-            card_actions = [
-                self.cards_to_actions[card](i, x, y) for (x, y) in tiles
-            ]
-            actions.extend(card_actions)
-
-        return actions
-
-    def set_state(self):
-        screenshot = self.emulator.take_screenshot()
-        self.state = self.detector.run(screenshot)
-        self.visualizer.run(screenshot, self.state)
-
-    def play_action(self, action):
-        card_centre = self._get_card_centre(action.index)
-        tile_centre = self._get_tile_centre(action.tile_x, action.tile_y)
-        self.emulator.click(*card_centre)
-        self.emulator.click(*tile_centre)
-
-    def _handle_play_pause_in_step(self):
+    @staticmethod
+    def _handle_play_pause_in_step():
         if not pause_event.is_set():
             if not Bot.is_paused_logged:
                 logger.info("Bot paused.")
@@ -163,43 +130,89 @@ class Bot:
             logger.info("Bot resumed.")
             Bot.is_resumed_logged = True
 
-    def step(self):
+    @staticmethod
+    def _get_valid_tiles(state: State):
+        tiles = ALLY_TILES
+        if state.numbers.left_enemy_princess_hp.number == 0:
+            tiles += LEFT_PRINCESS_TILES
+        if state.numbers.right_enemy_princess_hp.number == 0:
+            tiles += RIGHT_PRINCESS_TILES
+        return tiles
+
+    def get_actions(self, state: State):
+        valid_tiles = self._get_valid_tiles(state)
+        actions = []
+        for i in state.ready:
+            card = state.cards[i + 1]
+            if state.numbers.elixir.number < card.cost:
+                continue
+
+            tiles = ALL_TILES if card.target_anywhere else valid_tiles
+            card_actions = [
+                self.cards_to_actions[card](i, x, y) for (x, y) in tiles
+            ]
+            actions.extend(card_actions)
+
+        return actions
+
+    def compute_state(self) -> State | None:
+        screenshot = self.emulator.take_screenshot()
+        state = self.detector.run(screenshot)
+        if state is not None:
+            self.visualizer.run(screenshot, state)
+        return state
+
+    def play_action(self, action):
+        card_centre = self._get_card_centre(action.index)
+        tile_centre = self._get_tile_centre(action.tile_x, action.tile_y)
+        self.emulator.click(*card_centre)
+        self.emulator.click(*tile_centre)
+
+    def step(self, state: State | None):
         self._handle_play_pause_in_step()
-        old_screen = self.state.screen if self.state else None
-        self.set_state()
-        new_screen = self.state.screen
+        old_screen = state.screen if state else None
+        state = self.compute_state()
+        if state is None:
+            return state
+
+        new_screen = state.screen
         if new_screen != old_screen:
             logger.info(f"New screen state: {new_screen}")
 
         if new_screen == Screens.UNKNOWN:
             self._log_and_wait("Unknown screen", 2)
-            return
+            return state
 
         if new_screen == Screens.END_OF_GAME:
             if not self.end_of_game_clicked:
-                self.emulator.click(*self.state.screen.click_xy)
+                self.emulator.click(
+                    *cast(tuple[int, int], Screens.END_OF_GAME.click_xy)
+                )
                 self.end_of_game_clicked = True
                 self._log_and_wait("Clicked END_OF_GAME screen", 2)
-            return
+            return state
         self.end_of_game_clicked = False
 
         if new_screen == Screens.BYPASS_END_OF_GAME:
             if not self.bypass_end_of_game_clicked:
-                self.emulator.click(*self.state.screen.click_xy)
+                self.emulator.click(
+                    *cast(tuple[int, int], Screens.BYPASS_END_OF_GAME.click_xy)
+                )
                 self.bypass_end_of_game_clicked = True
                 self._log_and_wait("Clicked BYPASS_END_OF_GAME screen", 2)
-            return
+            return state
         self.bypass_end_of_game_clicked = False
 
         if self.auto_start and new_screen == Screens.LOBBY:
-            self.emulator.click(*self.state.screen.click_xy)
+            self.emulator.click(*cast(tuple[int, int], Screens.LOBBY.click_xy))
             self._log_and_wait("Starting game", 2)
-            return
+            return state
 
-        self._handle_game_step()
+        self._handle_game_step(state)
+        return state
 
-    def _handle_game_step(self):
-        actions = self.get_actions()
+    def _handle_game_step(self, state: State):
+        actions = self.get_actions(state)
         if not actions:
             self._log_and_wait("No actions available", self.play_action_delay)
             return
@@ -208,7 +221,7 @@ class Bot:
         best_score = [0]
         best_action = None
         for action in actions:
-            score = action.calculate_score(self.state)
+            score = action.calculate_score(state)
             if score > best_score:
                 best_action = action
                 best_score = score
@@ -226,13 +239,14 @@ class Bot:
         )
 
     def run(self):
+        state = None
         try:
             while self.should_run:
                 if not pause_event.is_set():
                     time.sleep(0.1)
                     continue
 
-                self.step()
+                state = self.step(state)
             logger.info("Thanks for using CRBAB, see you next time!")
         except KeyboardInterrupt:
             logger.info("Thanks for using CRBAB, see you next time!")

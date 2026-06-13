@@ -1,12 +1,13 @@
 import numpy as np
 from PIL import ImageFilter
 
-from clashroyalebuildabot.constants import ELIXIR_BOUNDING_BOX
-from clashroyalebuildabot.constants import HP_HEIGHT
-from clashroyalebuildabot.constants import HP_WIDTH
-from clashroyalebuildabot.constants import NUMBER_CONFIG
-from clashroyalebuildabot.namespaces.numbers import NumberDetection
-from clashroyalebuildabot.namespaces.numbers import Numbers
+from clashroyalebuildabot.constants import (
+    ELIXIR_BOUNDING_BOX,
+    HP_HEIGHT,
+    HP_WIDTH,
+    NUMBER_CONFIG,
+)
+from clashroyalebuildabot.namespaces.numbers import NumberDetection, Numbers
 
 
 class NumberDetector:

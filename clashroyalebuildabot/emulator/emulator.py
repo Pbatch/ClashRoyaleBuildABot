@@ -9,16 +9,18 @@ import time
 import zipfile
 
 import av
+import requests
 from loguru import logger
 from PIL.Image import Image
-import requests
 from tqdm import tqdm
 
-from clashroyalebuildabot.constants import ADB_DIR
-from clashroyalebuildabot.constants import ADB_PATH
-from clashroyalebuildabot.constants import EMULATOR_DIR
-from clashroyalebuildabot.constants import SCREENSHOT_HEIGHT
-from clashroyalebuildabot.constants import SCREENSHOT_WIDTH
+from clashroyalebuildabot.constants import (
+    ADB_DIR,
+    ADB_PATH,
+    EMULATOR_DIR,
+    SCREENSHOT_HEIGHT,
+    SCREENSHOT_WIDTH,
+)
 from error_handling import WikifiedError
 
 
@@ -175,7 +177,16 @@ class Emulator:
 
     def _update_frame(self):
         logger.debug("Starting to update frames...")
-        for line in iter(self.video_thread.stdout.readline, b""):
+        if self.video_thread is None:
+            logger.error("Video thread is None")
+            return
+
+        video_thread_stdout = self.video_thread.stdout
+        if video_thread_stdout is None:
+            logger.error("Video thread stdout is None")
+            return
+
+        for line in iter(video_thread_stdout.readline, b""):
             try:
                 last_frame = self._get_last_frame(line)
                 if not last_frame:

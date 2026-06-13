@@ -1,11 +1,10 @@
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 from clashroyalebuildabot.namespaces.cards import Card
 
 
 class Action(ABC):
-    CARD: Card = None
+    CARD: Card
 
     def __init__(self, index, tile_x, tile_y):
         self.index = index
