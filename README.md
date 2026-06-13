@@ -17,8 +17,7 @@ Please report any bugs on Discord, and we will fix them promptly.
 Welcome to Clash Royale Build-A-Bot! This project provides an advanced state generator that accurately returns detailed information using cutting-edge technologies.
 
 [![Discord](https://img.shields.io/badge/Discord-00c8d6?logo=discord&logoColor=white&style=flat)](https://discord.gg/K4UfbsfcMa)
-[![Python 3.12.0](https://img.shields.io/badge/python-3.10.0-00c8d6?style=flat&logo=python&logoColor=white)](https://www.python.org/downloads/release/python-3100/)
-[![All Contributors](https://img.shields.io/badge/all_contributors-17-00c8d6?style=flat)](#contributors-)
+[![Python 3.12.0](https://img.shields.io/badge/python-3.12.0-00c8d6?style=flat&logo=python&logoColor=white)](https://www.python.org/downloads/release/python-3120/)[![All Contributors](https://img.shields.io/badge/all_contributors-17-00c8d6?style=flat)](#contributors-)
 
 [**Getting Started**](#getting-started-with-your-clash-royale-bot) |
 [**Data**](#data) |
