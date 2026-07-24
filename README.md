@@ -110,6 +110,7 @@ This project follows the [all-contributors](https://github.com/all-contributors/
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/nikita9091239"><img src="https://avatars.githubusercontent.com/u/83181206?v=4?s=100" width="100px;" alt="nikita9091239"/><br /><sub><b>nikita9091239</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/issues?q=author%3Anikita9091239" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/FikryCoder"><img src="https://avatars.githubusercontent.com/u/111184562?v=4?s=100" width="100px;" alt="Fikry 🎯"/><br /><sub><b>Fikry 🎯</b></sub></a><br /><a href="#research-FikryCoder" title="Research">🔬</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/EnderBenjy"><img src="https://avatars.githubusercontent.com/u/68610598?v=4?s=100" width="100px;" alt="EnderBenjy"/><br /><sub><b>EnderBenjy</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=EnderBenjy" title="Code">💻</a> <a href="#design-EnderBenjy" title="Design">🎨</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/LuShadowX"><img src="https://avatars.githubusercontent.com/u/226906661?v=4?s=100" width="100px;" alt="Shadow_Lu"/><br /><sub><b>Shadow_Lu</b></sub></a><br /><a href="https://github.com/Pbatch/ClashRoyaleBuildABot/commits?author=LuShadowX" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
