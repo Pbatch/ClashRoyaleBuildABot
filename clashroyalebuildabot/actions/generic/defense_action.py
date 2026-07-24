@@ -28,4 +28,7 @@ class DefenseAction(Action):
         if lhs >= rhs and self.tile_x == 9:
             return [0]
 
+        if rhs > lhs and self.tile_x == 8:
+            return [0]
+
         return [1]
