@@ -31,6 +31,9 @@ jobs:
     - name: Run Ruff Format (Formatting)
       run: uv run ruff format . --check
 
+    - name: Run ty (Type checking)
+      run: uv run ty check
+
     - name: Clean up
       run: |
         rm -rf build
