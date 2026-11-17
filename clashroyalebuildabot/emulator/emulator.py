@@ -1,8 +1,7 @@
-# pylint: disable=consider-using-with
-
 import base64
 import os
 import platform
+import re
 import subprocess
 import threading
 import time
@@ -17,20 +16,59 @@ from tqdm import tqdm
 from clashroyalebuildabot.constants import (
     ADB_DIR,
     ADB_PATH,
-    EMULATOR_DIR,
+    APP_DIR,
     SCREENSHOT_HEIGHT,
     SCREENSHOT_WIDTH,
 )
-from error_handling import WikifiedError
+from clashroyalebuildabot.utils.error_handling import WikifiedError
+
+
+def extract_zip(zip_path, dest):
+    """Extract a zip, keeping Unix permissions such as the executable bit.
+
+    zipfile.extractall drops them, which leaves adb unable to run on Linux
+    and macOS.
+    """
+    with zipfile.ZipFile(zip_path, "r") as zip_ref:
+        for info in zip_ref.infolist():
+            path = zip_ref.extract(info, dest)
+            mode = (info.external_attr >> 16) & 0o777
+            if mode and not info.is_dir():
+                os.chmod(path, mode)
+
+
+def parse_wm_size(output: str) -> tuple[int, int]:
+    """Read the screen size from ``adb shell wm size``.
+
+    With an override set (``wm size 720x1280``) it prints both the physical
+    and the override size; apps render at the override, so that one wins.
+    """
+    sizes = dict(
+        (kind, (int(w), int(h)))
+        for kind, w, h in re.findall(r"(\w+) size: (\d+)x(\d+)", output)
+    )
+    if "Override" in sizes:
+        return sizes["Override"]
+    if "Physical" in sizes:
+        return sizes["Physical"]
+    raise ValueError(f"Can't read the screen size from {output!r}")
 
 
 class Emulator:
-    def __init__(self, device_serial, ip):
+    # screenrecord only sends a frame when the screen changes, so a quiet
+    # stream usually means a static screen, not a dead one.
+    FRAME_TIMEOUT = 5
+    # The first frame arrives as soon as recording starts.
+    FIRST_FRAME_TIMEOUT = 15
+
+    def __init__(self, device_serial):
         self.device_serial = device_serial
-        self.ip = ip
 
         self.frame_thread = None
-        self.video_thread = None
+        self.video_process = None
+        self._closed = threading.Event()
+        self._stream_ended = threading.Event()
+        self._last_frame = None
         self.frame = None
         self.codec = av.codec.CodecContext.create("h264", "r")
         self.os_name = platform.system().lower()
@@ -99,7 +137,7 @@ class Emulator:
         cmd = base64.standard_b64encode(cmd.encode("utf-8")).decode("utf-8")
         cmd = ["echo", cmd, "|", "base64", "-d", "|", "sh"]
         cmd = " ".join(cmd) + "\n"
-        self.video_thread = subprocess.Popen(
+        self.video_process = subprocess.Popen(
             [ADB_PATH, "-s", self.device_serial, "shell", cmd],
             stderr=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
@@ -109,10 +147,13 @@ class Emulator:
 
     def _install_adb(self):
         if os.path.isdir(ADB_DIR):
+            # Earlier versions lost the executable bit when extracting.
+            if os.path.isfile(ADB_PATH) and not os.access(ADB_PATH, os.X_OK):
+                os.chmod(ADB_PATH, os.stat(ADB_PATH).st_mode | 0o111)
             return
 
         basename = f"platform-tools-latest-{self.os_name}.zip"
-        zip_path = os.path.join(EMULATOR_DIR, basename)
+        zip_path = os.path.join(APP_DIR, basename)
         adb_url = f"https://dl.google.com/android/repository/{basename}"
 
         response = requests.get(adb_url, stream=True, timeout=60)
@@ -133,8 +174,8 @@ class Emulator:
                     if chunk:
                         size = file.write(chunk)
                         pbar.update(size / chunk_size)
-        with zipfile.ZipFile(zip_path, "r") as zip_ref:
-            zip_ref.extractall(EMULATOR_DIR)
+        # The zip holds a platform-tools folder, so this creates ADB_DIR.
+        extract_zip(zip_path, APP_DIR)
         os.remove(zip_path)
 
     def _run_command(self, command):
@@ -144,7 +185,7 @@ class Emulator:
             start_time = time.time()
             result = subprocess.run(
                 command,
-                cwd=EMULATOR_DIR,
+                cwd=APP_DIR,
                 capture_output=True,
                 check=True,
                 text=True,
@@ -159,15 +200,26 @@ class Emulator:
             logger.error(f"stderr: {e.stderr}")
             raise WikifiedError("007", "ADB command failed.") from e
 
-        if result.returncode != 0:
-            logger.error(f"Error executing command: {result.stderr}")
-            raise WikifiedError(
-                "007", "ADB command failed."
-            ) from RuntimeError(result.stderr)
-
         return result.stdout
 
+    def _device_reachable(self) -> bool:
+        try:
+            result = subprocess.run(
+                [ADB_PATH, "-s", self.device_serial, "get-state"],
+                cwd=APP_DIR,
+                capture_output=True,
+                timeout=10,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            return False
+        return result.returncode == 0
+
     def _restart_server(self):
+        # Restarting the server drops wireless-debugging connections, which
+        # don't always come back, so only do it when the device isn't
+        # already reachable.
+        if self._device_reachable():
+            return
         self._run_command(
             [
                 "kill-server",
@@ -176,27 +228,37 @@ class Emulator:
         self._run_command(["start-server"])
 
     def _update_frame(self):
+        try:
+            self._read_frames()
+        finally:
+            self._stream_ended.set()
+            if not self._closed.is_set():
+                logger.error("The video stream from the device stopped.")
+
+    def _read_frames(self):
         logger.debug("Starting to update frames...")
-        if self.video_thread is None:
-            logger.error("Video thread is None")
+        if self.video_process is None:
+            logger.error("Video process is None")
             return
 
-        video_thread_stdout = self.video_thread.stdout
-        if video_thread_stdout is None:
-            logger.error("Video thread stdout is None")
+        video_stdout = self.video_process.stdout
+        if video_stdout is None:
+            logger.error("Video process stdout is None")
             return
 
-        for line in iter(video_thread_stdout.readline, b""):
+        for line in iter(video_stdout.readline, b""):
             try:
                 last_frame = self._get_last_frame(line)
                 if not last_frame:
                     continue
 
-                self.frame = last_frame.reformat(
+                image = last_frame.reformat(
                     width=SCREENSHOT_WIDTH,
                     height=SCREENSHOT_HEIGHT,
                     format="rgb24",
                 ).to_image()
+                self._last_frame = image
+                self.frame = image
             except Exception as e:
                 logger.error(f"Unexpected error in frame update: {str(e)}")
 
@@ -207,14 +269,13 @@ class Emulator:
         if self.os_name == "windows":
             line = line.replace(b"\r\n", b"\n")
 
-        packets = self.codec.parse(line)
-        if not packets:
-            return None
-
-        frames = self.codec.decode(packets[-1])
-        if not frames:
-            return None
-        return frames[-1]
+        # Every packet must be decoded, even if only the newest frame is
+        # kept: H.264 frames depend on earlier ones, and the first packet
+        # carries the stream headers.
+        frames = []
+        for packet in self.codec.parse(line):
+            frames.extend(self.codec.decode(packet))
+        return frames[-1] if frames else None
 
     def _start_updating_frame(self):
         self.frame_thread = threading.Thread(target=self._update_frame)
@@ -222,10 +283,26 @@ class Emulator:
         self.frame_thread.start()
 
     def _get_width_and_height(self):
-        window_size = self._run_command(["shell", "wm", "size"])
-        window_size = window_size.replace("Physical size: ", "")
-        width, height = tuple(int(i) for i in window_size.split("x"))
-        return width, height
+        return parse_wm_size(self._run_command(["shell", "wm", "size"]))
+
+    def close(self):
+        """Stop the screen recording and the frame thread. Safe to call twice."""
+        if self._closed.is_set():
+            return
+        self._closed.set()
+
+        if self.video_process is not None:
+            self.video_process.terminate()
+            try:
+                self.video_process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                self.video_process.kill()
+                self.video_process.wait()
+
+        # Terminating the process closes its stdout, which ends _update_frame.
+        if self.frame_thread is not None:
+            self.frame_thread.join(timeout=5)
+        logger.debug("Emulator closed.")
 
     def stop_game(self):
         self._run_command(
@@ -246,11 +323,38 @@ class Emulator:
     def click(self, x, y):
         self._run_command(["shell", "input", "tap", str(x), str(y)])
 
-    def take_screenshot(self) -> Image:
+    def take_screenshot(self) -> Image | None:
+        """
+        Wait for the next frame.
+
+        If no new frame arrives within FRAME_TIMEOUT, the screen hasn't
+        changed, so the last frame is returned. Returns None once the
+        emulator is closed. Raises WikifiedError if the stream has stopped
+        or the first frame never arrives.
+        """
         logger.debug("Starting to take screenshot...")
+        timeout = (
+            self.FRAME_TIMEOUT
+            if self._last_frame is not None
+            else self.FIRST_FRAME_TIMEOUT
+        )
+        deadline = time.monotonic() + timeout
         while self.frame is None:
+            if self._closed.is_set():
+                return None
+            if self._stream_ended.is_set():
+                raise WikifiedError(
+                    "008", "Lost the video stream from the device."
+                )
+            if time.monotonic() >= deadline:
+                if self._last_frame is None:
+                    raise WikifiedError(
+                        "008",
+                        f"No video from the device after {timeout} seconds.",
+                    )
+                logger.debug("No new frame, reusing the last one.")
+                return self._last_frame
             time.sleep(0.01)
-            continue
 
         screenshot, self.frame = self.frame, None
 

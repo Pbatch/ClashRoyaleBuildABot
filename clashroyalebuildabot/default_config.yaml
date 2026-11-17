@@ -1,3 +1,11 @@
+# Default settings. Don't edit this file: updates will overwrite it.
+# To change a setting, put it in config.yaml in the project folder (the
+# GUI's "Save config to file" button creates it). You only need the settings
+# you want to change, for example:
+#
+#   ingame:
+#     play_action: 1.5
+
 bot:
   # The logging level for the bot.
   # Use "DEBUG" for detailed debugging information, "INFO" for general information,
@@ -7,14 +15,8 @@ bot:
   # Create a deck code when the game starts
   load_deck: False
   auto_start_game: False
-  enable_gui: True
 
 adb:
-  # The IP address of your device or emulator.
-  # Use 127.0.0.1 for a local emulator. If you're connecting to a physical device,
-  # make sure to use the device's IP address.
-  ip: "127.0.0.1"
-
   # The serial number of your device
   # Use adb devices to obtain it
   device_serial: emulator-5554
@@ -32,3 +34,15 @@ ingame:
   # The default is 1. For faster action execution on high-performance PCs, you can set this to 0.5.
   # For lower-performance PCs, consider using 1.25 to 1.5.
   play_action: 1
+
+screen_detector:
+  # The bot recognises the lobby, battle and end-of-game screens with OneJev,
+  # a small vision model. Start its server before the bot (needs an NVIDIA GPU):
+  #   flide serve --model OmniJev/OneJev1.6-0.8B --port 8000
+  base_url: http://localhost:8000
+  # Treat answers below this probability as an unknown screen.
+  min_confidence: 0.5
+  # Seconds between checks, and how long an answer stays valid.
+  interval: 1.0
+  max_age: 5.0
+  timeout: 10.0

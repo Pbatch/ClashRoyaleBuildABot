@@ -6,7 +6,13 @@ dist/
 build/
 __pycache__/
 *.pyc
+# Debug output and downloaded ADB tools
+/debug/
+/platform-tools/
+# Where older versions put them
 clashroyalebuildabot/debug
 clashroyalebuildabot/emulator/platform-tools
 env/
 crbab-venv/
+# User settings (defaults are in clashroyalebuildabot/default_config.yaml)
+/config.yaml

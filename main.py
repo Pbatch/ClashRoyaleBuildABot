@@ -1,4 +1,4 @@
-from error_handling import WikifiedError
+from clashroyalebuildabot.utils.error_handling import WikifiedError
 
 try:
     import signal
@@ -19,14 +19,12 @@ try:
     )
     from clashroyalebuildabot.gui.main_window import MainWindow
     from clashroyalebuildabot.gui.utils import load_config
-    from clashroyalebuildabot.utils.git_utils import check_and_pull_updates
     from clashroyalebuildabot.utils.logger import setup_logger
 except Exception as e:
     raise WikifiedError("001", "Missing imports.") from e
 
 
 def main():
-    check_and_pull_updates()
     actions = [
         ArchersAction,
         GoblinBarrelAction,

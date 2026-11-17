@@ -1,4 +1,5 @@
 import os
+from collections.abc import Sequence
 
 import numpy as np
 from PIL import Image
@@ -6,7 +7,7 @@ from scipy.optimize import linear_sum_assignment
 
 from clashroyalebuildabot.constants import CARD_CONFIG, IMAGES_DIR
 from clashroyalebuildabot.namespaces.cards import Card, Cards
-from error_handling import WikifiedError
+from clashroyalebuildabot.utils.error_handling import WikifiedError
 
 
 class CardDetector:
@@ -16,15 +17,16 @@ class CardDetector:
 
     def __init__(
         self,
-        cards: list[Card],
+        cards: Sequence[Card],
         hash_size: int = 8,
         grey_std_threshold: int = 5,
     ):
-        self.cards = cards
+        # Build a new list rather than extending the caller's. The blanks let
+        # the matcher assign empty hand slots.
+        self.cards = [*cards, *([Cards.BLANK] * self.HAND_SIZE)]
         self.hash_size = hash_size
         self.grey_std_threshold = grey_std_threshold
 
-        self.cards.extend([Cards.BLANK for _ in range(5)])
         self.card_hashes = self._calculate_card_hashes()
 
     def _calculate_multi_hash(self, image):
