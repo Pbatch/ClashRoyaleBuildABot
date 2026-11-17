@@ -34,22 +34,45 @@ class Visualizer(QObject):
         ["silver", (220, 220, 220, 127)],
     ]
 
-    frame_ready = pyqtSignal(np.ndarray)
+    # PyQt6 6.12's stubs wrongly mark `arguments` as required.
+    frame_ready = pyqtSignal(np.ndarray)  # ty: ignore[missing-argument]
 
-    def __init__(self, save_labels, save_images, show_images):
+    def __init__(
+        self,
+        save_labels,
+        save_images,
+        show_images,
+        labels_dir=LABELS_DIR,
+        screenshots_dir=SCREENSHOTS_DIR,
+    ):
         super().__init__()
         self.save_labels = save_labels
         self.save_images = save_images
         self.show_images = show_images
+        self.labels_dir = labels_dir
+        self.screenshots_dir = screenshots_dir
 
         self.font = ImageFont.load_default()
         self.unit_names = [unit.name for unit in list(NAME2UNIT.values())]
 
-        os.makedirs(LABELS_DIR, exist_ok=True)
-        os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
+        os.makedirs(self.labels_dir, exist_ok=True)
+        os.makedirs(self.screenshots_dir, exist_ok=True)
+        self._next_index = self._find_next_index()
 
-    @staticmethod
-    def _write_label(image, state, basename):
+    def _find_next_index(self) -> int:
+        """
+        One past the highest numbered file already saved, so earlier runs
+        are never overwritten. Scanned once here, not on every frame.
+        """
+        highest = 0
+        for directory in (self.labels_dir, self.screenshots_dir):
+            for name in os.listdir(directory):
+                stem = os.path.splitext(name)[0]
+                if stem.isdigit():
+                    highest = max(highest, int(stem))
+        return highest + 1
+
+    def _write_label(self, image, state, basename):
         labels = []
         for det in state.allies + state.enemies:
             bbox = det.position.bbox
@@ -61,7 +84,9 @@ class Visualizer(QObject):
             labels.append(label)
 
         with open(
-            os.path.join(LABELS_DIR, f"{basename}.txt"), "w", encoding="utf-8"
+            os.path.join(self.labels_dir, f"{basename}.txt"),
+            "w",
+            encoding="utf-8",
         ) as f:
             f.write("\n".join(labels))
 
@@ -104,9 +129,10 @@ class Visualizer(QObject):
         return image
 
     def run(self, image, state: State):
-        n_screenshots = len(os.listdir(SCREENSHOTS_DIR))
-        n_labels = len(os.listdir(LABELS_DIR))
-        basename = max(n_labels, n_screenshots) + 1
+        # A frame's label and screenshot share one number.
+        basename = self._next_index
+        if self.save_labels or self.save_images:
+            self._next_index += 1
 
         if self.save_labels:
             self._write_label(image, state, basename)
@@ -118,7 +144,7 @@ class Visualizer(QObject):
 
         if self.save_images:
             annotated_image.save(
-                os.path.join(SCREENSHOTS_DIR, f"{basename}.png")
+                os.path.join(self.screenshots_dir, f"{basename}.png")
             )
 
         if self.show_images:

@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from enum import StrEnum, auto
-from typing import Optional, Tuple
 
 
 class UnitCategory(StrEnum):
@@ -24,13 +23,13 @@ class Transport(StrEnum):
 class Unit:
     name: str
     category: UnitCategory
-    target: Optional[Target]
-    transport: Optional[Transport]
+    target: Target | None
+    transport: Transport | None
 
 
 @dataclass(frozen=True)
 class Position:
-    bbox: Tuple[int, int, int, int]
+    bbox: tuple[int, int, int, int]
     conf: float
     tile_x: int
     tile_y: int
