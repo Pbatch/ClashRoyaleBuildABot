@@ -14,6 +14,7 @@ from PyQt6.QtWidgets import (
     QLabel,
     QLineEdit,
     QPushButton,
+    QSizePolicy,
     QTabWidget,
     QTextEdit,
     QVBoxLayout,
@@ -177,13 +178,10 @@ def setup_tabs(main_window):
     )
     bot_layout.addRow("Log Level:", main_window.log_level_dropdown)
 
-    main_window.adb_ip_input = QLineEdit()
-    main_window.adb_ip_input.setText(main_window.config["adb"]["ip"])
     main_window.device_serial_input = QLineEdit()
     main_window.device_serial_input.setText(
         main_window.config["adb"]["device_serial"]
     )
-    bot_layout.addRow("ADB IP Address:", main_window.adb_ip_input)
     bot_layout.addRow("Device Serial:", main_window.device_serial_input)
 
     bot_group.setLayout(bot_layout)
@@ -219,7 +217,10 @@ def setup_tabs(main_window):
     )
     save_config_layout.addWidget(save_config_button)
     save_config_group.setLayout(save_config_layout)
-    save_config_group.setMaximumHeight(50)
+    # Natural height: a fixed cap clipped the button text.
+    save_config_group.setSizePolicy(
+        QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum
+    )
 
     ingame_group = QGroupBox("Ingame Settings")
     ingame_layout = QFormLayout()
@@ -248,11 +249,85 @@ def setup_tabs(main_window):
 
     ingame_group.setLayout(ingame_layout)
 
+    screen_group = _setup_screen_detector_group(main_window)
+
     settings_layout.addWidget(bot_group, 0, 0)
     settings_layout.addWidget(visuals_group, 1, 0)
     settings_layout.addWidget(save_config_group, 2, 0)
-    settings_layout.addWidget(ingame_group, 0, 1, 3, 1)
+    settings_layout.addWidget(ingame_group, 0, 1)
+    settings_layout.addWidget(screen_group, 1, 1, 2, 1)
 
     tab_widget.addTab(settings_tab, "Settings")
 
     return tab_widget
+
+
+def _spin_box(value, minimum, maximum, step, tooltip, decimals=2):
+    box = QDoubleSpinBox()
+    box.setRange(minimum, maximum)
+    box.setSingleStep(step)
+    box.setDecimals(decimals)
+    box.setValue(value)
+    box.setToolTip(tooltip)
+    return box
+
+
+def _setup_screen_detector_group(main_window):
+    config = main_window.config["screen_detector"]
+    group = QGroupBox("Screen Detector")
+    layout = QFormLayout()
+
+    main_window.screen_server_url_input = QLineEdit()
+    main_window.screen_server_url_input.setText(config["base_url"])
+    main_window.screen_server_url_input.setPlaceholderText(
+        "http://localhost:8000"
+    )
+    main_window.screen_server_url_input.setToolTip(
+        "Address of the Flide server running the OneJev model.\n"
+        "Start it with: flide serve --model OmniJev/OneJev1.6-0.8B --port 8000"
+    )
+    layout.addRow("Server URL:", main_window.screen_server_url_input)
+
+    main_window.screen_min_confidence_input = _spin_box(
+        config["min_confidence"],
+        0.0,
+        1.0,
+        0.05,
+        "Answers below this probability count as an unknown screen.",
+    )
+    layout.addRow("Min Confidence:", main_window.screen_min_confidence_input)
+
+    main_window.screen_interval_input = _spin_box(
+        config["interval"],
+        0.1,
+        10.0,
+        0.1,
+        "Seconds between screen checks.",
+    )
+    layout.addRow("Check Interval (sec):", main_window.screen_interval_input)
+
+    main_window.screen_max_age_input = _spin_box(
+        config["max_age"],
+        0.5,
+        60.0,
+        0.5,
+        "How long an answer stays valid. Older answers count as unknown.",
+    )
+    layout.addRow("Answer Max Age (sec):", main_window.screen_max_age_input)
+
+    main_window.screen_timeout_input = _spin_box(
+        config["timeout"],
+        1.0,
+        60.0,
+        1.0,
+        "How long to wait for the server before giving up on a request.",
+        decimals=1,
+    )
+    layout.addRow("Request Timeout (sec):", main_window.screen_timeout_input)
+
+    note = QLabel("Applied when the bot starts.")
+    note.setStyleSheet("color: #999;")
+    layout.addRow(note)
+
+    group.setLayout(layout)
+    return group

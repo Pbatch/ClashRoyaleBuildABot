@@ -1,9 +1,7 @@
 import random
 import threading
-import time
 from typing import cast
 
-import keyboard
 from loguru import logger
 
 from clashroyalebuildabot.constants import (
@@ -27,80 +25,65 @@ from clashroyalebuildabot.emulator.emulator import Emulator
 from clashroyalebuildabot.namespaces import Screens
 from clashroyalebuildabot.namespaces.state import State
 from clashroyalebuildabot.visualizer import Visualizer
-from error_handling import WikifiedError
-
-pause_event = threading.Event()
-pause_event.set()
-is_paused_logged = False
-is_resumed_logged = True
 
 
 class Bot:
-    is_paused_logged = False
-    is_resumed_logged = True
-
     def __init__(self, actions, config):
         self.actions = actions
         self.auto_start = config["bot"]["auto_start_game"]
         self.end_of_game_clicked = False
         self.bypass_end_of_game_clicked = False
-        self.should_run = True
+        self._stop_event = threading.Event()
+        self._pause_event = threading.Event()
 
+        # Detector checks the deck size, before the emulator is created.
         cards = [action.CARD for action in actions]
-        if len(cards) != 8:
-            raise WikifiedError(
-                "005", f"Must provide 8 cards but {len(cards)} was given"
-            )
         self.cards_to_actions = dict(zip(cards, actions, strict=False))
 
-        self.visualizer = Visualizer(**config["visuals"])
-        self.emulator = Emulator(**config["adb"])
-        self.detector = Detector(cards=cards)
         self.play_action_delay = config.get("ingame", {}).get("play_action", 1)
-
-        keyboard_thread = threading.Thread(
-            target=self._handle_keyboard_shortcut, daemon=True
+        self.visualizer = Visualizer(**config["visuals"])
+        self.detector = Detector(
+            cards=cards, screen_config=config.get("screen_detector")
         )
-        keyboard_thread.start()
 
-        if config["bot"]["load_deck"]:
-            self.emulator.load_deck(cards)
+        # The emulator owns a screen-recording process and a frame thread,
+        # so it is created last and closed again if anything after it fails.
+        self.emulator = Emulator(device_serial=config["adb"]["device_serial"])
+        try:
+            if config["bot"]["load_deck"]:
+                self.emulator.load_deck(cards)
+        except BaseException:
+            self.emulator.close()
+            raise
 
-    @staticmethod
-    def _log_and_wait(prefix, delay):
+    def _log_and_wait(self, prefix, delay):
         suffix = ""
         if delay > 1:
             suffix = "s"
         message = f"{prefix}. Waiting for {delay} second{suffix}."
         logger.info(message)
-        time.sleep(delay)
+        # Returns early if stop() is called, so stopping is never delayed.
+        self._stop_event.wait(delay)
 
-    @staticmethod
-    def _handle_keyboard_shortcut():
-        while True:
-            keyboard.wait("ctrl+p")
-            Bot.pause_or_resume()
+    @property
+    def is_paused(self) -> bool:
+        return self._pause_event.is_set()
 
-    @staticmethod
-    def pause_or_resume():
-        if pause_event.is_set():
+    def pause(self):
+        if not self.is_paused:
+            self._pause_event.set()
             logger.info("Bot paused.")
-            pause_event.clear()
-            Bot.is_paused_logged = True
-            Bot.is_resumed_logged = False
-        else:
-            logger.info("Bot resumed.")
-            pause_event.set()
-            Bot.is_resumed_logged = True
-            Bot.is_paused_logged = False
 
-    @staticmethod
-    def _get_nearest_tile(x, y):
-        tile_x = round(((x - TILE_INIT_X) / TILE_WIDTH) - 0.5)
-        tile_y = round(
-            ((DISPLAY_HEIGHT - TILE_INIT_Y - y) / TILE_HEIGHT) - 0.5
-        )
-        return tile_x, tile_y
+    def resume(self):
+        if self.is_paused:
+            self._pause_event.clear()
+            logger.info("Bot resumed.")
+
+    def toggle_pause(self):
+        if self.is_paused:
+            self.resume()
+        else:
+            self.pause()
 
     @staticmethod
     def _get_tile_centre(tile_x, tile_y):
@@ -119,20 +102,8 @@ class Bot:
         return x, y
 
     @staticmethod
-    def _handle_play_pause_in_step():
-        if not pause_event.is_set():
-            if not Bot.is_paused_logged:
-                logger.info("Bot paused.")
-                Bot.is_paused_logged = True
-            time.sleep(0.2)
-            return
-        if not Bot.is_resumed_logged:
-            logger.info("Bot resumed.")
-            Bot.is_resumed_logged = True
-
-    @staticmethod
     def _get_valid_tiles(state: State):
-        tiles = ALLY_TILES
+        tiles = list(ALLY_TILES)
         if state.numbers.left_enemy_princess_hp.number == 0:
             tiles += LEFT_PRINCESS_TILES
         if state.numbers.right_enemy_princess_hp.number == 0:
@@ -157,6 +128,8 @@ class Bot:
 
     def compute_state(self) -> State | None:
         screenshot = self.emulator.take_screenshot()
+        if screenshot is None:
+            return None
         state = self.detector.run(screenshot)
         if state is not None:
             self.visualizer.run(screenshot, state)
@@ -169,7 +142,6 @@ class Bot:
         self.emulator.click(*tile_centre)
 
     def step(self, state: State | None):
-        self._handle_play_pause_in_step()
         old_screen = state.screen if state else None
         state = self.compute_state()
         if state is None:
@@ -239,17 +211,22 @@ class Bot:
         )
 
     def run(self):
+        """Play until stop() is called. Always closes the emulator on exit."""
         state = None
         try:
-            while self.should_run:
-                if not pause_event.is_set():
-                    time.sleep(0.1)
+            while not self._stop_event.is_set():
+                if self.is_paused:
+                    self._stop_event.wait(0.1)
                     continue
 
                 state = self.step(state)
-            logger.info("Thanks for using CRBAB, see you next time!")
         except KeyboardInterrupt:
-            logger.info("Thanks for using CRBAB, see you next time!")
+            pass
+        finally:
+            self.detector.close()
+            self.emulator.close()
+        logger.info("Thanks for using CRBAB, see you next time!")
 
     def stop(self):
-        self.should_run = False
+        """Ask run() to return. Safe to call from any thread."""
+        self._stop_event.set()
