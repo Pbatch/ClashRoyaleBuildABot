@@ -1,17 +1,30 @@
 import os
+import sys
 
 from clashroyalebuildabot.namespaces import Units
 
 # Directories
 SRC_DIR = os.path.dirname(__file__)
-DEBUG_DIR = os.path.join(SRC_DIR, "debug")
+# Where the user's files live: next to the .exe when built with PyInstaller,
+# otherwise the project folder (the parent of this package).
+APP_DIR = (
+    os.path.dirname(sys.executable)
+    if getattr(sys, "frozen", False)
+    else os.path.dirname(SRC_DIR)
+)
+DEFAULT_CONFIG_PATH = os.path.join(SRC_DIR, "default_config.yaml")
+USER_CONFIG_PATH = os.path.join(APP_DIR, "config.yaml")
+DEBUG_DIR = os.path.join(APP_DIR, "debug")
 MODELS_DIR = os.path.join(SRC_DIR, "models")
 IMAGES_DIR = os.path.join(SRC_DIR, "images")
-EMULATOR_DIR = os.path.join(SRC_DIR, "emulator")
-ADB_DIR = os.path.join(EMULATOR_DIR, "platform-tools")
+# Downloaded on first run (see Emulator._install_adb)
+ADB_DIR = os.path.join(APP_DIR, "platform-tools")
 ADB_PATH = os.path.normpath(os.path.join(ADB_DIR, "adb"))
 SCREENSHOTS_DIR = os.path.join(DEBUG_DIR, "screenshots")
 LABELS_DIR = os.path.join(DEBUG_DIR, "labels")
+
+# Cards in a Clash Royale deck
+DECK_SIZE = 8
 
 # Display dimensions
 DISPLAY_WIDTH = 720
