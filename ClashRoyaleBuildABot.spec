@@ -4,7 +4,6 @@ a = Analysis(
     datas=[
         ('clashroyalebuildabot', 'clashroyalebuildabot'),
         ('clashroyalebuildabot/images/cards', 'clashroyalebuildabot/images/cards'),
-        ('clashroyalebuildabot/images/screen', 'clashroyalebuildabot/images/screen'),
         ('clashroyalebuildabot/gui', 'clashroyalebuildabot/gui'),
         ('clashroyalebuildabot/models', 'clashroyalebuildabot/models'),
         ('clashroyalebuildabot/namespaces', 'clashroyalebuildabot/namespaces'),
