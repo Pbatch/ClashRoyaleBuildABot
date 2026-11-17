@@ -1,0 +1,39 @@
+name: Sync docs to wiki
+
+on:
+  push:
+    branches: [main]
+    paths: [docs/**]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wiki
+  cancel-in-progress: true
+
+jobs:
+  wiki:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Prepare wiki pages
+      run: |
+        mkdir -p wiki
+        cp docs/*.md wiki/
+        # The wiki's landing page must be called Home
+        mv wiki/README.md wiki/Home.md
+        # Links to source files (../path) point at the repo on GitHub instead
+        sed -i 's#](\.\./#](https://github.com/${{ github.repository }}/blob/main/#g' wiki/*.md
+        # Pages are edited in docs/, so say so on each one
+        for f in wiki/*.md; do
+          printf '\n---\n_This page is generated from [docs/](https://github.com/${{ github.repository }}/tree/main/docs). Edit it there, not in the wiki._\n' >> "$f"
+        done
+
+    - name: Push to wiki
+      uses: Andrew-Chen-Wang/github-wiki-action@v4
+      with:
+        path: wiki/
+        strategy: clone
