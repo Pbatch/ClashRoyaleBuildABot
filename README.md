@@ -36,9 +36,15 @@ Follow these steps to set up your environment:
 
 **or:**
 -->
-1. **Install and Configure the Emulator:** Follow our [Emulator Setup Guide](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/Emulator-Setup-Guide).
-2. **Install uv, Python and Git:** Go through our [uv & Git Setup Guide](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/uv-&-Git-Setup-Guide).
-3. **Install and Configure Your Bot:** Use our [Bot Installation Guide](https://github.com/Pbatch/ClashRoyaleBuildABot/wiki/Bot-Installation-Setup-Guide).
+1. **Install and Configure the Emulator:** Follow our [Emulator Setup Guide](docs/emulator-setup.md).
+2. **Install uv, Python and Git:** Go through our [uv & Git Setup Guide](docs/uv-and-git-setup.md).
+3. **Install and Configure Your Bot:** Use our [Bot Installation Guide](docs/bot-installation.md).
+4. **Stay Up to Date:** The bot doesn't update itself. To get the latest version, run `git pull` and then `uv sync` in the project folder. Your settings live in `config.yaml` in the project folder, which updates never touch (see [Configuration](docs/bot-installation.md#configuration)).
+
+> [!NOTE]
+> **Updating from an older version?** Settings used to be saved in `clashroyalebuildabot/config.yaml`. If `git pull` says your local changes to that file would be overwritten, copy the settings you changed into a new `config.yaml` in the project folder, then run `git checkout -- clashroyalebuildabot/config.yaml` and `git pull` again.
+>
+> Debug output (logs, screenshots and labels) is now saved in `debug` in the project folder, and ADB is downloaded again into `platform-tools` there. You can move anything you want to keep out of `clashroyalebuildabot/debug`, then delete it and `clashroyalebuildabot/emulator/platform-tools`.
 
 Need help? Join our [Discord server](https://discord.gg/K4UfbsfcMa).
 
