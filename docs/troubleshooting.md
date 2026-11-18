@@ -4,11 +4,11 @@
 Unknown error, please create an issue.
 
 ### Error E001
-A required import is missing. Install the dependencies by running `uv sync --extra cpu` (or `uv sync --extra gpu`) in the project folder. Also, make sure that you're using the venv [as described in the setup guide](bot-installation.md#step-4-create-a-virtual-environment).
+A required import is missing. Install the dependencies by running `uv sync` in the project folder. Also, make sure that you're using the venv [as described in the setup guide](bot-installation.md#step-4-create-a-virtual-environment).
 
 
 ### Error E002
-Parsing of config file failed. Your settings are in `config.yaml` in the project folder: check it's valid YAML and that each setting is in the right section, as in [the defaults](../clashroyalebuildabot/default_config.yaml). To go back to the default settings, delete your `config.yaml`.
+Parsing of config file failed. Your settings are in `config.yaml` in the project folder. If the error lists settings, fix each one it names: an unknown setting is usually misspelt or in the wrong section, and the others have a value of the wrong kind (for example text where a number should be). Otherwise, check the file is valid YAML. Compare it with [the defaults](../clashroyalebuildabot/default_config.yaml). To go back to the default settings, delete your `config.yaml`.
 
 
 ### Error E003
@@ -30,7 +30,7 @@ class ArchersAction(Action):
 
 
 ### Error E006
-Error while connecting to the ADB device: Make sure to have ADB enabled on your device/emulator, and that your computer recognizes it by running `platform-tools\adb.exe devices -l` (Windows) or `platform-tools/adb devices -l` (macOS / Linux) in the project folder, and checking that your device is present in the displayed list. The bot downloads this copy of ADB the first time it starts.
+Error while connecting to the ADB device: Make sure to have ADB enabled on your device/emulator, and that your computer recognizes it by running `platform-tools/adb devices -l` in the project folder, and checking that your device is present in the displayed list. This is the bot's own copy of ADB, installed during [setup](bot-installation.md#step-7-run-setup).
 
 
 ### Error E007
@@ -46,4 +46,15 @@ Couldn't save your settings to `config.yaml` in the project folder. Check that t
 
 
 ### Error E010
-The bot couldn't reach the OneJev screen detector. Start its server in another terminal before starting the bot (see [Bot Installation](bot-installation.md#step-7-start-the-screen-detector)), and check that the **Server URL** under Screen Detector in the Settings tab (`screen_detector.base_url` in `config.yaml`) matches its address (`http://localhost:8000` by default).
+The bot couldn't reach the vision model server it uses to read the screen. The bot only starts a server itself when **Server URL** under Screen Detector in the Settings tab (`screen_detector.base_url` in `config.yaml`) is on this computer (`http://localhost:8001` by default) and `auto_start` is on. Otherwise, start the server before the bot, and check that the URL matches its address.
+
+
+### Error E011
+The bot's copy of ADB isn't installed. Run `uv run python -m clashroyalebuildabot.install` in the project folder (see [Bot Installation](bot-installation.md#step-7-run-setup)). It downloads ADB into `platform-tools/`.
+
+
+### Error E012
+The vision model server the bot started didn't come up. Its log, `debug/vlm_server.log` in the project folder, says why. Common causes:
+- **Out of GPU memory:** close other programs using the GPU, or lower `gpu_memory_utilization` under `screen_detector` in `config.yaml`.
+- **The model isn't downloaded and there's no internet:** run setup (see [Bot Installation](bot-installation.md#step-7-run-setup)).
+- **The first start is slow:** vLLM compiles the model the first time, which can take several minutes on a slower GPU. Raise `startup_timeout` under `screen_detector`.

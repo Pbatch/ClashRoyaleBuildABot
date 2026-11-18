@@ -1,5 +1,5 @@
 from clashroyalebuildabot.actions.generic.king_action import KingAction
-from clashroyalebuildabot.namespaces.cards import Cards
+from clashroyalebuildabot.game.cards import Cards
 
 
 class WitchAction(KingAction):

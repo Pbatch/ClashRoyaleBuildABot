@@ -4,9 +4,11 @@ Guides and tutorials for setting up, running and developing the bot.
 
 ## Quick Start
 
-1. **[Install and Configure the Emulator](emulator-setup.md)**
+1. **[Set Up Your Android Device](emulator-setup.md)**
 2. **[Install uv and Git](uv-and-git-setup.md)**
 3. **[Install and Configure Your Bot](bot-installation.md)**
+
+The bot doesn't update itself: to get a newer version, see [Updating](bot-installation.md#updating).
 
 ## Developing the Bot
 

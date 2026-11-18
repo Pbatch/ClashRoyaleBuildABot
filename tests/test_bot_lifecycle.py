@@ -15,6 +15,7 @@ from clashroyalebuildabot.actions import (
     WitchAction,
 )
 from clashroyalebuildabot.utils.error_handling import WikifiedError
+from tests.conftest import default_config
 
 ACTIONS = [
     ArchersAction,
@@ -48,7 +49,7 @@ class FakeEmulator:
 
 
 class FakeDetector:
-    def __init__(self, cards, screen_config=None):
+    def __init__(self, cards, screen_config):
         pass
 
     def close(self):
@@ -61,12 +62,12 @@ class FakeVisualizer:
 
 
 def make_config(load_deck=False):
-    return {
-        "bot": {"auto_start_game": False, "load_deck": load_deck},
-        "adb": {"device_serial": "test-device"},
-        "visuals": {},
-        "ingame": {"play_action": 1},
-    }
+    config = default_config()
+    config.bot.auto_start_game = False
+    config.bot.load_deck = load_deck
+    config.adb.device_serial = "test-device"
+    config.ingame.play_action = 1
+    return config
 
 
 @pytest.fixture(autouse=True)

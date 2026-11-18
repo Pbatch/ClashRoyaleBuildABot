@@ -1,7 +1,7 @@
 import pytest
 
 from clashroyalebuildabot.bot.bot import Bot
-from clashroyalebuildabot.constants import (
+from clashroyalebuildabot.constants.device_screen import (
     ALLY_TILES,
     LEFT_PRINCESS_TILES,
     RIGHT_PRINCESS_TILES,

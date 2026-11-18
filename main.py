@@ -17,8 +17,8 @@ try:
         MusketeerAction,
         WitchAction,
     )
+    from clashroyalebuildabot.config import load_config
     from clashroyalebuildabot.gui.main_window import MainWindow
-    from clashroyalebuildabot.gui.utils import load_config
     from clashroyalebuildabot.utils.logger import setup_logger
 except Exception as e:
     raise WikifiedError("001", "Missing imports.") from e

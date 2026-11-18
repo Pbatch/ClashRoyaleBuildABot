@@ -20,7 +20,7 @@ def emulator(monkeypatch):
             stdin=subprocess.DEVNULL,
         )
 
-    monkeypatch.setattr(Emulator, "_install_adb", lambda self: None)
+    monkeypatch.setattr(Emulator, "_check_adb", lambda self: None)
     monkeypatch.setattr(Emulator, "_restart_server", lambda self: None)
     monkeypatch.setattr(
         Emulator, "_get_valid_device_serial", lambda self: self.device_serial

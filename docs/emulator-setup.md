@@ -1,68 +1,53 @@
-### Wiki: Emulator Setup
+### Wiki: Device Setup
 ---
-### General Recommendations for Android Emulators
+The bot plays on an Android device it reaches over [ADB](https://developer.android.com/tools/adb). On Linux, that's either an Android phone connected by USB or the Android emulator from Android Studio.
 
-When selecting an Android emulator, ensure it meets the following baseline specifications for optimal performance:
+### Recommended Settings
 
-- **Android Version:** Pie (64-Bit)
-- **CPU:** Minimum of 4 cores
-- **Memory:** 4GB RAM
-- **Display Resolution (Portrait):** 720x1280
+Whichever device you use, set it up like this:
+
+- **Orientation:** Portrait
+- **Display Resolution:** 720x1280
 - **Pixel Density:** 240 DPI
+- **Android Version:** 11 or newer
 
-**Security Notice:** We advise caution when entering credentials into any emulator. While all emulators carry inherent risks, only use trusted sources for your Google credentials.
-
-**Compatibility Note:** Each emulator listed supports Hyper-V, essential for native Windows emulation and tools like Windows Subsystem for Linux (WSL).
-
----
-
-### Tested Emulators
-
-Below are emulators we've tested extensively. If you encounter issues with others, please [create an issue](https://github.com/Pbatch/ClashRoyaleBuildABot/issues/new) on this repo, and we may update our documentation accordingly.
+**Security Notice:** Be careful about entering credentials into any device or emulator image. Only sign in with your Google account on devices and images from trusted sources.
 
 ---
 
-### BlueStacks
+### Option 1: An Android Phone
 
-BlueStacks is among the most widely used Android emulators and aligns well with our bot operation requirements.
+A real phone is the simplest option: it runs the game natively and doesn't need a powerful computer.
 
-**Configuration Tips:**
+1. **Enable Developer Options:** Open `Settings > About phone` and tap **Build number** seven times.
+2. **Enable USB Debugging:** Turn it on in `Settings > System > Developer options`. The menu's location varies between phones.
+3. **Connect the Phone** to your computer with a USB cable, and accept the "Allow USB debugging?" prompt on the phone.
+4. **Set the Resolution:** Most phones have a taller screen than 720x1280. Once you've installed the bot's copy of ADB ([Bot Installation, Step 7](bot-installation.md#step-7-run-setup)), run these commands in the project folder:
+   ```bash
+   platform-tools/adb shell wm size 720x1280
+   platform-tools/adb shell wm density 240
+   ```
+   To undo them later, run `platform-tools/adb shell wm size reset` and `platform-tools/adb shell wm density reset`.
+5. **Find the Serial:** `platform-tools/adb devices` lists your phone's serial. Enter it as the **Device Serial** in the bot's Settings tab.
 
-- **Display Settings:** Navigate to `Settings >> Display >> Display resolution`, set the orientation to "Portrait" and the resolution to "720x1280".
-- **Enable ADB:** Go to `Settings > Advanced > Android Debug Bridge (ADB)`.
-- **Ad Management:** To prevent gameplay disruption, turn off ads in `Settings > Preferences > Allow BlueStacks to show Ads during gameplay`.
+---
 
-**Download BlueStacks:**
+### Option 2: The Android Studio Emulator
 
-To download the version of BlueStacks optimized for this bot, [**click here**](https://cloud.bluestacks.com/api/getdownloadnow?platform=win&win_version=11&mac_version=&client_uuid=dd3c7468-388a-46c3-9951-0d2b848a89db&app_pkg=nxt_pie64).
+The emulator needs hardware virtualization: check that `/dev/kvm` exists. If it doesn't, enable virtualization (VT-x or AMD-V) in your BIOS.
 
-**Next Steps with Clash Royale:**
+1. **Install [Android Studio](https://developer.android.com/studio/install#linux).**
+2. **Create a Virtual Device:** Open `Tools > Device Manager` and create a phone with a **Google Play** system image for **x86_64**, Android 11 or newer. Clash Royale is an ARM app, and these images can run ARM apps.
+3. **Set the Display:** In the device's advanced settings, set the resolution to 720x1280 and the density to 240 DPI, and give it at least 4 CPU cores and 4 GB of RAM.
+4. **Start the Device** from the Device Manager. The first emulator is usually listed by `adb devices` as `emulator-5554`, which is the bot's default **Device Serial**.
 
-1. **Install Clash Royale:** Download and install Clash Royale from the Google Play Store within BlueStacks.
+---
+
+### Next Steps with Clash Royale
+
+1. **Install Clash Royale** from the Google Play Store on the device.
 2. **Complete the Tutorial:** Play through the initial tutorial to familiarize yourself with the game mechanics.
 3. **Language Settings:** Set the game language to English via the in-game settings menu.
-4. **Log in to Your Supercell Account:** Ensure you log in to your Supercell account to sync your game progress and preferences.
+4. **Log in to Your Supercell Account** to sync your game progress.
 
----
-
-### LDPlayer 9
-
-*Details for LDPlayer 9 will be added soon.*
-
----
-
-### MEMU
-
-*Details for MEMU will be added soon.*
-
----
-
-### Play Games Developer Emulator
-
-*Details for Play Games Developer Emulator will be added soon.*
-
----
-
-### Note on Emulator Selection
-
-We do not endorse specific emulators due to their varied origins and potential security implications. Our recommendations focus on configuration for development and testing purposes. Always prioritize security when handling sensitive information within emulators.
+If your device doesn't work with the bot, please [create an issue](https://github.com/Pbatch/ClashRoyaleBuildABot/issues/new) on this repo.

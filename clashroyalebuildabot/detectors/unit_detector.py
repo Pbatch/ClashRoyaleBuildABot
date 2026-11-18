@@ -2,21 +2,123 @@ import os
 
 import numpy as np
 
-from clashroyalebuildabot.constants import (
-    DETECTOR_UNITS,
+from clashroyalebuildabot.constants.device_screen import (
     DISPLAY_HEIGHT,
     DISPLAY_WIDTH,
-    MODELS_DIR,
-    SCREENSHOT_HEIGHT,
-    SCREENSHOT_WIDTH,
     TILE_HEIGHT,
     TILE_INIT_X,
     TILE_INIT_Y,
     TILE_WIDTH,
 )
+from clashroyalebuildabot.constants.paths import MODELS_DIR
+from clashroyalebuildabot.constants.screenshot import (
+    SCREENSHOT_HEIGHT,
+    SCREENSHOT_WIDTH,
+)
 from clashroyalebuildabot.detectors.onnx_detector import OnnxDetector
 from clashroyalebuildabot.detectors.side_detector import SideDetector
-from clashroyalebuildabot.namespaces.units import Position, UnitDetection
+from clashroyalebuildabot.game.units import Position, UnitDetection, Units
+
+# The units the model detects, in the order of its class indices.
+DETECTOR_UNITS = [
+    Units.ARCHER,
+    Units.ARCHER_QUEEN,
+    Units.BALLOON,
+    Units.BANDIT,
+    Units.BARBARIAN,
+    Units.BARBARIAN_HUT,
+    Units.BAT,
+    Units.BATTLE_HEALER,
+    Units.BATTLE_RAM,
+    Units.BOMB_TOWER,
+    Units.BOMBER,
+    Units.BOWLER,
+    Units.BRAWLER,
+    Units.CANNON,
+    Units.CANNON_CART,
+    Units.DARK_PRINCE,
+    Units.DART_GOBLIN,
+    Units.ELECTRO_DRAGON,
+    Units.ELECTRO_GIANT,
+    Units.ELECTRO_SPIRIT,
+    Units.ELECTRO_WIZARD,
+    Units.ELITE_BARBARIAN,
+    Units.ELIXIR_COLLECTOR,
+    Units.ELIXIR_GOLEM_LARGE,
+    Units.ELIXIR_GOLEM_MEDIUM,
+    Units.ELIXIR_GOLEM_SMALL,
+    Units.EXECUTIONER,
+    Units.FIRE_SPIRIT,
+    Units.FIRE_CRACKER,
+    Units.FISHERMAN,
+    Units.FLYING_MACHINE,
+    Units.FURNACE,
+    Units.GIANT,
+    Units.GIANT_SKELETON,
+    Units.GIANT_SNOWBALL,
+    Units.GOBLIN,
+    Units.GOBLIN_CAGE,
+    Units.GOBLIN_DRILL,
+    Units.GOBLIN_HUT,
+    Units.GOLDEN_KNIGHT,
+    Units.GOLEM,
+    Units.GOLEMITE,
+    Units.GUARD,
+    Units.HEAL_SPIRIT,
+    Units.HOG,
+    Units.HOG_RIDER,
+    Units.BABY_DRAGON,
+    Units.HUNTER,
+    Units.ICE_GOLEM,
+    Units.ICE_SPIRIT,
+    Units.ICE_WIZARD,
+    Units.INFERNO_DRAGON,
+    Units.INFERNO_TOWER,
+    Units.KNIGHT,
+    Units.LAVA_HOUND,
+    Units.LAVA_PUP,
+    Units.LITTLE_PRINCE,
+    Units.LUMBERJACK,
+    Units.MAGIC_ARCHER,
+    Units.MEGA_KNIGHT,
+    Units.MEGA_MINION,
+    Units.MIGHTY_MINER,
+    Units.MINER,
+    Units.MINION,
+    Units.MINIPEKKA,
+    Units.MONK,
+    Units.MORTAR,
+    Units.MOTHER_WITCH,
+    Units.MUSKETEER,
+    Units.NIGHT_WITCH,
+    Units.PEKKA,
+    Units.PHOENIX_EGG,
+    Units.PHOENIX_LARGE,
+    Units.PHOENIX_SMALL,
+    Units.PRINCE,
+    Units.PRINCESS,
+    Units.RAM_RIDER,
+    Units.RASCAL_BOY,
+    Units.RASCAL_GIRL,
+    Units.ROYAL_GHOST,
+    Units.ROYAL_GIANT,
+    Units.ROYAL_GUARDIAN,
+    Units.ROYAL_HOG,
+    Units.ROYAL_RECRUIT,
+    Units.SKELETON,
+    Units.SKELETON_DRAGON,
+    Units.SKELETON_KING,
+    Units.SPARKY,
+    Units.SPEAR_GOBLIN,
+    Units.TESLA,
+    Units.TOMBSTONE,
+    Units.VALKYRIE,
+    Units.WALL_BREAKER,
+    Units.WITCH,
+    Units.WIZARD,
+    Units.X_BOW,
+    Units.ZAPPY,
+]
 
 
 class UnitDetector(OnnxDetector):
@@ -67,7 +169,7 @@ class UnitDetector(OnnxDetector):
                 self.UNIT_Y_END * image.height,
             )
         )
-        image, padding = self.resize_pad_transpose_and_scale(image)
+        image, padding = self.resize_and_pad(image)
         image = np.expand_dims(image, axis=0)
         return image, padding
 

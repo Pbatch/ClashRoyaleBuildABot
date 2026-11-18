@@ -3,13 +3,14 @@ import sys
 
 from loguru import logger
 
-from clashroyalebuildabot.constants import DEBUG_DIR
+from clashroyalebuildabot.config import Config
+from clashroyalebuildabot.constants.paths import DEBUG_DIR
 
 COLORS = dict(context_info="#118aa2", time="#459028")
 
 
-def setup_logger(main_window, config: dict):
-    log_level = config.get("bot", {}).get("log_level", "INFO").upper()
+def setup_logger(main_window, config: Config):
+    log_level = config.bot.log_level
     logger.remove()
     logger.add(sys.stdout, level=log_level)
     logger.add(

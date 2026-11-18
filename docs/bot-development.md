@@ -4,7 +4,7 @@ Hello and welcome to the bot development tutorial.
 
 Each step the `Bot` (`clashroyalebuildabot/bot/bot.py`) does the following:
 
-1.) Calculate the `State` of the game (`clashroyalebuildabot/namespaces/state.py`).
+1.) Calculate the `State` of the game (`clashroyalebuildabot/game/state.py`).
 ```python
 @dataclass
 class State:
@@ -15,8 +15,10 @@ class State:
     cards: list[Card]
     # Playable hand positions (0-3). Hand position i is cards[i + 1].
     ready: list[int]
-    screen: Screen
+    screen: ScreenName
 ```
+`numbers` holds plain values: `numbers.elixir` (0 to 10), `numbers.towers` with an `hp` and `level` for each tower (`numbers.towers.left_enemy_princess.hp`), and `numbers.timer` (`time_left` in seconds, and `overtime`). A tower's HP is `inf` until it's been read, and 0 once it's destroyed.
+
 The state tracks ally units, enemy units, tower health and elixir, your cards and the current screen. `cards` holds five cards: the next card first, then the four in your hand. `ready` lists the hand positions (0 to 3) that can be played, so hand position `i` is `cards[i + 1]`. See [Bot State](bot-state.md) for how it's calculated.
 
 2.) Use the `State` to score all possible actions, and choose the action with the highest score.

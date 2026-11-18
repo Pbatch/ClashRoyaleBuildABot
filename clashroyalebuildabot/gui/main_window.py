@@ -1,4 +1,5 @@
 from threading import Thread
+from typing import cast
 
 import keyboard
 from loguru import logger
@@ -19,12 +20,14 @@ from PyQt6.QtWidgets import (
 )
 
 from clashroyalebuildabot import Bot
+from clashroyalebuildabot.config import Config, LogLevel
 from clashroyalebuildabot.gui.animations import start_play_button_animation
 from clashroyalebuildabot.gui.gameplay_widget import ImageStreamWindow
 from clashroyalebuildabot.gui.layout_setup import setup_tabs, setup_top_bar
 from clashroyalebuildabot.gui.styles import set_styles
 from clashroyalebuildabot.utils.error_handling import WikifiedError
 from clashroyalebuildabot.utils.logger import colorize_log, setup_logger
+from clashroyalebuildabot.vlm_server import VLMServer
 
 PAUSE_HOTKEY = "ctrl+p"
 
@@ -53,14 +56,14 @@ class MainWindow(QMainWindow):
     load_deck_checkbox: QCheckBox
     auto_start_game_checkbox: QCheckBox
     screen_server_url_input: QLineEdit
-    screen_min_confidence_input: QDoubleSpinBox
+    screen_model_input: QLineEdit
     screen_interval_input: QDoubleSpinBox
     screen_max_age_input: QDoubleSpinBox
     screen_timeout_input: QDoubleSpinBox
     glow_effect: QGraphicsDropShadowEffect
     glow_animation: QPropertyAnimation
 
-    def __init__(self, config, actions):
+    def __init__(self, config: Config, actions):
         try:
             super().__init__()
             self.config = config
@@ -68,6 +71,7 @@ class MainWindow(QMainWindow):
             self.bot: Bot | None = None
             self.bot_thread: Thread | None = None
             self._stop_requested = False
+            self.vlm_server = VLMServer()
 
             self.setWindowTitle(" ")
             self.setGeometry(100, 100, 900, 600)
@@ -176,50 +180,46 @@ class MainWindow(QMainWindow):
         self.glow_animation.start()
         logger.info("Bot stopped")
 
-    def update_config(self) -> dict:
-        self.config["visuals"]["save_labels"] = (
-            self.save_labels_checkbox.isChecked()
-        )
-        self.config["visuals"]["save_images"] = (
-            self.save_images_checkbox.isChecked()
-        )
-        self.config["visuals"]["show_images"] = (
-            self.show_images_checkbox.isChecked()
-        )
-        self.visualize_tab.update_active_state(
-            self.config["visuals"]["show_images"]
-        )
-        self.config["bot"]["load_deck"] = self.load_deck_checkbox.isChecked()
-        self.config["bot"]["auto_start_game"] = (
+    def update_config(self) -> Config:
+        self.config.visuals.save_labels = self.save_labels_checkbox.isChecked()
+        self.config.visuals.save_images = self.save_images_checkbox.isChecked()
+        self.config.visuals.show_images = self.show_images_checkbox.isChecked()
+        self.visualize_tab.update_active_state(self.config.visuals.show_images)
+        self.config.bot.load_deck = self.load_deck_checkbox.isChecked()
+        self.config.bot.auto_start_game = (
             self.auto_start_game_checkbox.isChecked()
         )
-        log_level_changed = (
-            self.config["bot"]["log_level"]
-            != self.log_level_dropdown.currentText()
-        )
-        self.config["bot"]["log_level"] = self.log_level_dropdown.currentText()
+        # The dropdown only offers valid levels.
+        log_level = cast(LogLevel, self.log_level_dropdown.currentText())
+        log_level_changed = self.config.bot.log_level != log_level
+        self.config.bot.log_level = log_level
         if log_level_changed:
             setup_logger(self, self.config)
-        self.config["ingame"]["play_action"] = round(
+        self.config.ingame.play_action = round(
             float(self.play_action_delay_input.value()), 2
         )
-        self.config["adb"]["device_serial"] = self.device_serial_input.text()
+        self.config.adb.device_serial = self.device_serial_input.text()
 
-        screen = self.config["screen_detector"]
+        screen = self.config.screen_detector
         server_url = self.screen_server_url_input.text().strip()
         if server_url:  # an empty box keeps the current address
-            screen["base_url"] = server_url
-        screen["min_confidence"] = round(
-            self.screen_min_confidence_input.value(), 2
-        )
-        screen["interval"] = round(self.screen_interval_input.value(), 2)
-        screen["max_age"] = round(self.screen_max_age_input.value(), 2)
-        screen["timeout"] = round(self.screen_timeout_input.value(), 1)
+            screen.base_url = server_url
+        model = self.screen_model_input.text().strip()
+        if model:  # an empty box keeps the current model
+            screen.model = model
+        screen.interval = round(self.screen_interval_input.value(), 2)
+        screen.max_age = round(self.screen_max_age_input.value(), 2)
+        screen.timeout = round(self.screen_timeout_input.value(), 1)
         return self.config
 
     def bot_task(self):
         """Runs on bot_thread. Talks to the GUI only through signals."""
         try:
+            if not self.vlm_server.ensure_running(
+                self.config.screen_detector,
+                cancelled=lambda: self._stop_requested,
+            ):
+                return  # stopped while the server was starting
             bot = Bot(actions=self.actions, config=self.config)
             bot.visualizer.frame_ready.connect(self.visualize_tab.update_frame)
             self.bot = bot
@@ -246,4 +246,5 @@ class MainWindow(QMainWindow):
                 self.bot.stop()
             if self.bot_thread is not None:
                 self.bot_thread.join(timeout=10)
+        self.vlm_server.stop()
         super().closeEvent(a0)

@@ -11,7 +11,7 @@ class SideDetector(OnnxDetector):
         image = image.resize(
             (self.SIDE_SIZE, self.SIDE_SIZE), Image.Resampling.BICUBIC
         )
-        image = np.array(image, dtype=np.float32) / 255
+        image = np.asarray(image, dtype=np.uint8)
         return np.expand_dims(image, axis=0)
 
     @staticmethod

@@ -3,7 +3,7 @@ import os
 import pytest
 from PIL import Image
 
-from clashroyalebuildabot.visualizer import Visualizer
+from clashroyalebuildabot.gui.visualizer import Visualizer
 
 
 @pytest.fixture
@@ -73,3 +73,30 @@ def test_counter_does_not_advance_when_not_saving(dirs, state_factory):
     visualizer = make_visualizer(dirs, save_labels=False, save_images=False)
     visualizer.run(Image.new("RGB", (368, 652)), state_factory())
     assert visualizer._next_index == 1
+
+
+def test_labels_every_number_at_its_box():
+    from clashroyalebuildabot.constants.screenshot import (
+        ELIXIR_BOX,
+        KING_TOWER_BOXES,
+        PRINCESS_TOWER_BOXES,
+        TIMER_BOX,
+    )
+    from clashroyalebuildabot.game.numbers import (
+        Numbers,
+        Timer,
+        Tower,
+        Towers,
+    )
+
+    numbers = Numbers(
+        elixir=7,
+        towers=Towers(left_enemy_princess=Tower(hp=1918, level=8)),
+        timer=Timer(time_left=42, overtime=True),
+    )
+    labels = dict(Visualizer._number_labels(numbers))
+    assert labels[ELIXIR_BOX] == "7"
+    assert labels[PRINCESS_TOWER_BOXES["left_enemy_princess"]] == "1918 L8"
+    assert labels[KING_TOWER_BOXES["ally_king"]] == "inf L0"
+    assert labels[TIMER_BOX] == "42s OT"
+    assert len(labels) == 8  # elixir, six towers and the timer

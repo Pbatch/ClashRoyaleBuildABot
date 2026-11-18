@@ -11,11 +11,11 @@ class BridgeAction(Action):
         if (self.tile_x, self.tile_y) not in {(3, 15), (14, 15)}:
             return [0]
 
-        if state.numbers.elixir.number != 10:
+        if state.numbers.elixir != 10:
             return [0]
 
-        left_hp = state.numbers.left_enemy_princess_hp.number
-        right_hp = state.numbers.right_enemy_princess_hp.number
+        left_hp = state.numbers.towers.left_enemy_princess.hp
+        right_hp = state.numbers.towers.right_enemy_princess.hp
         if self.tile_x == 3:
             score = [1, left_hp > 0, left_hp <= right_hp]
         else:

@@ -17,12 +17,12 @@ Please report any bugs on Discord, and we will fix them promptly.
 Welcome to Clash Royale Build-A-Bot! This project provides an advanced state generator that accurately returns detailed information using cutting-edge technologies.
 
 [![Discord](https://img.shields.io/badge/Discord-00c8d6?logo=discord&logoColor=white&style=flat)](https://discord.gg/K4UfbsfcMa)
-[![Python 3.12.0](https://img.shields.io/badge/python-3.12.0-00c8d6?style=flat&logo=python&logoColor=white)](https://www.python.org/downloads/release/python-3120/)
-[![All Contributors](https://img.shields.io/badge/all_contributors-17-00c8d6?style=flat)](#contributors-)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-00c8d6?style=flat&logo=python&logoColor=white)](https://www.python.org/downloads/)
+[![All Contributors](https://img.shields.io/badge/all_contributors-17-00c8d6?style=flat)](#creative-minds-behind-this-)
 
-[**Getting Started**](#getting-started-with-your-clash-royale-bot) |
-[**Data**](#data) |
-[**Contributors**](#contributors-)
+[**Getting Started**](#getting-started-with-your-clash-royale-bot-) |
+[**Docs**](docs/README.md) |
+[**Contributors**](#creative-minds-behind-this-)
 
 </div>
 
@@ -30,29 +30,9 @@ Welcome to Clash Royale Build-A-Bot! This project provides an advanced state gen
 
 ## Getting Started with Your Clash Royale Bot 🛠️
 
-Follow these steps to set up your environment:
-<!--
-[**Watch the Installation Video**](https://www.youtube.com/watch?v=00OwHapmO7M) 
-
-**or:**
--->
-1. **Install and Configure the Emulator:** Follow our [Emulator Setup Guide](docs/emulator-setup.md).
-2. **Install uv, Python and Git:** Go through our [uv & Git Setup Guide](docs/uv-and-git-setup.md).
-3. **Install and Configure Your Bot:** Use our [Bot Installation Guide](docs/bot-installation.md).
-4. **Stay Up to Date:** The bot doesn't update itself. To get the latest version, run `git pull` and then `uv sync` in the project folder. Your settings live in `config.yaml` in the project folder, which updates never touch (see [Configuration](docs/bot-installation.md#configuration)).
-
-> [!NOTE]
-> **Updating from an older version?** Settings used to be saved in `clashroyalebuildabot/config.yaml`. If `git pull` says your local changes to that file would be overwritten, copy the settings you changed into a new `config.yaml` in the project folder, then run `git checkout -- clashroyalebuildabot/config.yaml` and `git pull` again.
->
-> Debug output (logs, screenshots and labels) is now saved in `debug` in the project folder, and ADB is downloaded again into `platform-tools` there. You can move anything you want to keep out of `clashroyalebuildabot/debug`, then delete it and `clashroyalebuildabot/emulator/platform-tools`.
+To set up the bot, follow the [Quick Start](docs/README.md#quick-start): set up your Android device, install uv and Git, then install and configure the bot. To get a newer version later, see [Updating](docs/bot-installation.md#updating).
 
 Need help? Join our [Discord server](https://discord.gg/K4UfbsfcMa).
-
----
-
-## Current Features ⚙️
-
-Our bot is equipped with a variety of functionalities designed for educational and research purposes. We will be updating the comprehensive list of features soon, as the bot has expanded significantly. 
 
 ---
 

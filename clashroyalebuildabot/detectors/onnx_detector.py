@@ -1,24 +1,54 @@
+import functools
+
 import numpy as np
 import onnxruntime as ort
+from loguru import logger
+
+CUDA = "CUDAExecutionProvider"
+CPU = "CPUExecutionProvider"
+
+
+@functools.cache
+def _providers() -> list[str]:
+    """The execution providers to use, fastest first.
+
+    onnxruntime-gpu can't find the CUDA and cuDNN libraries installed as
+    pip wheels (nvidia-cublas and friends) on its own, so they're loaded
+    first. Without them, the CUDA provider fails to load and onnxruntime
+    quietly falls back to the CPU, which is about ten times slower.
+    """
+    available = ort.get_available_providers()
+    if CUDA not in available:
+        return [CPU]
+    try:
+        ort.preload_dlls()
+    except Exception as e:  # noqa: BLE001 - the CPU still works
+        logger.warning(f"Couldn't preload the CUDA libraries: {e}")
+    return [CUDA, CPU]
 
 
 class OnnxDetector:
     def __init__(self, model_path):
         self.model_path = model_path
 
-        providers = list(
-            set(ort.get_available_providers())
-            & {"CUDAExecutionProvider", "CPUExecutionProvider"}
-        )
+        providers = _providers()
         self.sess = ort.InferenceSession(
             self.model_path,
             providers=providers,
         )
+        if CUDA in providers and CUDA not in self.sess.get_providers():
+            logger.warning(
+                f"{self.model_path} runs on the CPU: the CUDA provider "
+                "didn't load. Check that the CUDA and cuDNN libraries "
+                "match onnxruntime-gpu's version."
+            )
         self.output_name = self.sess.get_outputs()[0].name
 
+        # Models take uint8 RGB in NHWC layout; the cast, scaling and any
+        # transpose are folded into the graph.
         input_ = self.sess.get_inputs()[0]
         self.input_name = input_.name
-        self.model_height, self.model_width = input_.shape[2:]
+        self.model_height, self.model_width = input_.shape[1:3]
 
     def resize(self, x):
         ratio = x.height / x.width
@@ -49,13 +79,10 @@ class OnnxDetector:
         )
         return x, padding
 
-    def resize_pad_transpose_and_scale(self, image):
+    def resize_and_pad(self, image):
         image = self.resize(image)
-        image = np.array(image, dtype=np.float16)
-        image, padding = self.pad(image)
-        image = image.transpose(2, 0, 1)
-        image /= 255
-        return image, padding
+        image = np.asarray(image, dtype=np.uint8)
+        return self.pad(image)
 
     def fix_bboxes(self, x, width, height, padding):
         x[:, [0, 2]] -= padding[0]
