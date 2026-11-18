@@ -1,0 +1,22 @@
+"""Where the bot's files are."""
+
+import os
+
+# The package folder, and the project folder above it.
+SRC_DIR = os.path.dirname(os.path.dirname(__file__))
+APP_DIR = os.path.dirname(SRC_DIR)
+
+# Shipped with the bot, inside the package, and only read.
+DEFAULT_CONFIG_PATH = os.path.join(SRC_DIR, "default_config.yaml")
+MODELS_DIR = os.path.join(SRC_DIR, "models")
+IMAGES_DIR = os.path.join(SRC_DIR, "images")
+
+# Written at runtime, in the project folder, so they don't conflict with git
+# updates.
+USER_CONFIG_PATH = os.path.join(APP_DIR, "config.yaml")
+DEBUG_DIR = os.path.join(APP_DIR, "debug")
+SCREENSHOTS_DIR = os.path.join(DEBUG_DIR, "screenshots")
+LABELS_DIR = os.path.join(DEBUG_DIR, "labels")
+# Downloaded by setup (see clashroyalebuildabot/install.py).
+ADB_DIR = os.path.join(APP_DIR, "platform-tools")
+ADB_PATH = os.path.join(ADB_DIR, "adb")

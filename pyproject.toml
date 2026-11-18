@@ -11,30 +11,40 @@ authors = [
 description = "A platform for creating bots to play Clash Royale"
 readme = "README.md"
 requires-python = "==3.12.*"
+# Linux only: vLLM, which serves the vision model, doesn't run elsewhere.
+classifiers = [
+    "Operating System :: POSIX :: Linux",
+]
 dependencies = [
-    "numpy==2.5.5",
+    "numpy==2.3.5",
     "pillow==13.0.0",
     "keyboard==0.13.5",
     "scipy==1.18.1",
     "loguru==0.8.0",
     "PyYAML==6.0.3",
     "requests==2.34.2",
+    "openai==3.54.0",
     "pyqt6==6.12.1",
     "av==19.0.2",
     "tqdm==4.70.1",
+    "pydantic==2.12.5",
+    "onnxruntime-gpu==1.32.0",
+    "vllm==0.34.0",
 ]
 [project.optional-dependencies]
-cpu = [
-    "onnxruntime==1.32.0",
-]
-gpu = [
-    "onnxruntime-gpu==1.32.0",
-]
 dev = [
     "pre-commit==4.7.0",
     "pytest==9.2.0",
     "ruff==0.17.5",
     "ty==0.0.105",
+]
+
+[tool.uv]
+# Only resolve for Linux, and fail to lock if a dependency has no x86-64
+# Linux wheel.
+environments = ["sys_platform == 'linux'"]
+required-environments = [
+    "sys_platform == 'linux' and platform_machine == 'x86_64'",
 ]
 
 [tool.ruff]

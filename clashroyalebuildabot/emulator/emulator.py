@@ -1,40 +1,20 @@
 import base64
-import os
-import platform
 import re
 import subprocess
 import threading
 import time
-import zipfile
 
 import av
-import requests
 from loguru import logger
 from PIL.Image import Image
-from tqdm import tqdm
 
-from clashroyalebuildabot.constants import (
-    ADB_DIR,
-    ADB_PATH,
-    APP_DIR,
+from clashroyalebuildabot.constants.paths import ADB_PATH, APP_DIR
+from clashroyalebuildabot.constants.screenshot import (
     SCREENSHOT_HEIGHT,
     SCREENSHOT_WIDTH,
 )
+from clashroyalebuildabot.install import adb_installed
 from clashroyalebuildabot.utils.error_handling import WikifiedError
-
-
-def extract_zip(zip_path, dest):
-    """Extract a zip, keeping Unix permissions such as the executable bit.
-
-    zipfile.extractall drops them, which leaves adb unable to run on Linux
-    and macOS.
-    """
-    with zipfile.ZipFile(zip_path, "r") as zip_ref:
-        for info in zip_ref.infolist():
-            path = zip_ref.extract(info, dest)
-            mode = (info.external_attr >> 16) & 0o777
-            if mode and not info.is_dir():
-                os.chmod(path, mode)
 
 
 def parse_wm_size(output: str) -> tuple[int, int]:
@@ -54,6 +34,48 @@ def parse_wm_size(output: str) -> tuple[int, int]:
     raise ValueError(f"Can't read the screen size from {output!r}")
 
 
+def recording_size(width: int, height: int) -> tuple[int, int]:
+    """The size the device records at: as small as the bot's screenshots
+    while keeping the screen's shape, so the device doesn't encode and send
+    pixels that would only be thrown away.
+
+    Both sides are multiples of 16, the block size of H.264, since some
+    phones' encoders reject anything else.
+    """
+    scale = SCREENSHOT_WIDTH / width
+    return (
+        _round_to_16(SCREENSHOT_WIDTH),
+        _round_to_16(height * scale),
+    )
+
+
+def _round_to_16(n: float) -> int:
+    return max(16, round(n / 16) * 16)
+
+
+def recording_script(width: int, height: int) -> str:
+    """The shell script that streams the screen as H.264 to stdout.
+
+    screenrecord stops after at most 3 minutes, so it runs in a loop. If the
+    device can't record at the small size, it records at full size instead,
+    and the bot scales the frames down itself. If that fails too, the sleep
+    stops the loop from spinning.
+    """
+    small_w, small_h = recording_size(width, height)
+    record = (
+        "screenrecord --output-format=h264 --time-limit 179 "
+        '--bit-rate "5M" --size "{}x{}" -'
+    )
+    return (
+        "#!/bin/bash\n"
+        "while true; do\n"
+        f"    {record.format(small_w, small_h)} ||\n"
+        f"    {record.format(width, height)} ||\n"
+        "    sleep 1\n"
+        "done\n"
+    )
+
+
 class Emulator:
     # screenrecord only sends a frame when the screen changes, so a quiet
     # stream usually means a static screen, not a dead one.
@@ -71,9 +93,8 @@ class Emulator:
         self._last_frame = None
         self.frame = None
         self.codec = av.codec.CodecContext.create("h264", "r")
-        self.os_name = platform.system().lower()
 
-        self._install_adb()
+        self._check_adb()
         self._restart_server()
         self.device_serial = self._get_valid_device_serial()
         self.width, self.height = self._get_width_and_height()
@@ -127,13 +148,7 @@ class Emulator:
                 ) from adb_error
 
     def _start_recording(self):
-        cmd = (
-            f"""#!/bin/bash
-            while true; do
-                screenrecord --output-format=h264 --time-limit "179" """
-            f"""--size "{self.width}x{self.height}" --bit-rate "5M" -
-            done\n"""
-        )
+        cmd = recording_script(self.width, self.height)
         cmd = base64.standard_b64encode(cmd.encode("utf-8")).decode("utf-8")
         cmd = ["echo", cmd, "|", "base64", "-d", "|", "sh"]
         cmd = " ".join(cmd) + "\n"
@@ -145,38 +160,14 @@ class Emulator:
             bufsize=0,
         )
 
-    def _install_adb(self):
-        if os.path.isdir(ADB_DIR):
-            # Earlier versions lost the executable bit when extracting.
-            if os.path.isfile(ADB_PATH) and not os.access(ADB_PATH, os.X_OK):
-                os.chmod(ADB_PATH, os.stat(ADB_PATH).st_mode | 0o111)
-            return
-
-        basename = f"platform-tools-latest-{self.os_name}.zip"
-        zip_path = os.path.join(APP_DIR, basename)
-        adb_url = f"https://dl.google.com/android/repository/{basename}"
-
-        response = requests.get(adb_url, stream=True, timeout=60)
-        response.raise_for_status()
-        total_size = int(response.headers.get("content-length", 0))
-        chunk_size = 1024 * 1024  # 1 MB chunks
-        total_size_mb = total_size / chunk_size
-
-        with open(zip_path, "wb") as file:
-            with tqdm(
-                unit="MB",
-                desc="Downloading ADB",
-                unit_scale=True,
-                unit_divisor=1024,
-                total=total_size_mb,
-            ) as pbar:
-                for chunk in response.iter_content(chunk_size=chunk_size):
-                    if chunk:
-                        size = file.write(chunk)
-                        pbar.update(size / chunk_size)
-        # The zip holds a platform-tools folder, so this creates ADB_DIR.
-        extract_zip(zip_path, APP_DIR)
-        os.remove(zip_path)
+    def _check_adb(self):
+        if not adb_installed():
+            raise WikifiedError(
+                "011",
+                f"ADB isn't installed at {ADB_PATH}. Run "
+                "`uv run python -m clashroyalebuildabot.install` in the "
+                "project folder.",
+            )
 
     def _run_command(self, command):
         command = [ADB_PATH, "-s", self.device_serial, *command]
@@ -266,9 +257,6 @@ class Emulator:
         if not line:
             return None
 
-        if self.os_name == "windows":
-            line = line.replace(b"\r\n", b"\n")
-
         # Every packet must be decoded, even if only the newest frame is
         # kept: H.264 frames depend on earlier ones, and the first packet
         # carries the stream headers.
@@ -321,7 +309,17 @@ class Emulator:
         )
 
     def click(self, x, y):
-        self._run_command(["shell", "input", "tap", str(x), str(y)])
+        self.tap_sequence([(x, y)])
+
+    def tap_sequence(self, points):
+        """Tap each point in turn, in one adb command.
+
+        Each adb command costs a round trip to the device, and each
+        ``input`` a process start on it, so playing a card (tap the card,
+        then the tile) is sent as one.
+        """
+        taps = [f"input tap {round(x)} {round(y)}" for x, y in points]
+        self._run_command(["shell", " && ".join(taps)])
 
     def take_screenshot(self) -> Image | None:
         """

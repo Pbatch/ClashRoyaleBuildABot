@@ -1,7 +1,7 @@
 import math
 
 from clashroyalebuildabot.actions.generic.action import Action
-from clashroyalebuildabot.namespaces.units import Units
+from clashroyalebuildabot.game.units import Units
 
 
 class SpellAction(Action):

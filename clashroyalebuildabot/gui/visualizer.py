@@ -1,18 +1,20 @@
 import os
-from dataclasses import asdict
 
 import numpy as np
 from PIL import ImageDraw, ImageFont
 from PyQt6.QtCore import QObject, pyqtSignal
 
-from clashroyalebuildabot.constants import (
-    CARD_CONFIG,
-    LABELS_DIR,
-    SCREENSHOTS_DIR,
+from clashroyalebuildabot.constants.paths import LABELS_DIR, SCREENSHOTS_DIR
+from clashroyalebuildabot.constants.screenshot import (
+    CARD_BOXES,
+    ELIXIR_BOX,
+    KING_TOWER_BOXES,
+    PRINCESS_TOWER_BOXES,
+    TIMER_BOX,
 )
-from clashroyalebuildabot.namespaces.numbers import NumberDetection
-from clashroyalebuildabot.namespaces.state import State
-from clashroyalebuildabot.namespaces.units import NAME2UNIT
+from clashroyalebuildabot.game.numbers import Numbers
+from clashroyalebuildabot.game.state import State
+from clashroyalebuildabot.game.units import Units
 
 
 class Visualizer(QObject):
@@ -53,7 +55,7 @@ class Visualizer(QObject):
         self.screenshots_dir = screenshots_dir
 
         self.font = ImageFont.load_default()
-        self.unit_names = [unit.name for unit in list(NAME2UNIT.values())]
+        self.unit_names = [unit.name for unit in Units.all()]
 
         os.makedirs(self.labels_dir, exist_ok=True)
         os.makedirs(self.screenshots_dir, exist_ok=True)
@@ -112,17 +114,27 @@ class Visualizer(QObject):
                 d, det.position.bbox, f"{prefix}_{det.unit.name}", rgba
             )
 
+    @staticmethod
+    def _number_labels(numbers: Numbers):
+        """Where to draw each number, and what to write there."""
+        yield ELIXIR_BOX, f"{numbers.elixir}"
+        boxes = {**PRINCESS_TOWER_BOXES, **KING_TOWER_BOXES}
+        for name, tower in numbers.towers.items():
+            yield boxes[name], f"{tower.hp:g} L{tower.level}"
+        timer = numbers.timer
+        overtime = " OT" if timer.overtime else ""
+        yield TIMER_BOX, f"{timer.time_left:g}s{overtime}"
+
     def _annotate_image(self, image, state):
         d = ImageDraw.Draw(image, "RGBA")
-        for det in asdict(state.numbers).values():
-            det = NumberDetection(**det)
-            d.rectangle(det.bbox)
-            self._draw_text(d, det.bbox, f"{det.number:.2f}")
+        for bbox, text in self._number_labels(state.numbers):
+            d.rectangle(bbox)
+            self._draw_text(d, bbox, text)
 
         self._draw_unit_bboxes(d, state.allies, "ally")
         self._draw_unit_bboxes(d, state.enemies, "enemy")
 
-        for card, position in zip(state.cards, CARD_CONFIG, strict=False):
+        for card, position in zip(state.cards, CARD_BOXES, strict=False):
             d.rectangle(tuple(position))
             self._draw_text(d, position, card.name)
 

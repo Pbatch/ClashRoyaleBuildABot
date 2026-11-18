@@ -4,15 +4,12 @@ from typing import cast
 
 from loguru import logger
 
-from clashroyalebuildabot.constants import (
+from clashroyalebuildabot.config import Config
+from clashroyalebuildabot.constants.device_screen import (
     ALL_TILES,
     ALLY_TILES,
-    DISPLAY_CARD_DELTA_X,
-    DISPLAY_CARD_HEIGHT,
-    DISPLAY_CARD_INIT_X,
-    DISPLAY_CARD_WIDTH,
-    DISPLAY_CARD_Y,
     DISPLAY_HEIGHT,
+    HAND_CARD_BOXES,
     LEFT_PRINCESS_TILES,
     RIGHT_PRINCESS_TILES,
     TILE_HEIGHT,
@@ -22,15 +19,27 @@ from clashroyalebuildabot.constants import (
 )
 from clashroyalebuildabot.detectors.detector import Detector
 from clashroyalebuildabot.emulator.emulator import Emulator
-from clashroyalebuildabot.namespaces import Screens
-from clashroyalebuildabot.namespaces.state import State
-from clashroyalebuildabot.visualizer import Visualizer
+from clashroyalebuildabot.game import ScreenName, Screens
+from clashroyalebuildabot.game.state import State
+from clashroyalebuildabot.gui.visualizer import Visualizer
+
+# Screens the bot just waits through.
+WAITING_SCREENS = {
+    ScreenName.UNKNOWN,
+    ScreenName.SEARCHING_FOR_OPPONENT,
+    ScreenName.LOADING,
+    ScreenName.VS,
+    ScreenName.MATCH_OVER,
+}
+# Seconds between looks at a screen outside a battle. The screen detector
+# answers about once a second, so looking more often gains nothing.
+SCREEN_POLL_DELAY = 0.5
 
 
 class Bot:
-    def __init__(self, actions, config):
+    def __init__(self, actions, config: Config):
         self.actions = actions
-        self.auto_start = config["bot"]["auto_start_game"]
+        self.auto_start = config.bot.auto_start_game
         self.end_of_game_clicked = False
         self.bypass_end_of_game_clicked = False
         self._stop_event = threading.Event()
@@ -40,17 +49,17 @@ class Bot:
         cards = [action.CARD for action in actions]
         self.cards_to_actions = dict(zip(cards, actions, strict=False))
 
-        self.play_action_delay = config.get("ingame", {}).get("play_action", 1)
-        self.visualizer = Visualizer(**config["visuals"])
+        self.play_action_delay = config.ingame.play_action
+        self.visualizer = Visualizer(**config.visuals.model_dump())
         self.detector = Detector(
-            cards=cards, screen_config=config.get("screen_detector")
+            cards=cards, screen_config=config.screen_detector
         )
 
         # The emulator owns a screen-recording process and a frame thread,
         # so it is created last and closed again if anything after it fails.
-        self.emulator = Emulator(device_serial=config["adb"]["device_serial"])
+        self.emulator = Emulator(device_serial=config.adb.device_serial)
         try:
-            if config["bot"]["load_deck"]:
+            if config.bot.load_deck:
                 self.emulator.load_deck(cards)
         except BaseException:
             self.emulator.close()
@@ -93,20 +102,15 @@ class Bot:
 
     @staticmethod
     def _get_card_centre(card_n):
-        x = (
-            DISPLAY_CARD_INIT_X
-            + DISPLAY_CARD_WIDTH / 2
-            + card_n * DISPLAY_CARD_DELTA_X
-        )
-        y = DISPLAY_CARD_Y + DISPLAY_CARD_HEIGHT / 2
-        return x, y
+        left, top, right, bottom = HAND_CARD_BOXES[card_n]
+        return (left + right) / 2, (top + bottom) / 2
 
     @staticmethod
     def _get_valid_tiles(state: State):
         tiles = list(ALLY_TILES)
-        if state.numbers.left_enemy_princess_hp.number == 0:
+        if state.numbers.towers.left_enemy_princess.hp == 0:
             tiles += LEFT_PRINCESS_TILES
-        if state.numbers.right_enemy_princess_hp.number == 0:
+        if state.numbers.towers.right_enemy_princess.hp == 0:
             tiles += RIGHT_PRINCESS_TILES
         return tiles
 
@@ -115,7 +119,7 @@ class Bot:
         actions = []
         for i in state.ready:
             card = state.cards[i + 1]
-            if state.numbers.elixir.number < card.cost:
+            if state.numbers.elixir < card.cost:
                 continue
 
             tiles = ALL_TILES if card.target_anywhere else valid_tiles
@@ -138,8 +142,7 @@ class Bot:
     def play_action(self, action):
         card_centre = self._get_card_centre(action.index)
         tile_centre = self._get_tile_centre(action.tile_x, action.tile_y)
-        self.emulator.click(*card_centre)
-        self.emulator.click(*tile_centre)
+        self.emulator.tap_sequence([card_centre, tile_centre])
 
     def step(self, state: State | None):
         old_screen = state.screen if state else None
@@ -151,42 +154,64 @@ class Bot:
         if new_screen != old_screen:
             logger.info(f"New screen state: {new_screen}")
 
-        if new_screen == Screens.UNKNOWN:
-            self._log_and_wait("Unknown screen", 2)
+        # Wait here, before the end-of-game flags below are cleared, so a
+        # flicker through one of these screens can't cause a second tap.
+        if new_screen in WAITING_SCREENS:
+            self._log_and_wait(
+                f"Waiting on the {new_screen} screen", SCREEN_POLL_DELAY
+            )
             return state
 
-        if new_screen == Screens.END_OF_GAME:
+        if new_screen == ScreenName.END_OF_GAME:
             if not self.end_of_game_clicked:
                 self.emulator.click(
-                    *cast(tuple[int, int], Screens.END_OF_GAME.click_xy)
+                    *cast(
+                        tuple[int, int],
+                        Screens.get(ScreenName.END_OF_GAME).click_xy,
+                    )
                 )
                 self.end_of_game_clicked = True
                 self._log_and_wait("Clicked END_OF_GAME screen", 2)
             return state
         self.end_of_game_clicked = False
 
-        if new_screen == Screens.BYPASS_END_OF_GAME:
+        if new_screen == ScreenName.BYPASS_END_OF_GAME:
             if not self.bypass_end_of_game_clicked:
                 self.emulator.click(
-                    *cast(tuple[int, int], Screens.BYPASS_END_OF_GAME.click_xy)
+                    *cast(
+                        tuple[int, int],
+                        Screens.get(ScreenName.BYPASS_END_OF_GAME).click_xy,
+                    )
                 )
                 self.bypass_end_of_game_clicked = True
                 self._log_and_wait("Clicked BYPASS_END_OF_GAME screen", 2)
             return state
         self.bypass_end_of_game_clicked = False
 
-        if self.auto_start and new_screen == Screens.LOBBY:
-            self.emulator.click(*cast(tuple[int, int], Screens.LOBBY.click_xy))
+        if self.auto_start and new_screen == ScreenName.LOBBY:
+            self.emulator.click(
+                *cast(tuple[int, int], Screens.get(ScreenName.LOBBY).click_xy)
+            )
             self._log_and_wait("Starting game", 2)
+            return state
+
+        # Only play cards in a battle, never in the lobby.
+        if new_screen != ScreenName.IN_GAME:
+            self._log_and_wait(
+                f"Waiting on the {new_screen} screen", SCREEN_POLL_DELAY
+            )
             return state
 
         self._handle_game_step(state)
         return state
 
     def _handle_game_step(self, state: State):
+        # Only playing a card is followed by a wait, for it to land and the
+        # elixir to drop. Otherwise the bot looks again at the next frame,
+        # so it plays as soon as a card is affordable or worth playing.
         actions = self.get_actions(state)
         if not actions:
-            self._log_and_wait("No actions available", self.play_action_delay)
+            logger.debug("No actions available")
             return
 
         random.shuffle(actions)
@@ -199,9 +224,7 @@ class Bot:
                 best_score = score
 
         if best_score[0] == 0:
-            self._log_and_wait(
-                "No good actions available", self.play_action_delay
-            )
+            logger.debug("No good actions available")
             return
 
         self.play_action(best_action)

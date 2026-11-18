@@ -10,13 +10,14 @@ from .detectors import (
     UnitDetector,
 )
 from .emulator import Emulator
-from .namespaces import Cards, Screens, State, Units
-from .visualizer import Visualizer
+from .game import Cards, ScreenName, Screens, State, Units
+from .gui.visualizer import Visualizer
 
 __all__ = [
     "constants",
     "Visualizer",
     "Cards",
+    "ScreenName",
     "Screens",
     "Units",
     "State",

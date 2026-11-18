@@ -11,15 +11,15 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from clashroyalebuildabot.constants import (
-    MODELS_DIR,
+from clashroyalebuildabot.constants.paths import MODELS_DIR
+from clashroyalebuildabot.constants.screenshot import (
     SCREENSHOT_HEIGHT,
     SCREENSHOT_WIDTH,
 )
 from clashroyalebuildabot.detectors.number_detector import NumberDetector
 from clashroyalebuildabot.detectors.unit_detector import UnitDetector
 from clashroyalebuildabot.emulator.emulator import Emulator
-from clashroyalebuildabot.namespaces.cards import Cards
+from clashroyalebuildabot.game.cards import Cards
 
 DECK = [
     Cards.ARCHERS,
@@ -54,8 +54,8 @@ def test_side_detector_model_runs():
 
 
 def test_number_detector_runs():
-    numbers = NumberDetector().run(blank_screenshot())
-    assert 0 <= numbers.elixir.number <= 10
+    elixir = NumberDetector().run(blank_screenshot())
+    assert 0 <= elixir <= 10
 
 
 def _h264_stream(width=64, height=96, n_frames=5):
@@ -91,7 +91,6 @@ def test_h264_frames_decode_to_screenshots(chunker):
 
     emulator = Emulator.__new__(Emulator)  # skip adb setup in __init__
     emulator.codec = av.codec.CodecContext.create("h264", "r")
-    emulator.os_name = "linux"
 
     data = _h264_stream()
     last = None

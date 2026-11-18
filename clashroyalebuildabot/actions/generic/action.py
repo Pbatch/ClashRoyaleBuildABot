@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from clashroyalebuildabot.namespaces.cards import Card
+from clashroyalebuildabot.game.cards import Card
 
 
 class Action(ABC):

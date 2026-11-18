@@ -1,4 +1,5 @@
 import os
+from typing import get_args
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont, QPixmap
@@ -21,9 +22,9 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from clashroyalebuildabot.constants import IMAGES_DIR
+from clashroyalebuildabot.config import LogLevel, save_config
+from clashroyalebuildabot.constants.paths import IMAGES_DIR
 from clashroyalebuildabot.gui.gameplay_widget import ImageStreamWindow
-from clashroyalebuildabot.gui.utils import save_config
 
 
 def setup_top_bar(main_window):
@@ -160,7 +161,7 @@ def setup_tabs(main_window):
 
     main_window.visualize_tab = ImageStreamWindow()
     main_window.visualize_tab.update_active_state(
-        main_window.config["visuals"]["show_images"]
+        main_window.config.visuals.show_images
     )
     tab_widget.addTab(main_window.visualize_tab, "Visualize")
 
@@ -170,17 +171,15 @@ def setup_tabs(main_window):
     bot_group = QGroupBox("Bot ")
     bot_layout = QFormLayout()
     main_window.log_level_dropdown = QComboBox()
-    main_window.log_level_dropdown.addItems(
-        ["INFO", "DEBUG", "WARNING", "ERROR", "CRITICAL"]
-    )
+    main_window.log_level_dropdown.addItems(get_args(LogLevel))
     main_window.log_level_dropdown.setCurrentText(
-        main_window.config["bot"]["log_level"]
+        main_window.config.bot.log_level
     )
     bot_layout.addRow("Log Level:", main_window.log_level_dropdown)
 
     main_window.device_serial_input = QLineEdit()
     main_window.device_serial_input.setText(
-        main_window.config["adb"]["device_serial"]
+        main_window.config.adb.device_serial
     )
     bot_layout.addRow("Device Serial:", main_window.device_serial_input)
 
@@ -192,17 +191,17 @@ def setup_tabs(main_window):
         "Save labels to /debug folder"
     )
     main_window.save_labels_checkbox.setChecked(
-        main_window.config["visuals"]["save_labels"]
+        main_window.config.visuals.save_labels
     )
     main_window.save_images_checkbox = QCheckBox(
         "Save labeled images to /debug folder"
     )
     main_window.save_images_checkbox.setChecked(
-        main_window.config["visuals"]["save_images"]
+        main_window.config.visuals.save_images
     )
     main_window.show_images_checkbox = QCheckBox("Enable visualizer")
     main_window.show_images_checkbox.setChecked(
-        main_window.config["visuals"]["show_images"]
+        main_window.config.visuals.show_images
     )
     visuals_layout.addRow(main_window.save_labels_checkbox)
     visuals_layout.addRow(main_window.save_images_checkbox)
@@ -229,21 +228,19 @@ def setup_tabs(main_window):
     main_window.play_action_delay_input.setRange(0.1, 5.0)
     main_window.play_action_delay_input.setSingleStep(0.1)
     main_window.play_action_delay_input.setValue(
-        main_window.config["ingame"]["play_action"]
+        main_window.config.ingame.play_action
     )
     ingame_layout.addRow(
         "Action Delay (sec):", main_window.play_action_delay_input
     )
 
     main_window.load_deck_checkbox = QCheckBox("Load deck on startup")
-    main_window.load_deck_checkbox.setChecked(
-        main_window.config["bot"]["load_deck"]
-    )
+    main_window.load_deck_checkbox.setChecked(main_window.config.bot.load_deck)
     ingame_layout.addRow(main_window.load_deck_checkbox)
 
     main_window.auto_start_game_checkbox = QCheckBox("Auto start games")
     main_window.auto_start_game_checkbox.setChecked(
-        main_window.config["bot"]["auto_start_game"]
+        main_window.config.bot.auto_start_game
     )
     ingame_layout.addRow(main_window.auto_start_game_checkbox)
 
@@ -273,32 +270,31 @@ def _spin_box(value, minimum, maximum, step, tooltip, decimals=2):
 
 
 def _setup_screen_detector_group(main_window):
-    config = main_window.config["screen_detector"]
+    config = main_window.config.screen_detector
     group = QGroupBox("Screen Detector")
     layout = QFormLayout()
 
     main_window.screen_server_url_input = QLineEdit()
-    main_window.screen_server_url_input.setText(config["base_url"])
+    main_window.screen_server_url_input.setText(config.base_url)
     main_window.screen_server_url_input.setPlaceholderText(
-        "http://localhost:8000"
+        "http://localhost:8001"
     )
     main_window.screen_server_url_input.setToolTip(
-        "Address of the Flide server running the OneJev model.\n"
-        "Start it with: flide serve --model OmniJev/OneJev1.6-0.8B --port 8000"
+        "Address of the vLLM server running the vision model.\n"
+        "If none is running on this computer, the bot starts one."
     )
     layout.addRow("Server URL:", main_window.screen_server_url_input)
 
-    main_window.screen_min_confidence_input = _spin_box(
-        config["min_confidence"],
-        0.0,
-        1.0,
-        0.05,
-        "Answers below this probability count as an unknown screen.",
+    main_window.screen_model_input = QLineEdit()
+    main_window.screen_model_input.setText(config.model)
+    main_window.screen_model_input.setPlaceholderText("Qwen/Qwen3.5-0.8B")
+    main_window.screen_model_input.setToolTip(
+        "The model the vLLM server is serving."
     )
-    layout.addRow("Min Confidence:", main_window.screen_min_confidence_input)
+    layout.addRow("Model:", main_window.screen_model_input)
 
     main_window.screen_interval_input = _spin_box(
-        config["interval"],
+        config.interval,
         0.1,
         10.0,
         0.1,
@@ -307,7 +303,7 @@ def _setup_screen_detector_group(main_window):
     layout.addRow("Check Interval (sec):", main_window.screen_interval_input)
 
     main_window.screen_max_age_input = _spin_box(
-        config["max_age"],
+        config.max_age,
         0.5,
         60.0,
         0.5,
@@ -316,7 +312,7 @@ def _setup_screen_detector_group(main_window):
     layout.addRow("Answer Max Age (sec):", main_window.screen_max_age_input)
 
     main_window.screen_timeout_input = _spin_box(
-        config["timeout"],
+        config.timeout,
         1.0,
         60.0,
         1.0,

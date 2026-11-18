@@ -1,4 +1,3 @@
-import copy
 import os
 import threading
 import time
@@ -13,13 +12,11 @@ from loguru import logger  # noqa: E402
 from PyQt6.QtWidgets import QApplication  # noqa: E402
 
 import clashroyalebuildabot.gui.main_window as main_window_module  # noqa: E402
-from clashroyalebuildabot.gui.utils import (  # noqa: E402
-    load_config,
-    save_config,
-)
+from clashroyalebuildabot.config import save_config  # noqa: E402
 from clashroyalebuildabot.utils.error_handling import (
     WikifiedError,  # noqa: E402
 )
+from tests.conftest import default_config  # noqa: E402
 
 
 class FakeBot:
@@ -55,17 +52,36 @@ def qapp():
     return QApplication.instance() or QApplication([])
 
 
+class FakeVLMServer:
+    """Stands in for the vision model server, so tests never start vLLM.
+    ``ready`` is whether it's up; until then, ensure_running waits."""
+
+    def __init__(self):
+        self.ready = threading.Event()
+        self.ready.set()
+        self.stopped = False
+
+    def ensure_running(self, config, cancelled=lambda: False):
+        while not self.ready.wait(0.01):
+            if cancelled():
+                return False
+        return True
+
+    def stop(self):
+        self.stopped = True
+
+
 @pytest.fixture
 def window(qapp, monkeypatch):
     FakeBot.instances = []
     FakeBot.gate = None
     monkeypatch.setattr(main_window_module, "Bot", FakeBot)
+    monkeypatch.setattr(main_window_module, "VLMServer", FakeVLMServer)
     monkeypatch.setattr(
         main_window_module.keyboard, "add_hotkey", lambda *args: None
     )
     # Defaults only, so a local config.yaml can't affect the tests.
-    config = load_config(user_config_path=os.devnull + ".missing")
-    win = main_window_module.MainWindow(copy.deepcopy(config), [])
+    win = main_window_module.MainWindow(default_config(), [])
     yield win
     win.close()
 
@@ -122,6 +138,29 @@ def test_stop_while_bot_is_being_created(window):
     assert FakeBot.instances[0].stopped.is_set()
 
 
+def test_bot_waits_for_the_vision_model_server(window):
+    window.vlm_server.ready.clear()
+    window.start_bot()
+    time.sleep(0.1)
+    assert FakeBot.instances == []
+
+    window.vlm_server.ready.set()
+    wait_until(lambda: len(FakeBot.instances) == 1)
+
+
+def test_stop_while_the_server_is_starting(window):
+    window.vlm_server.ready.clear()
+    window.start_bot()
+    window.stop_bot()
+    wait_until(lambda: not window.is_running)
+    assert FakeBot.instances == []  # no bot was created
+
+
+def test_closing_window_stops_the_server(window):
+    window.close()
+    assert window.vlm_server.stopped
+
+
 def test_logs_from_other_threads_reach_the_log_panel(window):
     sink_id = logger.add(window.log_handler_function)
     try:
@@ -164,51 +203,47 @@ def test_bot_error_is_logged_and_window_resets(window, monkeypatch):
 
 
 def test_screen_detector_settings_show_config_values(window):
-    screen = window.config["screen_detector"]
-    assert window.screen_server_url_input.text() == screen["base_url"]
-    assert window.screen_min_confidence_input.value() == pytest.approx(
-        screen["min_confidence"]
-    )
+    screen = window.config.screen_detector
+    assert window.screen_server_url_input.text() == screen.base_url
+    assert window.screen_model_input.text() == screen.model
     assert window.screen_interval_input.value() == pytest.approx(
-        screen["interval"]
+        screen.interval
     )
-    assert window.screen_max_age_input.value() == pytest.approx(
-        screen["max_age"]
-    )
-    assert window.screen_timeout_input.value() == pytest.approx(
-        screen["timeout"]
-    )
+    assert window.screen_max_age_input.value() == pytest.approx(screen.max_age)
+    assert window.screen_timeout_input.value() == pytest.approx(screen.timeout)
 
 
 def test_screen_detector_settings_update_config(window):
     window.screen_server_url_input.setText(" http://gpu-box:9000 ")
-    window.screen_min_confidence_input.setValue(0.7)
+    window.screen_model_input.setText(" Qwen/Qwen3.5-2B ")
     window.screen_interval_input.setValue(2.5)
     window.screen_max_age_input.setValue(8)
     window.screen_timeout_input.setValue(20)
 
-    screen = window.update_config()["screen_detector"]
+    screen = window.update_config().screen_detector.model_dump()
 
-    assert screen == {
+    expected = {
         "base_url": "http://gpu-box:9000",
-        "min_confidence": 0.7,
+        "model": "Qwen/Qwen3.5-2B",
         "interval": 2.5,
         "max_age": 8.0,
         "timeout": 20.0,
     }
+    # The server settings without a box in the GUI keep their values.
+    assert {key: screen[key] for key in expected} == expected
 
 
 def test_empty_server_url_keeps_current_address(window):
-    before = window.config["screen_detector"]["base_url"]
+    before = window.config.screen_detector.base_url
     window.screen_server_url_input.setText("   ")
-    assert window.update_config()["screen_detector"]["base_url"] == before
+    assert window.update_config().screen_detector.base_url == before
 
 
 def test_saving_writes_only_changed_screen_settings(window, tmp_path):
-    window.screen_min_confidence_input.setValue(0.8)
+    window.screen_interval_input.setValue(2.5)
     user_config = tmp_path / "config.yaml"
 
     save_config(window.update_config(), user_config)
 
     saved = yaml.safe_load(user_config.read_text(encoding="utf-8"))
-    assert saved == {"screen_detector": {"min_confidence": 0.8}}
+    assert saved == {"screen_detector": {"interval": 2.5}}
