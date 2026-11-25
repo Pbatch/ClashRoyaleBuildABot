@@ -16,6 +16,13 @@ bot:
   load_deck: False
   auto_start_game: False
 
+  # Who decides which cards to play in a battle.
+  # "builtin": the bot's own scoring of each card's Action.
+  # "external": a client of the HTTP API, through POST /api/play. The bot
+  # still reads the screen and gets through the menus, but plays nothing
+  # unless asked. See docs/headless-and-api.md.
+  policy: "builtin"
+
 adb:
   # The serial number of your device
   # Use adb devices to obtain it

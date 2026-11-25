@@ -1,0 +1,714 @@
+<!doctype html>
+<!--
+  The bot's browser UI, served by the API at /. One file, no build step:
+  it only talks to the API (REST and WebSockets under /api), so it does
+  nothing the API can't. See clashroyalebuildabot/api/app.py.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build-A-Bot</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0d1117;
+    --panel: #161b22;
+    --panel-2: #1e272e;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #57a6ff;
+    --accent-2: #4b6eaf;
+    --ok: #3fb950;
+    --warn: #d29922;
+    --bad: #f85149;
+    --elixir: #c45bdb;
+    --ally: #57a6ff;
+    --enemy: #f85149;
+    --radius: 8px;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      color-scheme: light;
+      --bg: #f6f8fa;
+      --panel: #ffffff;
+      --panel-2: #eef1f4;
+      --border: #d0d7de;
+      --text: #1f2328;
+      --muted: #59636e;
+      --accent: #0969da;
+      --accent-2: #0969da;
+      --ok: #1a7f37;
+      --warn: #9a6700;
+      --bad: #cf222e;
+      --elixir: #8e3aa8;
+      --ally: #0969da;
+      --enemy: #cf222e;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  button, input, select { font: inherit; color: inherit; }
+  a { color: var(--accent); }
+
+  header {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 12px 16px;
+    background: var(--panel-2);
+    border-bottom: 1px solid var(--border);
+  }
+  header img { width: 44px; height: 44px; object-fit: contain; }
+  header h1 { font-size: 17px; margin: 0; }
+  header .sub { color: var(--muted); font-size: 12px; }
+  header .spacer { flex: 1; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 10px; border-radius: 999px;
+    background: var(--panel); border: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .pill[data-status="running"] .dot { background: var(--ok); }
+  .pill[data-status="paused"] .dot { background: var(--warn); }
+  .pill[data-status="stopping"] .dot { background: var(--warn); }
+  .pill[data-status="offline"] .dot { background: var(--bad); }
+
+  .btn {
+    border: 1px solid var(--border); background: var(--panel);
+    padding: 7px 14px; border-radius: 6px; cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn:hover:not(:disabled) { border-color: var(--accent); }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn.primary { background: var(--accent-2); border-color: var(--accent-2); color: #fff; }
+  .btn.primary:hover:not(:disabled) { filter: brightness(1.12); }
+  .btn.danger { background: var(--bad); border-color: var(--bad); color: #fff; }
+  .btn.small { padding: 3px 10px; font-size: 12px; }
+  kbd {
+    font-family: var(--mono); font-size: 11px;
+    border: 1px solid var(--border); border-radius: 3px; padding: 0 4px;
+    opacity: .8;
+  }
+
+  #banner {
+    display: none; padding: 8px 16px;
+    background: var(--bad); color: #fff; font-size: 13px;
+  }
+  #banner.show { display: block; }
+
+  main {
+    display: grid; gap: 16px; padding: 16px;
+    grid-template-columns: minmax(260px, 380px) 1fr;
+    grid-template-areas: "view side" "logs logs";
+    max-width: 1280px; margin: 0 auto;
+  }
+  @media (max-width: 760px) {
+    main { grid-template-columns: 1fr; grid-template-areas: "view" "side" "logs"; }
+  }
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: var(--radius); min-width: 0;
+  }
+  .card > h2 {
+    margin: 0; padding: 10px 14px; font-size: 13px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .04em; color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card > h2 .right { margin-left: auto; text-transform: none; letter-spacing: 0; font-weight: 400; }
+  .card .body { padding: 14px; }
+  #view { grid-area: view; align-self: start; }
+  #side { grid-area: side; display: grid; gap: 16px; align-content: start; min-width: 0; }
+  #logs { grid-area: logs; }
+
+  /* Live view */
+  .screen {
+    position: relative; aspect-ratio: 9 / 16; background: #000;
+    border-radius: 0 0 var(--radius) var(--radius); overflow: hidden;
+    display: grid; place-items: center;
+  }
+  .screen img { width: 100%; height: 100%; object-fit: contain; display: none; }
+  .screen.live img { display: block; }
+  .screen .empty {
+    color: #aaa; text-align: center; padding: 24px; display: grid; gap: 10px;
+    justify-items: center;
+  }
+  .screen.live .empty { display: none; }
+  .screen .btn { background: #222; border-color: #555; color: #eee; }
+  /* On a phone, don't spend a screenful on an empty view. */
+  @media (max-width: 760px) {
+    .screen:not(.live) { aspect-ratio: auto; min-height: 160px; }
+  }
+
+  /* Battle */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .stat { background: var(--panel-2); border-radius: 6px; padding: 8px 10px; min-width: 0; }
+  .stat .k { color: var(--muted); font-size: 12px; }
+  .stat .v { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .elixir-bar { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; margin-top: 6px; }
+  .elixir-bar span { height: 6px; border-radius: 2px; background: var(--border); }
+  .elixir-bar span.on { background: var(--elixir); }
+  .section-label { color: var(--muted); font-size: 12px; margin: 14px 0 6px; }
+  .hand { display: grid; grid-template-columns: repeat(4, 1fr) 0.8fr; gap: 8px; }
+  .slot {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px; min-height: 58px; display: grid; align-content: space-between;
+    min-width: 0;
+  }
+  .slot .name { font-weight: 600; font-size: 13px; overflow-wrap: anywhere; }
+  .slot .cost { color: var(--elixir); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .slot.dim { opacity: .5; }
+  .slot.pending { border-color: var(--warn); }
+  .slot.next { border-style: dashed; }
+  .towers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .tower { background: var(--panel-2); border-radius: 6px; padding: 6px 8px; font-size: 12px; min-width: 0; }
+  .tower .who { color: var(--muted); }
+  .tower .hp { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tower.enemy { border-left: 3px solid var(--enemy); }
+  .tower.ally { border-left: 3px solid var(--ally); }
+  .tower.down .hp { color: var(--muted); text-decoration: line-through; }
+  .units { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .chip { background: var(--panel-2); border-radius: 999px; padding: 1px 8px; font-size: 12px; }
+  .units .ally .chip { box-shadow: inset 2px 0 var(--ally); }
+  .units .enemy .chip { box-shadow: inset 2px 0 var(--enemy); }
+  .placeholder { color: var(--muted); }
+
+  /* Settings */
+  .settings { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 4px 24px; }
+  fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 8px; align-content: start; }
+  legend { font-weight: 600; margin-bottom: 6px; padding: 0; }
+  .field { display: grid; gap: 3px; }
+  .field > span { color: var(--muted); font-size: 12px; }
+  .field input[type=text], .field input[type=number], .field select {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px;
+    padding: 6px 8px; width: 100%;
+  }
+  .field input:focus, .field select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .check { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .check input { width: 16px; height: 16px; accent-color: var(--accent); }
+  .settings-foot {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border);
+  }
+  .note { color: var(--muted); font-size: 12px; }
+  .note.warn { color: var(--warn); }
+
+  /* Logs */
+  .log-tools { display: flex; gap: 8px; align-items: center; }
+  .log-tools input {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px;
+    padding: 2px 8px; font-size: 12px; width: 160px;
+  }
+  #log {
+    height: 300px; overflow: auto; margin: 0; padding: 8px 14px;
+    font: 12px/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere;
+  }
+  #log .t { color: var(--ok); }
+  #log .s { color: var(--muted); }
+  #log .DEBUG .l { color: var(--accent); }
+  #log .WARNING .l, #log .WARNING .m { color: var(--warn); }
+  #log .ERROR .l, #log .ERROR .m, #log .CRITICAL .l, #log .CRITICAL .m { color: var(--bad); }
+  #log .hidden { display: none; }
+
+  #toast {
+    position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px 14px; max-width: calc(100vw - 32px);
+    box-shadow: 0 4px 16px rgba(0,0,0,.3);
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  #toast.show { opacity: 1; }
+  #toast.error { border-color: var(--bad); }
+</style>
+</head>
+<body>
+
+<header>
+  <img src="/logo.png" alt="" onerror="this.remove()">
+  <div>
+    <h1>Clash Royale Build-A-Bot</h1>
+    <div class="sub"><a href="https://github.com/Pbatch/ClashRoyaleBuildABot" target="_blank" rel="noopener">GitHub</a> · <a href="/docs" target="_blank">API docs</a></div>
+  </div>
+  <div class="spacer"></div>
+  <span class="pill" id="status" data-status="offline"><span class="dot"></span><span id="status-text">Connecting…</span></span>
+  <button class="btn" id="pause" hidden title="Pause or resume (P)">Pause <kbd>P</kbd></button>
+  <button class="btn primary" id="startstop" disabled>Start</button>
+</header>
+<div id="banner">Lost connection to the bot. Retrying…</div>
+
+<main>
+  <section class="card" id="view">
+    <h2>Live view <span class="right note" id="fps"></span></h2>
+    <div class="screen" id="screen">
+      <img id="frame" alt="What the bot sees">
+      <div class="empty" id="screen-empty">
+        <div id="screen-msg">Waiting for frames…</div>
+        <button class="btn small" id="enable-view" hidden>Turn on the visualizer</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="side">
+    <section class="card" id="battle">
+      <h2>Battle <span class="right note" id="frame-no"></span></h2>
+      <div class="body" id="battle-body">
+        <div class="placeholder" id="battle-placeholder">The bot isn't running.</div>
+        <div id="battle-live" hidden>
+          <div class="stats">
+            <div class="stat"><div class="k">Elixir</div><div class="v" id="elixir">–</div><div class="elixir-bar" id="elixir-bar"></div></div>
+            <div class="stat"><div class="k" id="timer-label">Time left</div><div class="v" id="timer">–</div></div>
+            <div class="stat"><div class="k">Elixir rate</div><div class="v" id="rate">–</div></div>
+          </div>
+          <div class="section-label">Hand</div>
+          <div class="hand" id="hand"></div>
+          <div class="section-label">Towers</div>
+          <div class="towers" id="towers"></div>
+          <div class="units">
+            <div class="ally"><div class="section-label">Allies <span id="ally-count"></span></div><div class="chips" id="allies"></div></div>
+            <div class="enemy"><div class="section-label">Enemies <span id="enemy-count"></span></div><div class="chips" id="enemies"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Settings</h2>
+      <div class="body">
+        <form class="settings" id="settings" onsubmit="return false">
+          <fieldset>
+            <legend>Bot</legend>
+            <label class="field"><span>Device serial (from <code>adb devices</code>)</span>
+              <input type="text" data-key="adb.device_serial" spellcheck="false" autocomplete="off"></label>
+            <label class="field"><span>Who plays the cards</span>
+              <select data-key="bot.policy">
+                <option value="builtin">Built-in policy</option>
+                <option value="external">External client (POST /api/play)</option>
+              </select></label>
+            <label class="field"><span>Log level</span>
+              <select data-key="bot.log_level">
+                <option>DEBUG</option><option>INFO</option><option>WARNING</option><option>ERROR</option><option>CRITICAL</option>
+              </select></label>
+          </fieldset>
+          <fieldset>
+            <legend>In game</legend>
+            <label class="field"><span>Longest wait after a play (seconds)</span>
+              <input type="number" data-key="ingame.play_action" min="0.1" max="5" step="0.1"></label>
+            <label class="check"><input type="checkbox" data-key="bot.load_deck"> Load deck on startup</label>
+            <label class="check"><input type="checkbox" data-key="bot.auto_start_game"> Auto start games</label>
+          </fieldset>
+          <fieldset>
+            <legend>Visuals</legend>
+            <label class="check"><input type="checkbox" data-key="visuals.show_images"> Show the live view</label>
+            <label class="check"><input type="checkbox" data-key="visuals.save_images"> Save labelled images to debug/</label>
+            <label class="check"><input type="checkbox" data-key="visuals.save_labels"> Save labels to debug/</label>
+          </fieldset>
+        </form>
+        <div class="settings-foot">
+          <button class="btn" id="save">Save to config.yaml</button>
+          <span class="note" id="settings-note">Changes apply straight away, and last until the bot is closed unless saved.</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card" id="logs">
+    <h2>Logs
+      <span class="right log-tools">
+        <input type="search" id="log-filter" placeholder="Filter" aria-label="Filter logs">
+        <button class="btn small" id="log-clear">Clear</button>
+      </span>
+    </h2>
+    <div id="log" role="log" aria-live="off"></div>
+  </section>
+</main>
+
+<div id="toast" role="status"></div>
+
+<script>
+"use strict";
+
+const $ = (id) => document.getElementById(id);
+const WS_BASE = `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/api`;
+const MAX_LOG_LINES = 2000;
+const STATUS_TEXT = {
+  stopped: "Stopped", running: "Running", paused: "Paused",
+  stopping: "Stopping…", offline: "Disconnected",
+};
+
+let status = "offline";
+let config = null;
+
+// ---- Helpers ----------------------------------------------------------
+
+function pretty(name) {
+  return name ? name.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "?";
+}
+
+let toastTimer;
+function toast(message, isError = false) {
+  const el = $("toast");
+  el.textContent = message;
+  el.classList.toggle("error", isError);
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), isError ? 5000 : 2500);
+}
+
+async function api(method, path, body) {
+  const response = await fetch(`/api${path}`, {
+    method,
+    headers: body === undefined ? {} : { "Content-Type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    let message = data?.message ?? data?.detail ?? response.statusText;
+    if (typeof message !== "string") message = JSON.stringify(message);
+    throw new Error(message);
+  }
+  return data;
+}
+
+/** A WebSocket that reconnects, with backoff, until the page closes. */
+function stream(path, { binary = false, onMessage, onOpen, onClose }) {
+  let delay = 500;
+  const connect = () => {
+    const ws = new WebSocket(WS_BASE + path);
+    if (binary) ws.binaryType = "blob";
+    ws.onopen = () => { delay = 500; onOpen?.(); };
+    ws.onmessage = (event) => onMessage(binary ? event.data : JSON.parse(event.data));
+    ws.onclose = () => {
+      onClose?.();
+      setTimeout(connect, delay);
+      delay = Math.min(delay * 2, 5000);
+    };
+  };
+  connect();
+}
+
+// ---- Status and controls ------------------------------------------------
+
+function showStatus(next) {
+  status = next;
+  const pill = $("status");
+  pill.dataset.status = next;
+  $("status-text").textContent = STATUS_TEXT[next] ?? next;
+
+  const active = next === "running" || next === "paused";
+  const startStop = $("startstop");
+  startStop.disabled = next === "stopping" || next === "offline";
+  startStop.textContent = next === "stopping" ? "Stopping…" : active ? "Stop" : "Start";
+  startStop.classList.toggle("primary", !active);
+  startStop.classList.toggle("danger", active);
+
+  const pause = $("pause");
+  pause.hidden = !active;
+  pause.firstChild.textContent = next === "paused" ? "Resume " : "Pause ";
+
+  $("banner").classList.toggle("show", next === "offline");
+  showSettingsNote();
+  if (!active) {
+    showBattle(null);
+    $("screen").classList.remove("live");
+    $("fps").textContent = "";
+  }
+  showViewPlaceholder();
+}
+
+async function control(action) {
+  try {
+    showStatus((await api("POST", `/${action}`)).status);
+  } catch (e) {
+    toast(e.message, true);
+  }
+}
+
+$("startstop").onclick = () => {
+  if (status === "running" || status === "paused") control("stop");
+  else if (status === "stopped") control("start");
+};
+function togglePause() {
+  if (status === "running") control("pause");
+  else if (status === "paused") control("resume");
+}
+$("pause").onclick = togglePause;
+
+document.addEventListener("keydown", (e) => {
+  if (e.key.toLowerCase() !== "p" || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.target.closest("input, select, textarea")) return;
+  e.preventDefault();
+  togglePause();
+});
+
+// ---- Settings -----------------------------------------------------------
+
+const fields = [...document.querySelectorAll("[data-key]")];
+
+function getPath(obj, key) {
+  return key.split(".").reduce((o, k) => o?.[k], obj);
+}
+
+function valueOf(el) {
+  if (el.type === "checkbox") return el.checked;
+  if (el.type === "number") return Math.round(parseFloat(el.value) * 100) / 100;
+  return el.value;
+}
+
+function showConfig(next) {
+  config = next;
+  for (const el of fields) {
+    // Leave the field being typed in alone.
+    if (el === document.activeElement && el.type !== "checkbox") continue;
+    const value = getPath(config, el.dataset.key);
+    if (el.type === "checkbox") el.checked = Boolean(value);
+    else el.value = value;
+  }
+  showViewPlaceholder();
+}
+
+function showSettingsNote() {
+  const note = $("settings-note");
+  const active = status === "running" || status === "paused";
+  note.classList.toggle("warn", active);
+  note.textContent = active
+    ? "The running bot keeps its settings, apart from the log level. Stop and start it to use the rest."
+    : "Changes apply straight away, and last until the bot is closed unless saved.";
+}
+
+async function pushSetting(el) {
+  const [section, name] = el.dataset.key.split(".");
+  const value = valueOf(el);
+  if (Number.isNaN(value)) { showConfig(config); return; }
+  if (value === getPath(config, el.dataset.key)) return;
+  try {
+    showConfig(await api("PATCH", "/config", { [section]: { [name]: value } }));
+  } catch (e) {
+    toast(e.message, true);
+    // Back to the value still in use.
+    if (document.activeElement === el) el.blur();
+    showConfig(await api("GET", "/config"));
+  }
+}
+
+for (const el of fields) {
+  el.addEventListener("change", () => pushSetting(el));
+  if (el.type === "text") {
+    el.addEventListener("keydown", (e) => { if (e.key === "Enter") el.blur(); });
+  }
+}
+
+$("save").onclick = async () => {
+  try {
+    await api("POST", "/config/save");
+    toast("Saved to config.yaml");
+  } catch (e) {
+    toast(e.message, true);
+  }
+};
+
+// ---- Live view ------------------------------------------------------------
+
+let frameUrl = null;
+let frameTimes = [];
+
+function showViewPlaceholder() {
+  const showImages = config?.visuals?.show_images;
+  const msg = $("screen-msg");
+  $("enable-view").hidden = showImages !== false;
+  if (showImages === false) {
+    msg.textContent = "The live view is off.";
+    $("screen").classList.remove("live");
+  } else if (status === "running" || status === "paused") {
+    msg.textContent = "Waiting for frames… If you turned the live view on while the bot was running, stop and start it.";
+  } else {
+    msg.textContent = "Start the bot to see what it sees.";
+  }
+}
+
+$("enable-view").onclick = async () => {
+  const el = fields.find((f) => f.dataset.key === "visuals.show_images");
+  el.checked = true;
+  await pushSetting(el);
+};
+
+stream("/frames", {
+  binary: true,
+  onMessage(blob) {
+    const url = URL.createObjectURL(blob);
+    const img = $("frame");
+    img.onload = () => { if (frameUrl && frameUrl !== url) URL.revokeObjectURL(frameUrl); frameUrl = url; };
+    img.src = url;
+    $("screen").classList.add("live");
+    const now = performance.now();
+    frameTimes.push(now);
+    frameTimes = frameTimes.filter((t) => now - t < 2000);
+    $("fps").textContent = `${(frameTimes.length / 2).toFixed(1)} fps`;
+  },
+});
+
+// ---- Battle ---------------------------------------------------------------
+
+const TOWERS = [
+  ["left_enemy_princess", "Enemy left", "enemy"],
+  ["enemy_king", "Enemy king", "enemy"],
+  ["right_enemy_princess", "Enemy right", "enemy"],
+  ["left_ally_princess", "Your left", "ally"],
+  ["ally_king", "Your king", "ally"],
+  ["right_ally_princess", "Your right", "ally"],
+];
+const SCREENS = {
+  lobby: "In the lobby.",
+  end_of_game: "The battle is over.",
+  unknown: "On a screen the bot doesn't recognise.",
+};
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function formatTime(seconds) {
+  if (seconds == null) return "–";
+  const s = Math.max(0, Math.round(seconds));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+
+function unitChips(container, detections) {
+  const counts = new Map();
+  for (const d of detections) counts.set(d.unit, (counts.get(d.unit) ?? 0) + 1);
+  container.replaceChildren(
+    ...[...counts].sort((a, b) => b[1] - a[1]).map(([unit, n]) =>
+      el("span", "chip", n > 1 ? `${pretty(unit)} ×${n}` : pretty(unit))),
+  );
+  if (!counts.size) container.append(el("span", "placeholder", "None"));
+}
+
+function showBattle(state) {
+  const live = $("battle-live");
+  const placeholder = $("battle-placeholder");
+  $("frame-no").textContent = state ? `frame ${state.frame}` : "";
+  const battle = state?.battle;
+  if (!battle) {
+    live.hidden = true;
+    placeholder.hidden = false;
+    placeholder.textContent = !state
+      ? (status === "running" || status === "paused" ? "Waiting for the first frame…" : "The bot isn't running.")
+      : SCREENS[state.screen] ?? state.screen;
+    return;
+  }
+  placeholder.hidden = true;
+  live.hidden = false;
+
+  $("elixir").textContent = battle.elixir;
+  $("elixir-bar").replaceChildren(
+    ...Array.from({ length: 10 }, (_, i) => el("span", i < battle.elixir ? "on" : "")));
+  $("timer-label").textContent = battle.timer.overtime ? "Overtime left" : "Time left";
+  $("timer").textContent = formatTime(battle.timer.time_left);
+  $("rate").textContent = battle.elixir_rate ? `×${battle.elixir_rate.multiplier}` : "–";
+
+  const pending = state.pending_play?.hand_index;
+  const slots = battle.hand.map((card) => {
+    const slot = el("div", "slot");
+    slot.classList.toggle("dim", !card.playable);
+    slot.classList.toggle("pending", card.hand_index === pending);
+    slot.append(el("div", "name", card.card ? pretty(card.card) : "?"),
+                el("div", "cost", card.cost != null ? `${card.cost} elixir` : ""));
+    if (card.hand_index === pending) slot.title = "Played, waiting for the screen to show it";
+    return slot;
+  });
+  const next = el("div", "slot next dim");
+  next.append(el("div", "name", battle.next_card ? pretty(battle.next_card) : "?"),
+              el("div", "cost", "next"));
+  $("hand").replaceChildren(...slots, next);
+
+  $("towers").replaceChildren(...TOWERS.map(([key, label, side]) => {
+    const tower = battle.towers[key];
+    const node = el("div", `tower ${side}`);
+    node.classList.toggle("down", tower.destroyed);
+    const level = tower.level != null ? ` · lvl ${tower.level}` : "";
+    node.append(el("div", "who", label + level),
+                el("div", "hp", tower.destroyed ? "Destroyed" : tower.hp != null ? tower.hp.toLocaleString() : "–"));
+    return node;
+  }));
+
+  unitChips($("allies"), battle.allies);
+  unitChips($("enemies"), battle.enemies);
+  $("ally-count").textContent = battle.allies.length ? `(${battle.allies.length})` : "";
+  $("enemy-count").textContent = battle.enemies.length ? `(${battle.enemies.length})` : "";
+}
+
+// States come every frame; draw at most once per animation frame.
+let latestState = null;
+let drawQueued = false;
+stream("/states", {
+  onMessage(state) {
+    latestState = state;
+    if (drawQueued) return;
+    drawQueued = true;
+    requestAnimationFrame(() => {
+      drawQueued = false;
+      if (status === "running" || status === "paused") showBattle(latestState);
+    });
+  },
+});
+
+// ---- Logs -----------------------------------------------------------------
+
+const logBox = $("log");
+const filterBox = $("log-filter");
+
+function matchesFilter(line) {
+  const q = filterBox.value.trim().toLowerCase();
+  return !q || line.textContent.toLowerCase().includes(q);
+}
+
+function appendLog(event) {
+  const atBottom = logBox.scrollHeight - logBox.scrollTop - logBox.clientHeight < 30;
+  const line = el("div", event.level);
+  const time = new Date(event.time).toLocaleTimeString([], { hour12: false });
+  line.append(el("span", "t", time), " ",
+              el("span", "l", event.level.padEnd(8)), " ",
+              el("span", "s", event.source), " ",
+              el("span", "m", event.message));
+  line.classList.toggle("hidden", !matchesFilter(line));
+  logBox.append(line);
+  while (logBox.childElementCount > MAX_LOG_LINES) logBox.firstElementChild.remove();
+  if (atBottom) logBox.scrollTop = logBox.scrollHeight;
+}
+
+filterBox.addEventListener("input", () => {
+  for (const line of logBox.children) line.classList.toggle("hidden", !matchesFilter(line));
+});
+$("log-clear").onclick = () => logBox.replaceChildren();
+
+// ---- Events: status, config and logs --------------------------------------
+
+stream("/events", {
+  async onOpen() {
+    try {
+      showConfig(await api("GET", "/config"));
+    } catch (e) {
+      toast(e.message, true);
+    }
+  },
+  onMessage(event) {
+    if (event.type === "status") showStatus(event.status);
+    else if (event.type === "config") showConfig(event.config);
+    else if (event.type === "log") appendLog(event);
+  },
+  onClose() { showStatus("offline"); },
+});
+</script>
+</body>
+</html>

@@ -1,7 +1,6 @@
-from dataclasses import fields
+from dataclasses import dataclass, fields
 from enum import StrEnum, auto
-
-from pydantic.dataclasses import dataclass
+from functools import cached_property
 
 
 class UnitCategory(StrEnum):
@@ -31,7 +30,6 @@ class Unit:
 
 @dataclass(frozen=True)
 class Position:
-    bbox: tuple[int, int, int, int]
     conf: float
     tile_x: int
     tile_y: int
@@ -106,6 +104,9 @@ class _UnitsNamespace:
         target=Target.GROUND,
         transport=Transport.GROUND,
     )
+    # What a Giant Skeleton, Balloon or Bomb Tower drops when it dies, and
+    # a Mighty Miner when it changes lanes: it explodes after a moment.
+    BOMB: Unit = Unit("bomb", category=UnitCategory.BUILDING)
     BOMB_TOWER: Unit = Unit(
         "bomb_tower",
         category=UnitCategory.BUILDING,
@@ -223,7 +224,7 @@ class _UnitsNamespace:
         target=Target.ALL,
         transport=Transport.GROUND,
     )
-    FIRE_CRACKER: Unit = Unit(
+    FIRECRACKER: Unit = Unit(
         "firecracker",
         category=UnitCategory.TROOP,
         target=Target.ALL,
@@ -241,7 +242,13 @@ class _UnitsNamespace:
         target=Target.ALL,
         transport=Transport.AIR,
     )
-    FURNACE: Unit = Unit("furnace", category=UnitCategory.BUILDING)
+    # A walking troop since its rework, no longer a building.
+    FURNACE: Unit = Unit(
+        "furnace",
+        category=UnitCategory.TROOP,
+        target=Target.ALL,
+        transport=Transport.GROUND,
+    )
     GIANT: Unit = Unit(
         "giant",
         category=UnitCategory.TROOP,
@@ -271,7 +278,15 @@ class _UnitsNamespace:
     GOBLIN_DRILL: Unit = Unit(
         "goblin_drill", category=UnitCategory.BUILDING, target=Target.GROUND
     )
-    GOBLIN_HUT: Unit = Unit("goblin_hut", category=UnitCategory.BUILDING)
+    GOBLIN_GIANT: Unit = Unit(
+        "goblin_giant",
+        category=UnitCategory.TROOP,
+        target=Target.BUILDINGS,
+        transport=Transport.GROUND,
+    )
+    GOBLIN_HUT: Unit = Unit(
+        "goblin_hut", category=UnitCategory.BUILDING, target=Target.ALL
+    )
     GOBLIN_MACHINE: Unit = Unit(
         "goblin_machine",
         category=UnitCategory.TROOP,
@@ -362,7 +377,9 @@ class _UnitsNamespace:
         target=Target.ALL,
         transport=Transport.AIR,
     )
-    INFERNO_TOWER: Unit = Unit("inferno_tower", category=UnitCategory.BUILDING)
+    INFERNO_TOWER: Unit = Unit(
+        "inferno_tower", category=UnitCategory.BUILDING, target=Target.ALL
+    )
     KNIGHT: Unit = Unit(
         "knight",
         category=UnitCategory.TROOP,
@@ -558,6 +575,12 @@ class _UnitsNamespace:
         target=Target.GROUND,
         transport=Transport.GROUND,
     )
+    SKELETON_BARREL: Unit = Unit(
+        "skeleton_barrel",
+        category=UnitCategory.TROOP,
+        target=Target.BUILDINGS,
+        transport=Transport.AIR,
+    )
     SKELETON_DRAGON: Unit = Unit(
         "skeleton_dragon",
         category=UnitCategory.TROOP,
@@ -640,13 +663,25 @@ class _UnitsNamespace:
     ZAPPY: Unit = Unit(
         "zappy",
         category=UnitCategory.TROOP,
-        target=Target.GROUND,
+        target=Target.ALL,
         transport=Transport.GROUND,
     )
 
     def all(self) -> tuple[Unit, ...]:
         """Every unit, in the order they're listed above."""
         return tuple(getattr(self, field.name) for field in fields(self))
+
+    @cached_property
+    def _by_name(self) -> dict[str, Unit]:
+        return {unit.name: unit for unit in self.all()}
+
+    def by_name(self, name: str) -> Unit:
+        """The unit called name (``"baby_dragon"``). Raises KeyError if
+        there's none."""
+        try:
+            return self._by_name[name]
+        except KeyError:
+            raise KeyError(f"No unit named {name!r}") from None
 
 
 Units = _UnitsNamespace()

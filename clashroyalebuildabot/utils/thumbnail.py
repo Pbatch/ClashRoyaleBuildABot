@@ -1,9 +1,10 @@
 """Tiny thumbnails of parts of a frame, and their hex form.
 
-The card and screen detectors recognise what's on screen by comparing a
-thumbnail of where it should be with a reference thumbnail. The references
-ship as hex strings in constants/, made with these same functions by the
-scripts in dev/, so a reference and a frame's thumbnail always match up.
+The screen detector recognises which screen is showing by comparing a
+thumbnail of where a button should be with a reference thumbnail. The
+references ship as hex strings in constants/screen_hashes.py, made with these
+same functions by the scripts in dev/, so a reference and a frame's thumbnail
+always match up.
 """
 
 import cv2

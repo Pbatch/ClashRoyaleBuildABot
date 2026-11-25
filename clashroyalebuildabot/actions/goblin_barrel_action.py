@@ -7,8 +7,8 @@ class GoblinBarrelAction(Action):
     CARD = Cards.GOBLIN_BARREL
 
     def calculate_score(self, state: State) -> list[float]:
-        left_hp = state.numbers.towers.left_enemy_princess.hp
-        right_hp = state.numbers.towers.right_enemy_princess.hp
+        left_hp = state.towers.left_enemy_princess.hp
+        right_hp = state.towers.right_enemy_princess.hp
 
         if (self.tile_x, self.tile_y) == (3, 25) and left_hp > 0:
             return [1, left_hp <= right_hp]

@@ -5,6 +5,7 @@ from typing import ClassVar
 import cv2
 import numpy as np
 import pytest
+import yaml
 from fastapi.testclient import TestClient
 from loguru import logger
 
@@ -12,6 +13,7 @@ import clashroyalebuildabot.bot.controller as controller_module
 import clashroyalebuildabot.utils.logger as logger_module
 from clashroyalebuildabot.api import EventHub, create_app
 from clashroyalebuildabot.bot.controller import BotController
+from clashroyalebuildabot.constants import paths
 from tests.conftest import default_config
 
 
@@ -22,8 +24,13 @@ class FakeBot:
     instances: ClassVar[list["FakeBot"]] = []
     hold: ClassVar[threading.Event | None] = None
 
-    def __init__(self, actions, config, on_frame=None):
+    is_external = False
+
+    def __init__(
+        self, actions, config, on_frame=None, on_observation=None, policy=None
+    ):
         self.on_frame = on_frame
+        self.on_observation = on_observation
         self.config = config.model_copy(deep=True)
         self.stopped = threading.Event()
         self.is_paused = False
@@ -230,3 +237,33 @@ def test_shutting_down_stops_the_bot(controller, hub):
         bot = FakeBot.instances[0]
     assert bot.stopped.is_set()
     assert not controller.is_running
+
+
+def test_events_stream_config_changes(client):
+    with client.websocket_connect("/api/events") as ws:
+        ws.receive_json()  # the current status
+        client.patch("/api/config", json={"bot": {"load_deck": True}})
+        event = ws.receive_json()
+    assert event["type"] == "config"
+    assert event["config"]["bot"]["load_deck"] is True
+
+
+def test_save_config_writes_only_changed_settings(
+    client, monkeypatch, tmp_path
+):
+    user_config = tmp_path / "config.yaml"
+    monkeypatch.setattr(paths, "USER_CONFIG_PATH", str(user_config))
+    client.patch("/api/config", json={"ingame": {"play_action": 2.5}})
+
+    response = client.post("/api/config/save")
+
+    assert response.status_code == 200
+    saved = yaml.safe_load(user_config.read_text(encoding="utf-8"))
+    assert saved == {"ingame": {"play_action": 2.5}}
+
+
+def test_web_ui_is_served_at_the_root(client):
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/html")
+    assert "<title>Build-A-Bot</title>" in response.text

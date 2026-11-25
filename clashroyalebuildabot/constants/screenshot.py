@@ -7,8 +7,8 @@ SCREENSHOT_WIDTH = 368
 SCREENSHOT_HEIGHT = 652
 
 # Cards. Each box is the card's face (its art and thin dark border), the same
-# framing as the card art card_hashes.py is made from, without the frame
-# around it. Measured by matching that art to battle frames.
+# framing as the card art the card embeddings are made from, without the
+# frame around it. Measured by matching that art to battle frames.
 NEXT_CARD_BOX = (27, 610, 55, 645)
 _CARD_Y = 546
 _CARD_INIT_X = 87
@@ -29,10 +29,12 @@ CARD_BOXES = [
     ),
 ]
 
-ELIXIR_BOX = (100, 628, 350, 643)
-# The elixir drop at the left end of the elixir bar, which only a battle
-# shows. The ScreenDetector compares it with BATTLE_DROP_HASH in screen_hashes.py.
-BATTLE_CHECK_BOX = (80, 624, 99, 649)
+# The elixir bar, from just right of the elixir drop: the elixir written at
+# its left end, then the pink fill. Its middle rows, where the fill is
+# solid.
+ELIXIR_BOX = (100, 630, 360, 641)
+# The elixir written beside the drop.
+ELIXIR_NUMBER_BOX = (100, 618, 132, 646)
 
 # Buttons the ScreenDetector recognises screens by, inside their edges: the
 # word "Battle" on the lobby's Battle button, and the results screen's Play

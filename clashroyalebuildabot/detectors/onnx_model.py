@@ -37,9 +37,9 @@ def _providers() -> list[str]:
     if not _cuda_libraries_installed():
         # Trying CUDA anyway would only fail, loudly, and fall back.
         logger.info(
-            "The unit detector runs on the CPU. With an NVIDIA GPU, run "
-            "`uv sync --extra gpu` to run it on the GPU, several times "
-            "faster."
+            "The models run on the CPU. With an NVIDIA GPU, run "
+            "`uv sync --extra gpu` to run them on the GPU; the unit "
+            "detector runs several times faster there."
         )
         return [CPU]
     try:
@@ -68,7 +68,10 @@ class OnnxModel:
             )
         input_ = self.session.get_inputs()[0]
         self.input_name = input_.name
-        self.output_name = self.session.get_outputs()[0].name
+        output = self.session.get_outputs()[0]
+        self.output_name = output.name
+        # Its dimensions; a dynamic one is a name, not an int.
+        self.output_shape: tuple[int | str, ...] = tuple(output.shape)
         # (height, width) of the images it takes.
         self.input_size: tuple[int, int] = tuple(input_.shape[1:3])
 
@@ -77,3 +80,10 @@ class OnnxModel:
             [self.output_name], {self.input_name: batch}
         )
         return cast("np.ndarray", outputs[0])
+
+
+@functools.cache
+def load(path: str) -> OnnxModel:
+    """One model per file and process, shared by every part that uses it:
+    loading one isn't free."""
+    return OnnxModel(path)

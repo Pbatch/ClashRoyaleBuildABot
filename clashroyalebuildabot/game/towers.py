@@ -1,8 +1,8 @@
-"""The numbers read from the screen each step: elixir, towers and timer.
+"""The six towers' health and level, read from the screen each step.
 
-These are plain values. Where each one is on the screen is fixed, so it
-lives in constants/screenshot.py (``ELIXIR_BOX``, ``PRINCESS_TOWER_BOXES``,
-``KING_TOWER_BOXES`` and ``TIMER_BOX``), not here.
+Where each tower is on the screen is fixed, so it lives in
+constants/screenshot.py (``PRINCESS_TOWER_BOXES`` and ``KING_TOWER_BOXES``),
+not here.
 """
 
 import math
@@ -16,7 +16,6 @@ from pydantic.dataclasses import dataclass
 # equal.
 UNKNOWN_HP = math.inf
 UNKNOWN_LEVEL = 0
-UNKNOWN_TIME = math.inf
 
 
 @dataclass(frozen=True)
@@ -41,18 +40,3 @@ class Towers:
         """Each tower with its name, in the order above."""
         for f in fields(self):
             yield f.name, getattr(self, f.name)
-
-
-@dataclass(frozen=True)
-class Timer:
-    # Seconds left. In overtime, it counts down the overtime left.
-    # UNKNOWN_TIME until read.
-    time_left: float = UNKNOWN_TIME
-    overtime: bool = False
-
-
-@dataclass(frozen=True)
-class Numbers:
-    elixir: int = 0
-    towers: Towers = field(default_factory=Towers)
-    timer: Timer = field(default_factory=Timer)

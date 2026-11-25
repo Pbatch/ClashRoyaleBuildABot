@@ -4,6 +4,7 @@ from collections.abc import Callable, Iterator
 import cv2
 import numpy as np
 
+from clashroyalebuildabot.constants.device_screen import tile_box
 from clashroyalebuildabot.constants.paths import LABELS_DIR, SCREENSHOTS_DIR
 from clashroyalebuildabot.constants.screenshot import (
     CARD_BOXES,
@@ -12,8 +13,8 @@ from clashroyalebuildabot.constants.screenshot import (
     PRINCESS_TOWER_BOXES,
     TIMER_BOX,
 )
-from clashroyalebuildabot.game.numbers import UNKNOWN_LEVEL, Numbers
 from clashroyalebuildabot.game.state import State
+from clashroyalebuildabot.game.towers import UNKNOWN_LEVEL
 from clashroyalebuildabot.game.units import UnitDetection, Units
 from clashroyalebuildabot.utils.image import Box, save
 
@@ -88,7 +89,7 @@ class Visualizer:
         height, width = image.shape[:2]
         labels = []
         for det in state.allies + state.enemies:
-            bbox = det.position.bbox
+            bbox = tile_box(det.position.tile_x, det.position.tile_y)
             xc = (bbox[0] + bbox[2]) / (2 * width)
             yc = (bbox[1] + bbox[3]) / (2 * height)
             w = (bbox[2] - bbox[0]) / width
@@ -166,19 +167,18 @@ class Visualizer:
                 self._COLOUR_AND_RGBA
             )
             rgba = self._COLOUR_AND_RGBA[colour_idx][1]
-            self._draw_text(
-                d, det.position.bbox, f"{prefix}_{det.unit.name}", rgba
-            )
+            box = tile_box(det.position.tile_x, det.position.tile_y)
+            self._draw_text(d, box, f"{prefix}_{det.unit.name}", rgba)
 
     @staticmethod
-    def _number_labels(numbers: Numbers) -> Iterator[tuple[Box, str]]:
+    def _number_labels(state: State) -> Iterator[tuple[Box, str]]:
         """Where to draw each number, and what to write there."""
-        yield ELIXIR_BOX, f"{numbers.elixir}"
+        yield ELIXIR_BOX, f"{state.elixir}"
         boxes = {**PRINCESS_TOWER_BOXES, **KING_TOWER_BOXES}
-        for name, tower in numbers.towers.items():
+        for name, tower in state.towers.items():
             level = f" L{tower.level}" if tower.level != UNKNOWN_LEVEL else ""
             yield boxes[name], f"{tower.hp:g}{level}"
-        timer = numbers.timer
+        timer = state.timer
         overtime = " OT" if timer.overtime else ""
         yield TIMER_BOX, f"{timer.time_left:g}s{overtime}"
 
@@ -186,7 +186,7 @@ class Visualizer:
         # Drawn on a copy: the emulator hands the same frame out again when
         # the screen doesn't change, and it must reach the detectors clean.
         d = image.copy()
-        for bbox, text in self._number_labels(state.numbers):
+        for bbox, text in self._number_labels(state):
             self._rectangle(d, bbox)
             self._draw_text(d, bbox, text)
 
@@ -195,7 +195,9 @@ class Visualizer:
 
         for card, position in zip(state.cards, CARD_BOXES, strict=False):
             self._rectangle(d, position)
-            self._draw_text(d, position, card.name)
+            self._draw_text(
+                d, position, "empty" if card is None else card.name
+            )
 
         return d
 

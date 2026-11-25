@@ -7,7 +7,7 @@ class ArchersAction(Action):
     CARD = Cards.ARCHERS
 
     def calculate_score(self, state: State) -> list[float]:
-        score: list[float] = [0.5] if state.numbers.elixir == 10 else [0]
+        score: list[float] = [0.5] if state.elixir == 10 else [0]
 
         for det in state.enemies:
             lhs = det.position.tile_x <= 8 and self.tile_x == 7

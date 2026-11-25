@@ -1,16 +1,14 @@
 import math
 import os
-import threading
 
 import numpy as np
 
-from clashroyalebuildabot.detectors.background import LatestResult
 from clashroyalebuildabot.detectors.tower_hp_reader import (
-    RUBBLE_READINGS,
+    RUBBLE_SECONDS,
     TOWER_BOXES,
     TowerHPReader,
 )
-from clashroyalebuildabot.game.numbers import (
+from clashroyalebuildabot.game.towers import (
     UNKNOWN_HP,
     UNKNOWN_LEVEL,
     Towers,
@@ -45,10 +43,19 @@ def battle_frame(**overrides: str) -> np.ndarray:
     return frame(**{**crops, **overrides})
 
 
-def read_in_background(reader, image):
-    reader.run(image)
-    reader.wait(5)
-    return reader.latest()
+class Clock:
+    """A clock the test moves on by hand."""
+
+    def __init__(self):
+        self.now = 0.0
+
+    def __call__(self):
+        return self.now
+
+
+def reader_and_clock():
+    clock = Clock()
+    return TowerHPReader(clock=clock), clock
 
 
 def hps(towers: Towers) -> dict[str, float]:
@@ -56,103 +63,102 @@ def hps(towers: Towers) -> dict[str, float]:
 
 
 def test_reads_every_towers_hp():
-    reader = TowerHPReader(interval=0)
-    for _ in range(RUBBLE_READINGS):
-        towers = read_in_background(reader, battle_frame())
-    assert hps(towers) == BATTLE
-    reader.close()
+    reader, clock = reader_and_clock()
+    reader.run(battle_frame())
+    clock.now = RUBBLE_SECONDS  # long enough for the rubble to count
+    assert hps(reader.run(battle_frame())) == BATTLE
 
 
 def test_levels_stay_unknown():
-    reader = TowerHPReader(interval=0)
-    towers = read_in_background(reader, battle_frame())
+    reader, _ = reader_and_clock()
+    towers = reader.run(battle_frame())
     assert all(t.level == UNKNOWN_LEVEL for _, t in towers.items())
-    reader.close()
 
 
 def test_unknown_until_first_reading():
-    reader = TowerHPReader()
+    reader, _ = reader_and_clock()
     assert all(math.isinf(hp) for hp in hps(reader.latest()).values())
-    reader.close()
 
 
-def test_rubble_counts_only_after_several_readings():
-    # A missing bar might be a moment's glitch; rubble stays missing.
-    reader = TowerHPReader(interval=0)
-    for _ in range(RUBBLE_READINGS - 1):
-        towers = read_in_background(reader, battle_frame())
+def test_rubble_counts_only_after_a_while():
+    # A missing bar might be a pop-up passing over; rubble stays missing.
+    reader, clock = reader_and_clock()
+    for t in np.arange(0, RUBBLE_SECONDS, 0.1):
+        clock.now = t
+        towers = reader.run(battle_frame())
         assert towers.left_ally_princess.hp == UNKNOWN_HP
-    towers = read_in_background(reader, battle_frame())
-    assert towers.left_ally_princess.hp == 0
-    reader.close()
+    clock.now = RUBBLE_SECONDS
+    assert reader.run(battle_frame()).left_ally_princess.hp == 0
+
+
+def test_many_frames_dont_make_rubble_sooner():
+    # However fast frames come, rubble takes RUBBLE_SECONDS.
+    reader, clock = reader_and_clock()
+    clock.now = 10.0
+    for _ in range(100):
+        towers = reader.run(battle_frame())
+    assert towers.left_ally_princess.hp == UNKNOWN_HP
+
+
+def test_a_bar_seen_again_restarts_the_wait():
+    reader, clock = reader_and_clock()
+    reader.run(battle_frame())  # rubble from t = 0
+    clock.now = RUBBLE_SECONDS - 0.1
+    # Its number shows again, for a moment.
+    reader.run(battle_frame(left_ally_princess="tower_right_ally_princess"))
+    clock.now = RUBBLE_SECONDS
+    reader.run(battle_frame())  # gone again, but only just
+    assert reader.latest().left_ally_princess.hp == 1459
+    clock.now = 2 * RUBBLE_SECONDS
+    assert reader.run(battle_frame()).left_ally_princess.hp == 0
 
 
 def test_destroyed_tower_stays_destroyed():
-    reader = TowerHPReader(interval=0)
-    for _ in range(RUBBLE_READINGS):
-        read_in_background(reader, battle_frame())
+    reader, clock = reader_and_clock()
+    reader.run(battle_frame())
+    clock.now = RUBBLE_SECONDS
+    reader.run(battle_frame())
     # A number seen over its rubble later (a spell, a damage number) doesn't
     # bring it back.
     image = battle_frame(left_ally_princess="tower_right_ally_princess")
-    towers = read_in_background(reader, image)
-    assert towers.left_ally_princess.hp == 0
-    reader.close()
+    assert reader.run(image).left_ally_princess.hp == 0
 
 
 def test_covered_number_keeps_the_previous_reading():
     # "Not enough elixir" covers the number, but the bar's still there.
-    reader = TowerHPReader(interval=0)
-    read_in_background(reader, battle_frame())
+    reader, clock = reader_and_clock()
+    reader.run(battle_frame())
     image = battle_frame(right_ally_princess="tower_covered_bar")
-    for _ in range(RUBBLE_READINGS + 1):
-        towers = read_in_background(reader, image)
+    for t in range(1, 5):
+        clock.now = float(t)
+        towers = reader.run(image)
     assert towers.right_ally_princess.hp == 1459
-    reader.close()
 
 
 def test_untouched_king_tower_never_reads_as_destroyed():
-    reader = TowerHPReader(interval=0)
-    for _ in range(RUBBLE_READINGS + 1):
-        towers = read_in_background(reader, frame())
+    reader, clock = reader_and_clock()
+    for t in range(5):
+        clock.now = float(t)
+        towers = reader.run(frame())
     assert towers.enemy_king.hp == UNKNOWN_HP
     assert towers.ally_king.hp == UNKNOWN_HP
-    reader.close()
 
 
 def test_king_tower_keeps_its_last_reading():
-    reader = TowerHPReader(interval=0)
-    read_in_background(reader, battle_frame())
-    towers = read_in_background(reader, frame())
-    assert towers.ally_king.hp == 3803
-    reader.close()
+    reader, _ = reader_and_clock()
+    reader.run(battle_frame())
+    assert reader.run(frame()).ally_king.hp == 3803
 
 
 def test_reset_forgets_readings():
-    reader = TowerHPReader(interval=0)
-    for _ in range(RUBBLE_READINGS):
-        read_in_background(reader, battle_frame())
+    reader, clock = reader_and_clock()
+    reader.run(battle_frame())
+    clock.now = RUBBLE_SECONDS
+    reader.run(battle_frame())
     reader.reset()
     assert all(math.isinf(hp) for hp in hps(reader.latest()).values())
-    # And the rubble count starts again.
-    towers = read_in_background(reader, battle_frame())
-    assert towers.left_ally_princess.hp == UNKNOWN_HP
-    reader.close()
-
-
-def test_reset_discards_an_answer_still_in_flight():
-    release = threading.Event()
-
-    def slow(image, previous):
-        release.wait(5)
-        return "old"
-
-    latest = LatestResult(slow, default="none", interval=0, max_age=None)
-    latest.run(frame())
-    latest.reset()
-    release.set()
-    latest.wait(5)
-    assert latest.latest() == "none"
-    latest.close()
+    # And the wait for rubble starts again.
+    assert reader.run(battle_frame()).left_ally_princess.hp == UNKNOWN_HP
 
 
 def test_every_tower_has_a_box():

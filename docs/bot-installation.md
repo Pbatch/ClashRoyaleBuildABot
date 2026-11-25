@@ -1,12 +1,12 @@
 ### Wiki: Bot Installation Setup Guide
 ---
 ### Prerequisites
-- Linux on x86-64. The bot is only tested on Linux.
+- Linux or Windows on x86-64. The bot is only tested on Linux.
 - Optionally, an NVIDIA GPU with its driver installed. The unit detector runs several times faster on it, but the CPU works too.
 - [uv](https://docs.astral.sh/uv/).
 
 #### Step 1: Open a Shell
-- Open a terminal.
+- Open a terminal (on Windows, PowerShell).
 
 #### Step 2: Clone the Repository
 - Clone the repository using the command:
@@ -30,6 +30,10 @@
 - This step is optional if you start the bot with `uv run`, which always uses the project's environment. To run `python` directly instead, activate the environment first:
   ```bash
   source .venv/bin/activate
+  ```
+  On Windows, in PowerShell:
+  ```powershell
+  .venv\Scripts\activate
   ```
 
 #### Step 6: Install Dependencies
@@ -69,9 +73,10 @@ Now, let’s verify that the bot operates correctly:
   ```
 - In the window that opens, check the **Device Serial** in the Settings tab (run `adb devices` to find it). If the configured device isn't found, the bot uses the first connected device.
 - Press start (▶) to start the bot. Press it again (■) to stop.
+- To run the bot without the window, or to control it from scripts, see [Running Without the GUI, and the HTTP API](headless-and-api.md).
 
 ### Configuration
-The default settings are in [`clashroyalebuildabot/default_config.yaml`](../clashroyalebuildabot/default_config.yaml). Don't edit that file: updates replace it.
+The default settings are in [`clashroyalebuildabot/default_config.yaml`](https://github.com/Pbatch/ClashRoyaleBuildABot/blob/main/clashroyalebuildabot/default_config.yaml). Don't edit that file: updates replace it.
 
 To change a setting, either change it in the GUI's Settings tab and press **Save config to file**, or create `config.yaml` in the project folder yourself. It only needs the settings you want to change, in the same sections as the defaults:
 ```yaml

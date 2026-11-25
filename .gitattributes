@@ -6,3 +6,4 @@
 *.jpg binary
 *.ico binary
 *.onnx binary
+*.npz binary

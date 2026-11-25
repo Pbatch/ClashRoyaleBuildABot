@@ -29,7 +29,9 @@ class FakeBot:
     # When set, run() keeps going after stop() until it's released.
     hold: ClassVar[threading.Event | None] = None
 
-    def __init__(self, actions, config, on_frame=None):
+    def __init__(
+        self, actions, config, on_frame=None, on_observation=None, policy=None
+    ):
         if FakeBot.gate is not None:
             FakeBot.gate.wait(timeout=5)
         self.on_frame = on_frame

@@ -16,5 +16,7 @@ env/
 crbab-venv/
 # User settings (defaults are in clashroyalebuildabot/default_config.yaml)
 /config.yaml
-# Local developer scripts
-/dev/
+# Local developer scripts and data, except the game-data exporter
+/dev/*
+!/dev/game_data/
+/site/

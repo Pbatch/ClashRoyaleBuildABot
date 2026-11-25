@@ -3,13 +3,22 @@ window and any future API both drive the bot through this."""
 
 import threading
 from collections.abc import Callable, Sequence
+from concurrent.futures import TimeoutError as FutureTimeout
 from enum import StrEnum
 
 import numpy as np
 from loguru import logger
 
 from clashroyalebuildabot.actions.generic.action import Action
-from clashroyalebuildabot.bot.bot import Bot
+from clashroyalebuildabot.bot.bot import Bot, Observation
+from clashroyalebuildabot.bot.plays import (
+    Play,
+    PlayRejected,
+    PlayRequest,
+    PlayResult,
+    Reason,
+)
+from clashroyalebuildabot.bot.policy import Policy
 from clashroyalebuildabot.config import Config, apply_changes
 from clashroyalebuildabot.utils.error_handling import WikifiedError
 
@@ -31,10 +40,16 @@ class BotController:
     """
 
     def __init__(
-        self, config: Config, actions: Sequence[type[Action]]
+        self,
+        config: Config,
+        actions: Sequence[type[Action]],
+        policy: Policy | None = None,
     ) -> None:
+        """Each bot plays with policy if given, otherwise as
+        ``bot.policy`` in the config says."""
         self.config = config
         self.actions = actions
+        self.policy = policy
         self._bot: Bot | None = None
         self._thread: threading.Thread | None = None
         self._stop_requested = False
@@ -48,6 +63,8 @@ class BotController:
         self._frame_listeners: list[Callable[[np.ndarray], None]] = []
         self._status_listeners: list[Callable[[BotStatus], None]] = []
         self._config_listeners: list[Callable[[Config], None]] = []
+        self._observation_listeners: list[Callable[[Observation], None]] = []
+        self._observation: Observation | None = None
         # Serialises config changes, which may come from the GUI and the
         # API at once, and the snapshot each new bot takes.
         self._config_lock = threading.RLock()
@@ -57,6 +74,60 @@ class BotController:
     ) -> None:
         """Called with each annotated frame while show_images is on."""
         self._frame_listeners.append(listener)
+
+    def add_observation_listener(
+        self, listener: Callable[[Observation], None]
+    ) -> None:
+        """Called with every frame's Observation, on the bot's thread."""
+        self._observation_listeners.append(listener)
+
+    @property
+    def observation(self) -> Observation | None:
+        """The running bot's latest Observation. None until it has read a
+        frame, and once it stops."""
+        return self._observation
+
+    @property
+    def is_external(self) -> bool:
+        """Whether the running bot plays what clients ask for."""
+        bot = self._bot
+        return bot is not None and bot.is_external
+
+    def submit_play(
+        self,
+        play: Play,
+        *,
+        frame: int | None = None,
+        max_age: float = 1.0,
+        timeout: float = 2.0,
+    ) -> PlayResult:
+        """Ask the running bot to make play, on its next battle frame, and
+        wait until it has. Raises PlayRejected with the reason it wasn't
+        made, including TIMEOUT if the bot didn't get to it in timeout
+        seconds (it then never will)."""
+        bot = self._bot
+        if bot is None or self._stop_requested:
+            raise PlayRejected(Reason.NOT_RUNNING, "The bot isn't running.")
+        if not bot.is_external:
+            raise PlayRejected(
+                Reason.BUILTIN_POLICY,
+                "The bot is playing with its built-in policy. Set "
+                "bot.policy to external, then restart it.",
+            )
+        if bot.is_paused:
+            raise PlayRejected(Reason.PAUSED, "The bot is paused.")
+        request = PlayRequest(play=play, frame=frame, max_age=max_age)
+        future = bot.requests.submit(request)
+        try:
+            return future.result(timeout=timeout)
+        except FutureTimeout:
+            if future.cancel():
+                raise PlayRejected(
+                    Reason.TIMEOUT,
+                    f"The bot didn't get to the play in {timeout} seconds.",
+                ) from None
+            # The bot took it just in time.
+            return future.result()
 
     def add_config_listener(self, listener: Callable[[Config], None]) -> None:
         """Called with the config after every update_config(), on the
@@ -174,6 +245,11 @@ class BotController:
         for listener in self._frame_listeners:
             listener(frame)
 
+    def _emit_observation(self, observation: Observation) -> None:
+        self._observation = observation
+        for listener in self._observation_listeners:
+            listener(observation)
+
     def _run(self, config: Config) -> None:
         """Runs on the bot's thread, with the config it started with."""
         try:
@@ -181,6 +257,8 @@ class BotController:
                 actions=self.actions,
                 config=config,
                 on_frame=self._emit_frame,
+                on_observation=self._emit_observation,
+                policy=self.policy,
             )
             with self._lock:
                 self._bot = bot
@@ -201,6 +279,7 @@ class BotController:
             with self._lock:
                 self._bot = None
                 self._thread = None
+                self._observation = None
                 self._stop_requested = False
             logger.info("Bot stopped")
             self._emit_status()

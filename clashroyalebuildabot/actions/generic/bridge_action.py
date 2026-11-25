@@ -18,11 +18,11 @@ class BridgeAction(Action):
         if tile not in {LEFT_BRIDGE, RIGHT_BRIDGE}:
             return [0]
 
-        if state.numbers.elixir != 10:
+        if state.elixir != 10:
             return [0]
 
-        left_hp = state.numbers.towers.left_enemy_princess.hp
-        right_hp = state.numbers.towers.right_enemy_princess.hp
+        left_hp = state.towers.left_enemy_princess.hp
+        right_hp = state.towers.right_enemy_princess.hp
         if tile == LEFT_BRIDGE:
             return [1, left_hp > 0, left_hp <= right_hp]
         return [1, right_hp > 0, right_hp <= left_hp]

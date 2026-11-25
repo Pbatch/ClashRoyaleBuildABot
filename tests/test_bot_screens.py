@@ -1,18 +1,10 @@
-import clashroyalebuildabot.bot.bot as bot_module
 from clashroyalebuildabot.game import ScreenName, Screens
 from tests.conftest import make_state
-from tests.test_bot_lifecycle import (
-    ACTIONS,
-    FakeDetector,
-    FakeVisualizer,
-    make_config,
-)
+from tests.test_bot_lifecycle import make_bot as make_test_bot
+from tests.test_bot_lifecycle import make_config
 
 
 class TapRecorder:
-    def __init__(self, device_serial):
-        pass
-
     def click(self, x, y):
         pass
 
@@ -30,12 +22,9 @@ class Record:
 
 
 def make_bot(monkeypatch, auto_start=False):
-    monkeypatch.setattr(bot_module, "Emulator", TapRecorder)
-    monkeypatch.setattr(bot_module, "Detector", FakeDetector)
-    monkeypatch.setattr(bot_module, "Visualizer", FakeVisualizer)
     config = make_config()
     config.bot.auto_start_game = auto_start
-    bot = bot_module.Bot(ACTIONS, config)
+    bot = make_test_bot(TapRecorder(), config)
     record = Record()
 
     def play(state):

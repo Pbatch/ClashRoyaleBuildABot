@@ -1,0 +1,69 @@
+name: Release
+
+# Builds the sdist and wheel, checks the wheel works installed, and on a
+# version tag publishes them to PyPI; see DEPLOYMENT.md.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # Pure Python, so one wheel serves every platform.
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+
+    - uses: astral-sh/setup-uv@v7
+
+    - run: uv build --out-dir dist
+
+    # The tests import the source tree, not the wheel (test.yml runs them),
+    # so this checks what they can't: that the wheel holds the models and
+    # data the bot loads. It runs outside the checkout so the source tree
+    # can't shadow the installed package.
+    - name: Check the wheel works installed
+      run: |
+        uv venv --python 3.12 "$RUNNER_TEMP/venv"
+        uv pip install --python "$RUNNER_TEMP/venv" dist/*.whl
+        cd "$RUNNER_TEMP"
+        venv/bin/python -I -c '
+        from clashroyalebuildabot.detectors.state_reader import StateReader
+        from clashroyalebuildabot.game.cards import Cards
+        StateReader([
+            Cards.ARCHERS, Cards.GIANT, Cards.MINIONS, Cards.KNIGHT,
+            Cards.MUSKETEER, Cards.FIREBALL, Cards.ARROWS, Cards.GOBLIN_BARREL,
+        ])
+        '
+
+    - uses: actions/upload-artifact@v7
+      with:
+        name: clashroyalebuildabot
+        path: dist/*
+
+  # Uploads use trusted publishing, so no tokens are stored; PyPI trusts this
+  # workflow in the pypi environment, which needs approval.
+  publish-pypi:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/ClashRoyaleBuildABot/
+    permissions:
+      id-token: write
+    steps:
+    - uses: actions/download-artifact@v8
+      with:
+        name: clashroyalebuildabot
+        path: dist
+
+    # PyPI never accepts a version twice, so a tag like v2.0.0-test mustn't
+    # upload 2.0.0.
+    - name: Check the tag matches the version
+      run: test -f "dist/clashroyalebuildabot-${GITHUB_REF_NAME#v}.tar.gz"
+
+    - uses: pypa/gh-action-pypi-publish@release/v1

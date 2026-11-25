@@ -1,25 +1,23 @@
+import os
 from collections.abc import Sequence
 
 import numpy as np
+from scipy.ndimage import maximum_filter
 
-from clashroyalebuildabot.constants.device_screen import (
-    DISPLAY_HEIGHT,
-    DISPLAY_WIDTH,
-    TILE_HEIGHT,
-    TILE_INIT_X,
-    TILE_INIT_Y,
-    TILE_WIDTH,
-)
+from clashroyalebuildabot.constants.paths import MODELS_DIR
 from clashroyalebuildabot.constants.screenshot import (
     SCREENSHOT_HEIGHT,
     SCREENSHOT_WIDTH,
 )
-from clashroyalebuildabot.detectors.onnx_model import OnnxModel
+from clashroyalebuildabot.detectors import onnx_model
 from clashroyalebuildabot.game.cards import Card
 from clashroyalebuildabot.game.units import Position, UnitDetection, Units
 
+MODEL_PATH = os.path.join(MODELS_DIR, "units_tiles.onnx")
+
 # The units the model knows, in the order of its channels: unit i is
-# channels 2 * i (ours) and 2 * i + 1 (the enemy's).
+# channels 2 * i (ours) and 2 * i + 1 (the enemy's). Only ever append, so
+# a model trained on a shorter list still reads as the units it knows.
 DETECTOR_UNITS = [
     Units.ARCHER,
     Units.ARCHER_QUEEN,
@@ -49,7 +47,7 @@ DETECTOR_UNITS = [
     Units.ELIXIR_GOLEM_SMALL,
     Units.EXECUTIONER,
     Units.FIRE_SPIRIT,
-    Units.FIRE_CRACKER,
+    Units.FIRECRACKER,
     Units.FISHERMAN,
     Units.FLYING_MACHINE,
     Units.FURNACE,
@@ -118,6 +116,20 @@ DETECTOR_UNITS = [
     Units.WIZARD,
     Units.X_BOW,
     Units.ZAPPY,
+    # Added 2026-11-25.
+    Units.BERSERKER,
+    Units.BOSS_BANDIT,
+    Units.GOBLIN_DEMOLISHER,
+    Units.GOBLIN_GIANT,
+    Units.GOBLIN_MACHINE,
+    Units.GOBLINSTEIN,
+    Units.GOBLINSTEIN_DOCTOR,
+    Units.RUNE_GIANT,
+    Units.SKELETON_BARREL,
+    Units.SPIRIT_EMPRESS,
+    Units.SPIRIT_EMPRESS_MOUNTED,
+    Units.SUSPICIOUS_BUSH,
+    Units.BOMB,
 ]
 
 
@@ -137,7 +149,7 @@ class UnitDetector:
     deck's units alone (see name_allies): the model only has to see that
     one of ours is there, not which.
 
-    There's no box: a detection's bbox is its tile, in screenshot pixels.
+    There's no box: a detection is a unit on a tile.
     """
 
     PEAK_CONF = 0.4
@@ -146,19 +158,34 @@ class UnitDetector:
     UNIT_Y_END = 0.80
     ROWS, COLS = 32, 18
 
-    def __init__(self, model_path: str, cards: Sequence[Card]) -> None:
-        self.model = OnnxModel(model_path)
+    def __init__(
+        self, cards: Sequence[Card], model_path: str = MODEL_PATH
+    ) -> None:
+        self.model = onnx_model.load(model_path)
         top, bottom = self.view_rows()
         if self.model.input_size != (bottom - top, SCREENSHOT_WIDTH):
             raise ValueError(
                 f"{model_path} takes {self.model.input_size} images, not "
                 f"the {(bottom - top, SCREENSHOT_WIDTH)} unit view"
             )
-        # The DETECTOR_UNITS indices our cards can put on the battlefield,
+        # The units this model knows: the first n of DETECTOR_UNITS, as
+        # one trained before units were appended knows fewer.
+        channels = self.model.output_shape[1]
+        if (
+            not isinstance(channels, int)
+            or channels % 2
+            or not (0 < channels <= 2 * len(DETECTOR_UNITS))
+        ):
+            raise ValueError(
+                f"{model_path} gives {channels} channels, not an ally and "
+                f"an enemy channel for up to {len(DETECTOR_UNITS)} units"
+            )
+        self.units = DETECTOR_UNITS[: channels // 2]
+        # The indices of the units our cards can put on the battlefield,
         # spawned units included (a witch's skeletons).
         deck = {unit.name for card in cards for unit in card.units}
         self.deck_units = np.array(
-            [i for i, unit in enumerate(DETECTOR_UNITS) if unit.name in deck],
+            [i for i, unit in enumerate(self.units) if unit.name in deck],
             dtype=np.int64,
         )
 
@@ -171,32 +198,9 @@ class UnitDetector:
         )
 
     @staticmethod
-    def _tile_bbox(col: int, row: int) -> tuple[int, int, int, int]:
-        """A tile in screenshot pixels; row 0 is the top of the arena."""
-        sx = SCREENSHOT_WIDTH / DISPLAY_WIDTH
-        sy = SCREENSHOT_HEIGHT / DISPLAY_HEIGHT
-        left = (TILE_INIT_X + col * TILE_WIDTH) * sx
-        up = UnitDetector.ROWS - 1 - row  # tiles from the bottom
-        bottom = (DISPLAY_HEIGHT - TILE_INIT_Y - up * TILE_HEIGHT) * sy
-        return (
-            round(left),
-            round(bottom - TILE_HEIGHT * sy),
-            round(left + TILE_WIDTH * sx),
-            round(bottom),
-        )
-
-    @staticmethod
     def _local_max(probs: np.ndarray) -> np.ndarray:
         """The highest value in each tile's 3 x 3 neighbourhood, per channel."""
-        padded = np.pad(probs, ((0, 0), (1, 1), (1, 1)), constant_values=-1)
-        out = probs.copy()
-        rows, cols = probs.shape[1:]
-        for dy in range(3):
-            for dx in range(3):
-                np.maximum(
-                    out, padded[:, dy : dy + rows, dx : dx + cols], out=out
-                )
-        return out
+        return maximum_filter(probs, size=(1, 3, 3), mode="constant", cval=-1)
 
     def name_allies(self, probs: np.ndarray) -> np.ndarray:
         """The model's probabilities with every ally named from our deck.
@@ -237,12 +241,11 @@ class UnitDetector:
         enemies: list[UnitDetection] = []
         for channel, row, col in zip(*np.nonzero(keep), strict=True):
             position = Position(
-                self._tile_bbox(col, row),
                 float(probs[channel, row, col]),
                 int(col),
                 int(self.ROWS - 1 - row),  # the bot counts up from the bottom
             )
-            detection = UnitDetection(DETECTOR_UNITS[channel // 2], position)
+            detection = UnitDetection(self.units[channel // 2], position)
             (enemies if channel % 2 else allies).append(detection)
         return allies, enemies
 

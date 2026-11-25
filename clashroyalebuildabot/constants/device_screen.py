@@ -33,6 +33,23 @@ ALLY_TILES += [
     [x, y] for x in range(N_WIDE_TILES) for y in range(1, N_HEIGHT_TILES)
 ]
 ALL_TILES = ALLY_TILES + [[x, 31 - y] for x, y in ALLY_TILES]
+
+
+def tile_box(tile_x: int, tile_y: int) -> tuple[int, int, int, int]:
+    """A tile in screenshot pixels, (left, top, right, bottom). Tiles count
+    from the bottom left, as everywhere else in the bot."""
+    sx = SCREENSHOT_WIDTH / DISPLAY_WIDTH
+    sy = SCREENSHOT_HEIGHT / DISPLAY_HEIGHT
+    left = (TILE_INIT_X + tile_x * TILE_WIDTH) * sx
+    bottom = (DISPLAY_HEIGHT - TILE_INIT_Y - tile_y * TILE_HEIGHT) * sy
+    return (
+        round(left),
+        round(bottom - TILE_HEIGHT * sy),
+        round(left + TILE_WIDTH * sx),
+        round(bottom),
+    )
+
+
 # Extra tiles we can play on once that enemy princess tower is destroyed.
 LEFT_PRINCESS_TILES = [[3, N_HEIGHT_TILES], [3, N_HEIGHT_TILES + 1]]
 LEFT_PRINCESS_TILES += [
@@ -46,6 +63,21 @@ RIGHT_PRINCESS_TILES += [
     for x in range(N_WIDE_TILES // 2, N_WIDE_TILES)
     for y in range(N_HEIGHT_TILES + 2, N_HEIGHT_TILES + 6)
 ]
+
+# The tiles under each tower's base, as (x_min, y_min, x_max, y_max), both
+# ends included, named as in Towers. Kings cover 4x4 tiles, princesses 3x3.
+# From the towers' centres in the game's logic files (king (9, 3), princess
+# (3.5, 6.5) and (14.5, 6.5) on our side, in tiles, mirrored for the
+# enemy's), and checked against battle screenshots. The towers are drawn
+# leaning up the screen, so their sprites reach above these tiles.
+TOWER_TILES = {
+    "left_enemy_princess": (2, 24, 4, 26),
+    "right_enemy_princess": (13, 24, 15, 26),
+    "left_ally_princess": (2, 5, 4, 7),
+    "right_ally_princess": (13, 5, 15, 7),
+    "enemy_king": (7, 27, 10, 30),
+    "ally_king": (7, 1, 10, 4),
+}
 
 
 def _scale_to_display(box: Box) -> Box:

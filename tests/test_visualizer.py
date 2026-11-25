@@ -76,26 +76,24 @@ def test_counter_does_not_advance_when_not_saving(dirs, state_factory):
     assert visualizer._next_index == 1
 
 
-def test_labels_every_number_at_its_box():
+def test_labels_every_number_at_its_box(state_factory):
+    from dataclasses import replace
+
     from clashroyalebuildabot.constants.screenshot import (
         ELIXIR_BOX,
         KING_TOWER_BOXES,
         PRINCESS_TOWER_BOXES,
         TIMER_BOX,
     )
-    from clashroyalebuildabot.game.numbers import (
-        Numbers,
-        Timer,
-        Tower,
-        Towers,
-    )
+    from clashroyalebuildabot.game.timer import Timer
+    from clashroyalebuildabot.game.towers import Tower, Towers
 
-    numbers = Numbers(
-        elixir=7,
+    state = replace(
+        state_factory(elixir=7),
         towers=Towers(left_enemy_princess=Tower(hp=1918, level=8)),
         timer=Timer(time_left=42, overtime=True),
     )
-    labels = dict(Visualizer._number_labels(numbers))
+    labels = dict(Visualizer._number_labels(state))
     assert labels[ELIXIR_BOX] == "7"
     assert labels[PRINCESS_TOWER_BOXES["left_enemy_princess"]] == "1918 L8"
     assert labels[KING_TOWER_BOXES["ally_king"]] == "inf"

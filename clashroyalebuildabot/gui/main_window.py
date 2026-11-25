@@ -23,6 +23,7 @@ from PyQt6.QtWidgets import (
 
 from clashroyalebuildabot.actions.generic.action import Action
 from clashroyalebuildabot.bot.controller import BotController, BotStatus
+from clashroyalebuildabot.bot.policy import Policy
 from clashroyalebuildabot.config import Config
 from clashroyalebuildabot.gui.animations import start_play_button_animation
 from clashroyalebuildabot.gui.gameplay_widget import ImageStreamWindow
@@ -79,12 +80,15 @@ class MainWindow(QMainWindow):
     glow_animation: QPropertyAnimation
 
     def __init__(
-        self, config: Config, actions: Sequence[type[Action]]
+        self,
+        config: Config,
+        actions: Sequence[type[Action]],
+        policy: Policy | None = None,
     ) -> None:
         try:
             super().__init__()
             self.config = config
-            self.controller = BotController(config, actions)
+            self.controller = BotController(config, actions, policy)
             self._shown_status: BotStatus | None = None
             self._shown_show_images = config.visuals.show_images
 

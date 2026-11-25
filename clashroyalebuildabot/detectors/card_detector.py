@@ -1,158 +1,137 @@
+"""Read the next card and the four cards in hand.
+
+A small CNN (models/card_embedder.onnx) turns each card position into a
+vector, trained so a position's vector lies close to its card art's,
+whether the card is drawn in colour, greyed out with the elixir wedge, raised
+or as the small next card. Every card art's vector ships in
+models/card_embeddings.npz, so the art itself doesn't, and a card the game
+adds later needs only its art's vector, not a new model (see dev/cards).
+"""
+
+import os
 from collections.abc import Sequence
 from functools import cache
 
+import cv2
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
-from clashroyalebuildabot.constants.card_hashes import CARD_HASHES
+from clashroyalebuildabot.constants.paths import MODELS_DIR
 from clashroyalebuildabot.constants.screenshot import CARD_BOXES
-from clashroyalebuildabot.game.cards import Card, Cards
+from clashroyalebuildabot.detectors import onnx_model
+from clashroyalebuildabot.game.cards import Card
 from clashroyalebuildabot.utils.error_handling import WikifiedError
 from clashroyalebuildabot.utils.image import crop
-from clashroyalebuildabot.utils.thumbnail import from_hex, thumbnail
 
-# Card thumbnails are this many pixels across and down.
-THUMBNAIL_SIZE = (8, 10)
-
-
-def card_thumbnail(image: np.ndarray) -> np.ndarray:
-    """A card, or a card's art, as the greyscale thumbnail it's matched
-    by."""
-    return thumbnail(image, THUMBNAIL_SIZE, grey=True)
+MODEL_PATH = os.path.join(MODELS_DIR, "card_embedder.onnx")
+EMBEDDINGS_PATH = os.path.join(MODELS_DIR, "card_embeddings.npz")
+# The art name of an empty hand slot, read as None.
+EMPTY_ART = "blank"
 
 
 @cache
-def art_thumbnails() -> dict[str, np.ndarray]:
-    """Every card art's thumbnail, by art name (``<card>`` and, for an
-    evolution, ``<card>_ev1``). They're made from the art by maintainers,
-    so the art itself doesn't ship with the bot."""
-    return {
-        name: from_hex(h, THUMBNAIL_SIZE, grey=True)
-        for name, h in CARD_HASHES.items()
-    }
+def art_embeddings(path: str = EMBEDDINGS_PATH) -> dict[str, np.ndarray]:
+    """Every card art's vector, by art name: ``<card>`` and, for an
+    evolution, ``<card>_ev1``."""
+    data = np.load(path)
+    return dict(zip(data["names"].tolist(), data["vectors"], strict=True))
 
 
 class CardDetector:
     """Reads the next card and the four cards in hand, and which of those
     can be played.
 
-    Each card position is shrunk to a tiny greyscale thumbnail and compared
-    with the deck's card art. A card in colour is drawn as the art is. A
-    card the player can't afford yet is drawn in grey and washed out, apart
-    from a darker wedge that sweeps round from 12 o'clock as elixir fills,
-    so each of its pixels is compared with the art as drawn normally, washed
-    out or in the wedge, whichever is closest.
-
-    Washed-out cards can look alike, so the detector also remembers what it
-    saw: a card stays in its position until it's played, and the card that
+    Each position is matched to the deck card whose art's vector is most
+    alike (by cosine similarity), every position holding a different card.
+    An empty slot reads as None. The detector also remembers what it saw: a
+    card stays in its position until it's played, and the card that
     replaces it is the one that was next. Call ``reset`` between battles.
     """
 
     # The next card plus the four in hand.
     HAND_SIZE = 5
-    # The bottom rows hold the cost badge, which the card art doesn't have.
-    MATCH_ROWS = 8
-    # How a greyed card's brightness relates to the art's, as (scale,
-    # offset), outside the wedge and inside it. Measured on battle frames.
-    WASHED_OUT = (0.355, 163.0)
-    WEDGE = (0.592, 36.0)
     # How much a position prefers the card it held last frame, or the card
-    # that was next, in the same units as the match cost (mean brightness
-    # difference per pixel). Clear evidence of another card still wins.
-    MEMORY_BONUS = 4.0
+    # that was next, in cosine distance. On battle frames the right card is
+    # typically 0.5 more alike than the best wrong one, and at least 0.14 in
+    # 95% of positions, so this settles close calls while clear evidence of
+    # another card still wins.
+    MEMORY_BONUS = 0.1
 
     def __init__(
         self,
         cards: Sequence[Card],
         grey_std_threshold: int = 5,
+        model_path: str = MODEL_PATH,
+        embeddings_path: str = EMBEDDINGS_PATH,
     ) -> None:
-        # Build a new list rather than extending the caller's. The blanks let
-        # the matcher assign empty hand slots.
-        self.cards = [*cards, *([Cards.BLANK] * self.HAND_SIZE)]
+        # What a position can hold: a deck card, or nothing (one None per
+        # position, since every position holds a different entry).
+        self.cards: list[Card | None] = [*cards, *([None] * self.HAND_SIZE)]
         self.grey_std_threshold = grey_std_threshold
-
-        self.art_variants, self.art_owners = self._deck_art()
-        self._last: list[Card] | None = None
+        self.model = onnx_model.load(model_path)
+        self.art_vectors, self.art_owners = self._deck_art(embeddings_path)
+        self._last: list[Card | None] | None = None
 
     def reset(self) -> None:
         """Forget the last hand, for the start of a new battle."""
         self._last = None
 
-    def _pixels(self, thumb: np.ndarray) -> np.ndarray:
-        """The thumbnail pixels a card is matched on, as floats."""
-        return thumb.astype(np.float32)[: self.MATCH_ROWS].ravel()
-
-    def _variants(self, thumb: np.ndarray) -> np.ndarray:
-        """An art's pixels as drawn normally (first), washed out and in the
-        wedge."""
-        gray = self._pixels(thumb)
-        variants = [gray]
-        for scale, offset in (self.WASHED_OUT, self.WEDGE):
-            variants.append(scale * gray + offset)
-        return np.stack(variants)
-
-    @staticmethod
-    def _art_thumbnails(card: Card) -> list[np.ndarray]:
-        """The card's art, plus its evolution's art if it has one: an
-        evolved card is drawn with that instead."""
-        thumbs = art_thumbnails()
-        if card.name not in thumbs:
-            raise WikifiedError("005", f"No card hash for {card.name}.")
-        names = [card.name, f"{card.name}_ev1"]
-        return [thumbs[n] for n in names if n in thumbs]
-
-    def _deck_art(self) -> tuple[np.ndarray, np.ndarray]:
-        """Every art's variants, and the index in self.cards it belongs
-        to."""
-        variants, owners = [], []
+    def _deck_art(self, path: str) -> tuple[np.ndarray, np.ndarray]:
+        """The vector of every art of the deck's cards (a card with an
+        evolution has both arts, since an evolved card is drawn with the
+        other), and the index in self.cards each belongs to. An empty slot
+        has the blank slot's art."""
+        vectors = art_embeddings(path)
+        arts, owners = [], []
         for i, card in enumerate(self.cards):
-            for thumb in self._art_thumbnails(card):
-                variants.append(self._variants(thumb))
-                owners.append(i)
-        return np.stack(variants), np.array(owners)
+            art = EMPTY_ART if card is None else card.name
+            if art not in vectors:
+                raise WikifiedError("005", f"No card embedding for {art}.")
+            for name in (art, f"{art}_ev1"):
+                if name in vectors:
+                    arts.append(vectors[name])
+                    owners.append(i)
+        return np.stack(arts), np.array(owners)
 
-    def _match_costs(
-        self, crops: list[np.ndarray], coloured: list[bool]
-    ) -> np.ndarray:
-        """(positions, cards): how unlike each card each position looks."""
-        seen = np.stack([self._pixels(card_thumbnail(c)) for c in crops])
-        # (positions, arts, variants, pixels).
-        diffs = np.abs(
-            seen[:, None, None, :] - self.art_variants[None, :, :, :]
+    def embed(self, crops: Sequence[np.ndarray]) -> np.ndarray:
+        """(positions, dim) unit vectors, one per card position. Each is
+        resized to the model's input as it was in training."""
+        height, width = self.model.input_size
+        batch = np.stack(
+            [
+                cv2.resize(
+                    c,
+                    (width, height),
+                    interpolation=cv2.INTER_AREA
+                    if c.shape[0] > height
+                    else cv2.INTER_LINEAR,
+                )
+                for c in crops
+            ]
         )
-        # A coloured card is drawn as the art is. A greyed one may have any
-        # variant at each pixel.
-        art_costs = np.where(
-            np.array(coloured)[:, None],
-            diffs[:, :, 0].mean(axis=2),
-            diffs.min(axis=2).mean(axis=2),
-        )
-        # A card matches as well as its closest art.
+        return self.model(batch)
+
+    def _match_costs(self, crops: list[np.ndarray]) -> np.ndarray:
+        """(positions, cards): how unlike each card each position looks, as
+        cosine distance to the card's closest art."""
+        art_costs = 1 - self.embed(crops) @ self.art_vectors.T
         costs = np.full((len(crops), len(self.cards)), np.inf)
         for art, owner in enumerate(self.art_owners):
             costs[:, owner] = np.minimum(costs[:, owner], art_costs[:, art])
         return costs
 
     def _apply_memory(self, costs: np.ndarray) -> np.ndarray:
+        """Each hand position's costs, less MEMORY_BONUS for the card it
+        held last frame and for the card that was next."""
         if self._last is None:
             return costs
         costs = costs.copy()
-        last_next = self._last[0]
         for position in range(1, self.HAND_SIZE):
+            kept = {self._last[position], self._last[0]} - {None}
             for j, card in enumerate(self.cards):
-                if card == Cards.BLANK:
-                    continue
-                if card in (self._last[position], last_next):
+                if card in kept:
                     costs[position, j] -= self.MEMORY_BONUS
         return costs
-
-    def _detect_cards(
-        self, crops: list[np.ndarray], coloured: list[bool]
-    ) -> list[Card]:
-        costs = self._apply_memory(self._match_costs(crops, coloured))
-        # Every position holds a different card.
-        _, idx = linear_sum_assignment(costs)
-        return [self.cards[i] for i in idx]
 
     @staticmethod
     def _art_area(card: np.ndarray) -> np.ndarray:
@@ -172,22 +151,20 @@ class CardDetector:
         # How far each pixel is from grey, on average.
         return bool(np.mean(np.std(art, axis=2)) > self.grey_std_threshold)
 
-    @staticmethod
-    def _detect_if_ready(cards: list[Card], coloured: list[bool]) -> list[int]:
-        """Hand positions whose card is in colour. A card the player can't
-        afford is drawn in grey, and an empty slot is never ready."""
-        return [
-            i
-            for i, (card, colour) in enumerate(
-                zip(cards[1:], coloured[1:], strict=True)
-            )
-            if colour and card != Cards.BLANK
-        ]
-
-    def run(self, image: np.ndarray) -> tuple[list[Card], list[int]]:
+    def run(self, image: np.ndarray) -> tuple[list[Card | None], list[int]]:
         crops = [crop(image, position) for position in CARD_BOXES]
-        coloured = [self._is_coloured(card) for card in crops]
-        cards = self._detect_cards(crops, coloured)
-        ready = self._detect_if_ready(cards, coloured)
+        costs = self._apply_memory(self._match_costs(crops))
+        # Every position holds a different card.
+        _, idx = linear_sum_assignment(costs)
+        cards = [self.cards[i] for i in idx]
+        # A card the player can't afford is drawn in grey, and an empty slot
+        # is never ready.
+        ready = [
+            i
+            for i, (card, image_crop) in enumerate(
+                zip(cards[1:], crops[1:], strict=True)
+            )
+            if card is not None and self._is_coloured(image_crop)
+        ]
         self._last = cards
         return cards, ready

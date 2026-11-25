@@ -1,0 +1,88 @@
+# The docs site, built from docs/ by Zensical and published to GitHub
+# Pages by .github/workflows/docs.yml. Preview it while editing with
+#     uv run --only-group docs zensical serve
+# and open http://localhost:8000.
+
+[project]
+site_name = "ClashRoyaleBuildABot"
+site_description = "Guides for setting up, running and developing the bot."
+site_url = "https://pbatch.github.io/ClashRoyaleBuildABot/"
+repo_url = "https://github.com/Pbatch/ClashRoyaleBuildABot"
+repo_name = "Pbatch/ClashRoyaleBuildABot"
+edit_uri = "edit/main/docs/"
+docs_dir = "docs"
+
+nav = [
+  { "Home" = "README.md" },
+  { "Get started" = [
+    { "Set up your Android device" = "emulator-setup.md" },
+    { "Install uv and Git" = "uv-and-git-setup.md" },
+    { "Install and configure the bot" = "bot-installation.md" },
+  ] },
+  { "Run the bot" = [
+    { "Without the GUI, and the HTTP API" = "headless-and-api.md" },
+    { "Connect Claude to the bot" = "connect-claude.md" },
+  ] },
+  { "Develop the bot" = [
+    { "Bot development tutorial" = "bot-development.md" },
+    { "Bot state" = "bot-state.md" },
+  ] },
+  { "Troubleshooting" = "troubleshooting.md" },
+]
+
+[project.theme]
+language = "en"
+features = [
+  "content.action.edit",
+  "content.code.annotate",
+  "content.code.copy",
+  "content.tabs.link",
+  "content.tooltips",
+  "navigation.footer",
+  "navigation.instant",
+  "navigation.path",
+  "navigation.sections",
+  "navigation.top",
+  "navigation.tracking",
+  "search.highlight",
+]
+
+# Follow the system's light or dark mode, with a toggle to override it.
+[[project.theme.palette]]
+media = "(prefers-color-scheme)"
+toggle.icon = "lucide/sun-moon"
+toggle.name = "Switch to light mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to system preference"
+
+[project.markdown_extensions]
+abbr = {}
+admonition = {}
+attr_list = {}
+def_list = {}
+footnotes = {}
+md_in_html = {}
+tables = {}
+toc.permalink = true
+pymdownx.details = {}
+pymdownx.highlight.anchor_linenums = true
+pymdownx.highlight.line_spans = "__span"
+pymdownx.highlight.pygments_lang_class = true
+pymdownx.inlinehilite = {}
+pymdownx.keys = {}
+pymdownx.superfences.custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
+]
+pymdownx.tabbed.alternate_style = true
+pymdownx.tabbed.combine_header_slug = true
+pymdownx.tasklist.custom_checkbox = true

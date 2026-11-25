@@ -36,7 +36,9 @@ uv run pytest
 ```
 
 If you change how something works, update the matching page in [docs/](docs/README.md).
-Edit the docs there, not in the wiki: the wiki is copied from `docs/` on every push to `main`.
+They're published as the [docs site](https://pbatch.github.io/ClashRoyaleBuildABot/) on every push to `main`, and built on every pull request, so a broken link fails the check.
+To preview the site while you edit, run `uv run --only-group docs zensical serve` and open http://localhost:8000.
+A new page also needs an entry in `nav` in [zensical.toml](zensical.toml).
 Every error code raised in the code needs a section in [docs/troubleshooting.md](docs/troubleshooting.md); the tests check this.
 
 ## Review

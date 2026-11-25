@@ -4,19 +4,15 @@ the GPU first. Taps are tested in test_input_shell.py."""
 import pytest
 
 import clashroyalebuildabot.bot.bot as bot_module
+import clashroyalebuildabot.bot.policy as policy_module
 import clashroyalebuildabot.detectors.onnx_model as onnx_model
 from clashroyalebuildabot.game.cards import Cards
 from tests.conftest import make_state
-from tests.test_bot_lifecycle import (
-    ACTIONS,
-    FakeDetector,
-    FakeVisualizer,
-    make_config,
-)
+from tests.test_bot_lifecycle import ACTIONS, make_bot
 
 
 class TapEmulator:
-    def __init__(self, device_serial):
+    def __init__(self):
         self.sequences = []
 
     def tap_sequence(self, points):
@@ -28,10 +24,7 @@ class TapEmulator:
 
 @pytest.fixture
 def bot(monkeypatch):
-    monkeypatch.setattr(bot_module, "Emulator", TapEmulator)
-    monkeypatch.setattr(bot_module, "Detector", FakeDetector)
-    monkeypatch.setattr(bot_module, "Visualizer", FakeVisualizer)
-    bot = bot_module.Bot(ACTIONS, make_config())
+    bot = make_bot(TapEmulator())
     waits: list[float] = []
     monkeypatch.setattr(
         bot, "_log_and_wait", lambda prefix, delay: waits.append(delay)
@@ -48,7 +41,7 @@ def test_no_wait_without_affordable_cards(bot):
 
 def test_no_wait_without_a_good_action(bot, monkeypatch):
     bot, waits = bot
-    monkeypatch.setattr(bot_module.random, "shuffle", lambda actions: None)
+    monkeypatch.setattr(policy_module.random, "shuffle", lambda actions: None)
     for action in ACTIONS:
         monkeypatch.setattr(action, "calculate_score", lambda self, s: [0])
     state = make_state(elixir=10, cards=[Cards.KNIGHT] * 5, ready=[0, 1, 2, 3])

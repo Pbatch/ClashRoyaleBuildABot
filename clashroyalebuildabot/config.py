@@ -55,6 +55,7 @@ class BotConfig(_Section):
     log_level: LogLevel
     load_deck: bool
     auto_start_game: bool
+    policy: Literal["builtin", "external"]
 
     @field_validator("log_level", mode="before")
     @classmethod

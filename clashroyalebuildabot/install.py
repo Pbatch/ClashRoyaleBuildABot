@@ -11,9 +11,12 @@ The bot installs or updates ADB itself when it starts, so this only gets it
 out of the way up front.
 """
 
+import contextlib
 import hashlib
 import os
 import shutil
+import subprocess
+import sys
 import tempfile
 import zipfile
 
@@ -25,13 +28,24 @@ from clashroyalebuildabot.constants.paths import ADB_DIR, ADB_PATH, APP_DIR
 
 # Pinned, so every install gets the same ADB. To update, take the version
 # from https://dl.google.com/android/repository/repository2-3.xml (which
-# lists the zip's SHA-1) and record the zip's SHA-256 here.
+# lists each zip's SHA-1) and record each zip's SHA-256 here.
 ADB_VERSION = "37.0.3"
+# Google's name for each platform in the zip's file name, and its SHA-256.
+ADB_ZIPS = {
+    "linux": (
+        "linux",
+        "214548146cadb2ca3508143d8a1d4be4c59de5bb837253e3ede89ed74cf450d1",
+    ),
+    "win32": (
+        "win",
+        "89d108360a3bf2924d3bea837239edaccc22fd6ff5befd3787c4348a9fe4f09d",
+    ),
+}
+_ADB_PLATFORM, ADB_SHA256 = ADB_ZIPS.get(sys.platform, ADB_ZIPS["linux"])
 ADB_URL = (
     "https://dl.google.com/android/repository/"
-    f"platform-tools_r{ADB_VERSION}-linux.zip"
+    f"platform-tools_r{ADB_VERSION}-{_ADB_PLATFORM}.zip"
 )
-ADB_SHA256 = "214548146cadb2ca3508143d8a1d4be4c59de5bb837253e3ede89ed74cf450d1"
 
 
 def extract_zip(
@@ -112,6 +126,16 @@ def install_adb() -> None:
             f"Updating ADB from {version or 'an unknown version'} "
             f"to {ADB_VERSION}"
         )
+        # Stop the old server first: on Windows its running adb.exe can't
+        # be deleted. A new client would restart it anyway, since the
+        # versions differ.
+        with contextlib.suppress(OSError, subprocess.TimeoutExpired):
+            subprocess.run(
+                [ADB_PATH, "kill-server"],
+                check=False,
+                capture_output=True,
+                timeout=10,
+            )
 
     # Download and extract in a temporary folder next to ADB_DIR, then move
     # the result into place in one step, so an interrupted install leaves

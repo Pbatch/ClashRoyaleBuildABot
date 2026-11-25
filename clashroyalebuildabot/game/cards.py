@@ -1,4 +1,5 @@
-from pydantic.dataclasses import dataclass
+from dataclasses import dataclass, fields
+from functools import cached_property
 
 from clashroyalebuildabot.game.units import Unit, Units
 
@@ -28,7 +29,7 @@ class _CardsNamespace:
         "baby_dragon", cost=4, id_=26000015, units=(Units.BABY_DRAGON,)
     )
     BALLOON: Card = Card(
-        "balloon", cost=5, id_=26000006, units=(Units.BALLOON,)
+        "balloon", cost=5, id_=26000006, units=(Units.BALLOON, Units.BOMB)
     )
     BANDIT: Card = Card("bandit", cost=3, id_=26000046, units=(Units.BANDIT,))
     BARBARIAN_BARREL: Card = Card(
@@ -52,15 +53,20 @@ class _CardsNamespace:
         "battle_healer", cost=4, id_=26000068, units=(Units.BATTLE_HEALER,)
     )
     BATTLE_RAM: Card = Card(
-        "battle_ram", cost=4, id_=26000036, units=(Units.BATTLE_RAM,)
+        "battle_ram",
+        cost=4,
+        id_=26000036,
+        units=(Units.BATTLE_RAM, Units.BARBARIAN),
     )
     BERSERKER: Card = Card(
         "berserker", cost=2, id_=26000102, units=(Units.BERSERKER,)
     )
-    BLANK: Card = Card("blank", cost=11, id_=-1)
     BOMBER: Card = Card("bomber", cost=2, id_=26000013, units=(Units.BOMBER,))
     BOMB_TOWER: Card = Card(
-        "bomb_tower", cost=4, id_=27000004, units=(Units.BOMB_TOWER,)
+        "bomb_tower",
+        cost=4,
+        id_=27000004,
+        units=(Units.BOMB_TOWER, Units.BOMB),
     )
     BOSS_BANDIT: Card = Card(
         "boss_bandit", cost=6, id_=26000103, units=(Units.BOSS_BANDIT,)
@@ -124,7 +130,7 @@ class _CardsNamespace:
         "fireball", cost=4, id_=28000000, target_anywhere=True
     )
     FIRECRACKER: Card = Card(
-        "firecracker", cost=3, id_=26000064, units=(Units.FIRE_CRACKER,)
+        "firecracker", cost=3, id_=26000064, units=(Units.FIRECRACKER,)
     )
     FISHERMAN: Card = Card(
         "fisherman", cost=3, id_=26000061, units=(Units.FISHERMAN,)
@@ -138,7 +144,10 @@ class _CardsNamespace:
     )
     GIANT: Card = Card("giant", cost=5, id_=26000003, units=(Units.GIANT,))
     GIANT_SKELETON: Card = Card(
-        "giant_skeleton", cost=6, id_=26000020, units=(Units.GIANT_SKELETON,)
+        "giant_skeleton",
+        cost=6,
+        id_=26000020,
+        units=(Units.GIANT_SKELETON, Units.BOMB),
     )
     GIANT_SNOWBALL: Card = Card(
         "giant_snowball", cost=2, id_=28000017, target_anywhere=True
@@ -185,7 +194,10 @@ class _CardsNamespace:
         units=(Units.GOBLIN, Units.SPEAR_GOBLIN),
     )
     GOBLIN_GIANT: Card = Card(
-        "goblin_giant", cost=6, id_=26000060, units=(Units.SPEAR_GOBLIN,)
+        "goblin_giant",
+        cost=6,
+        id_=26000060,
+        units=(Units.GOBLIN_GIANT, Units.SPEAR_GOBLIN),
     )
     GOBLIN_HUT: Card = Card(
         "goblin_hut",
@@ -264,7 +276,10 @@ class _CardsNamespace:
         "mega_minion", cost=3, id_=26000039, units=(Units.MEGA_MINION,)
     )
     MIGHTY_MINER: Card = Card(
-        "mighty_miner", cost=4, id_=26000065, units=(Units.MIGHTY_MINER,)
+        "mighty_miner",
+        cost=4,
+        id_=26000065,
+        units=(Units.MIGHTY_MINER, Units.BOMB),
     )
     MINER: Card = Card("miner", cost=3, id_=26000032, units=(Units.MINER,))
     MINIONS: Card = Card(
@@ -342,7 +357,10 @@ class _CardsNamespace:
         "skeleton_army", cost=3, id_=26000012, units=(Units.SKELETON,)
     )
     SKELETON_BARREL: Card = Card(
-        "skeleton_barrel", cost=3, id_=26000056, units=(Units.SKELETON,)
+        "skeleton_barrel",
+        cost=3,
+        id_=26000056,
+        units=(Units.SKELETON_BARREL, Units.SKELETON),
     )
     SKELETON_DRAGONS: Card = Card(
         "skeleton_dragons",
@@ -375,7 +393,10 @@ class _CardsNamespace:
         "three_musketeers", cost=9, id_=26000028, units=(Units.MUSKETEER,)
     )
     TOMBSTONE: Card = Card(
-        "tombstone", cost=3, id_=27000009, units=(Units.TOMBSTONE,)
+        "tombstone",
+        cost=3,
+        id_=27000009,
+        units=(Units.TOMBSTONE, Units.SKELETON),
     )
     TORNADO: Card = Card("tornado", cost=3, id_=28000012, target_anywhere=True)
     VALKYRIE: Card = Card(
@@ -393,6 +414,22 @@ class _CardsNamespace:
     X_BOW: Card = Card("x_bow", cost=6, id_=27000008, units=(Units.X_BOW,))
     ZAP: Card = Card("zap", cost=2, id_=28000008, target_anywhere=True)
     ZAPPIES: Card = Card("zappies", cost=4, id_=26000052, units=(Units.ZAPPY,))
+
+    def all(self) -> tuple[Card, ...]:
+        """Every card, in the order they're listed above."""
+        return tuple(getattr(self, field.name) for field in fields(self))
+
+    @cached_property
+    def _by_name(self) -> dict[str, Card]:
+        return {card.name: card for card in self.all()}
+
+    def by_name(self, name: str) -> Card:
+        """The card called name (``"baby_dragon"``). Raises KeyError if
+        there's none."""
+        try:
+            return self._by_name[name]
+        except KeyError:
+            raise KeyError(f"No card named {name!r}") from None
 
 
 Cards = _CardsNamespace()

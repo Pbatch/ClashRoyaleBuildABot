@@ -3,26 +3,27 @@ import os
 import numpy as np
 import pytest
 
-from clashroyalebuildabot.constants.screen_hashes import (
-    BATTLE_DROP_HASH,
-    BUTTON_HASHES,
-)
+from clashroyalebuildabot.constants.screen_hashes import BUTTON_HASHES
 from clashroyalebuildabot.constants.screenshot import (
-    BATTLE_CHECK_BOX,
     LOBBY_BATTLE_BOX,
     RESULTS_CENTRE_OK_BOX,
     RESULTS_OK_BOX,
     RESULTS_PLAY_AGAIN_BOX,
+    TIMER_BOX,
 )
 from clashroyalebuildabot.detectors.screen_detector import (
-    DROP_THUMBNAIL_SIZE,
     THUMBNAIL_SIZE,
     ScreenDetector,
 )
 from clashroyalebuildabot.game import ScreenName
-from clashroyalebuildabot.utils.image import load, resize
+from clashroyalebuildabot.utils.image import load
 
-DATA = os.path.join(os.path.dirname(__file__), "data", "screens")
+TESTS = os.path.dirname(__file__)
+DATA = os.path.join(TESTS, "data", "screens")
+TIMER = os.path.join(TESTS, "data", "numbers", "timer_2_29.png")
+# A real crop of the elixir number and bar, and where it goes.
+ELIXIR = os.path.join(TESTS, "data", "elixir", "elixir_7.png")
+ELIXIR_CROP_BOX = (100, 618, 360, 646)
 
 
 def frame(*crops: tuple[str, tuple[int, int, int, int]]) -> np.ndarray:
@@ -33,16 +34,23 @@ def frame(*crops: tuple[str, tuple[int, int, int, int]]) -> np.ndarray:
     return image
 
 
-def with_elixir_drop(image: np.ndarray) -> np.ndarray:
-    """The frame with the reference elixir drop, blown back up to the size
-    of its box, pasted in."""
-    width, height = DROP_THUMBNAIL_SIZE
-    drop = np.frombuffer(bytes.fromhex(BATTLE_DROP_HASH), np.uint8)
-    left, top, right, bottom = BATTLE_CHECK_BOX
-    image[top:bottom, left:right] = resize(
-        drop.reshape(height, width, 3), (right - left, bottom - top)
-    )
+def paste(image: np.ndarray, path: str, box) -> np.ndarray:
+    left, top, right, bottom = box
+    image[top:bottom, left:right] = load(path)
     return image
+
+
+def with_timer(image: np.ndarray) -> np.ndarray:
+    return paste(image, TIMER, TIMER_BOX)
+
+
+def with_elixir_bar(image: np.ndarray) -> np.ndarray:
+    return paste(image, ELIXIR, ELIXIR_CROP_BOX)
+
+
+def battle(image: np.ndarray) -> np.ndarray:
+    """The frame with a battle's HUD: a timer and the elixir bar."""
+    return with_elixir_bar(with_timer(image))
 
 
 @pytest.fixture
@@ -51,13 +59,24 @@ def detector():
 
 
 def test_battle(detector):
-    assert detector.run(with_elixir_drop(frame())) == ScreenName.IN_GAME
+    assert detector.run(battle(frame())) == ScreenName.IN_GAME
 
 
-def test_the_elixir_drop_wins_over_buttons(detector):
+def test_a_battle_wins_over_buttons(detector):
     # A battle is a battle, whatever else the frame looks like.
-    image = with_elixir_drop(frame(("battle_button", LOBBY_BATTLE_BOX)))
+    image = battle(frame(("battle_button", LOBBY_BATTLE_BOX)))
     assert detector.run(image) == ScreenName.IN_GAME
+
+
+def test_a_frozen_timer_alone_isnt_a_battle(detector):
+    # When a battle ends, the timer stays on screen through the crowns and
+    # onto the results, but the card and elixir bars are gone.
+    assert not detector.in_battle(with_timer(frame()))
+
+
+def test_an_elixir_bar_alone_isnt_a_battle(detector):
+    # Menus have pink of their own.
+    assert not detector.in_battle(with_elixir_bar(frame()))
 
 
 @pytest.mark.parametrize("fill", [(0, 0, 0), (255, 255, 255), (60, 140, 230)])
@@ -115,5 +134,3 @@ def test_every_hash_is_a_whole_thumbnail():
     width, height = THUMBNAIL_SIZE
     for value in BUTTON_HASHES.values():
         assert len(bytes.fromhex(value)) == width * height * 3
-    width, height = DROP_THUMBNAIL_SIZE
-    assert len(bytes.fromhex(BATTLE_DROP_HASH)) == width * height * 3

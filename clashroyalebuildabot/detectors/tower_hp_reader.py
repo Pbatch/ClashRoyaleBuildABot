@@ -1,8 +1,9 @@
-"""Read every tower's health.
+"""Read every tower's health, on every frame.
 
 Each tower's health bar has its exact HP written on it, in the game's own
-font, which is matched digit by digit (see digit_reader). Tower levels
-aren't read: they stay ``UNKNOWN_LEVEL``.
+font, which a small CNN reads (see digit_model): all six towers in one
+batch, in a few milliseconds. Tower levels aren't read: they stay
+``UNKNOWN_LEVEL``.
 
 A number that can't be read doesn't mean much on its own: "Elixir!" and
 other pop-ups often cover it for a moment. So:
@@ -12,39 +13,40 @@ other pop-ups often cover it for a moment. So:
   hit, its bar never goes away. If a king tower falls, the battle is over.
 - A princess tower without a number keeps its last reading while its health
   bar's colour is still there. With neither number nor bar for
-  ``RUBBLE_READINGS`` readings in a row, it's rubble: 0 HP, for the rest of
-  the battle.
+  ``RUBBLE_SECONDS``, it's rubble: 0 HP, for the rest of the battle. That's
+  measured in seconds, not frames, so a pop-up over the bar for a few
+  frames doesn't topple a tower, however fast frames come.
 
-All six towers are read in parallel, in the background, at most once per
-``interval`` seconds. Until a tower's first reading, its HP is
-``UNKNOWN_HP``: treated as standing, never as destroyed.
+Until a tower's first reading, its HP is ``UNKNOWN_HP``: treated as
+standing, never as destroyed.
 """
 
 import dataclasses
-from collections.abc import Mapping
-from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass, field
+import os
+import time
+from collections.abc import Callable
 
 import numpy as np
 
+from clashroyalebuildabot.constants.paths import MODELS_DIR
 from clashroyalebuildabot.constants.screenshot import (
     KING_TOWER_BOXES,
     PRINCESS_TOWER_BOXES,
 )
-from clashroyalebuildabot.detectors.background import BackgroundReader
-from clashroyalebuildabot.detectors.digit_reader import read_number
-from clashroyalebuildabot.game.numbers import Tower, Towers
+from clashroyalebuildabot.detectors import digit_model
+from clashroyalebuildabot.game.towers import Tower, Towers
 from clashroyalebuildabot.utils.image import crop
 
 TOWER_BOXES = {**PRINCESS_TOWER_BOXES, **KING_TOWER_BOXES}
-# Readings in a row with no number and no bar before a princess tower
-# counts as destroyed. Pop-ups that hide a bar are gone within this many.
-RUBBLE_READINGS = 3
+MODEL_PATH = os.path.join(MODELS_DIR, "tower_hp_digits.onnx")
+# Seconds with no number and no bar before a princess tower counts as
+# destroyed. Pop-ups that hide a bar are gone within this.
+RUBBLE_SECONDS = 2.0
 # The share of a princess tower's box in its bar's colour above which the
 # bar is still there. Rubble is at or near 0; a bar is at 0.04 to 0.1, and
 # the bars pop-ups cover are too. A bar under about 200 HP is barely
 # coloured and falls below it, but then it only counts as rubble if its
-# number is unreadable for RUBBLE_READINGS readings, and it's about to fall.
+# number is unreadable for RUBBLE_SECONDS too, and it's about to fall.
 BAR_SHARE = 0.03
 
 
@@ -59,60 +61,55 @@ def bar_share(image: np.ndarray, enemy: bool) -> float:
     return float(bar.mean())
 
 
-def _no_misses() -> dict[str, int]:
-    return dict.fromkeys(PRINCESS_TOWER_BOXES, 0)
+class TowerHPReader:
+    def __init__(
+        self,
+        model_path: str = MODEL_PATH,
+        clock: Callable[[], float] = time.monotonic,
+    ) -> None:
+        self._model = digit_model.load(model_path)
+        self._clock = clock
+        self.reset()
 
+    def latest(self) -> Towers:
+        """The latest readings, without reading a frame."""
+        return self._towers
 
-@dataclass(frozen=True)
-class TowerReadings:
-    towers: Towers = field(default_factory=Towers)
-    # Per princess tower, readings in a row with no number and no bar.
-    missing: Mapping[str, int] = field(default_factory=_no_misses)
-
-
-def _read_one(image: np.ndarray, name: str) -> tuple[int | None, bool]:
-    """(HP or None, whether the bar's colour shows)."""
-    box = crop(image, TOWER_BOXES[name])
-    hp = read_number(box)
-    return hp, bar_share(box, "enemy" in name) >= BAR_SHARE
-
-
-class TowerHPReader(BackgroundReader[TowerReadings, Towers]):
-    def __init__(self, interval: float = 1.0) -> None:
-        self._pool = ThreadPoolExecutor(
-            max_workers=len(TOWER_BOXES), thread_name_prefix="tower-hp"
+    def reset(self) -> None:
+        """Forget the readings, ready for the next battle."""
+        self._towers = Towers()
+        # Per princess tower, since when it has shown neither number nor
+        # bar, or None while it shows either.
+        self._unseen_since: dict[str, float | None] = dict.fromkeys(
+            PRINCESS_TOWER_BOXES
         )
-        super().__init__(TowerReadings(), interval, name="tower-hp-reader")
 
-    def read(
-        self, image: np.ndarray, previous: TowerReadings
-    ) -> TowerReadings:
-        """All six towers, read in parallel."""
-        names = list(TOWER_BOXES)
-        readings = self._pool.map(lambda n: _read_one(image, n), names)
+    def run(self, image: np.ndarray) -> Towers:
+        """Read all six towers in this frame, in one batch, and return
+        every tower's HP."""
+        now = self._clock()
+        crops = {name: crop(image, box) for name, box in TOWER_BOXES.items()}
+        hps = self._model.read(list(crops.values()))
         changes = {}
-        missing = dict(previous.missing)
-        for name, (hp, bar) in zip(names, readings, strict=True):
-            last = getattr(previous.towers, name)
-            princess = name in missing
+        for (name, tower), hp in zip(crops.items(), hps, strict=True):
+            last = getattr(self._towers, name)
+            princess = name in self._unseen_since
             if princess and last.hp == 0:
                 continue  # rubble doesn't come back
             if hp is not None:
                 changes[name] = Tower(hp=hp, level=last.level)
-                if princess:
-                    missing[name] = 0
-            elif princess and not bar:
-                missing[name] += 1
-                if missing[name] >= RUBBLE_READINGS:
-                    changes[name] = Tower(hp=0, level=last.level)
-            elif princess:
-                missing[name] = 0
-        towers = dataclasses.replace(previous.towers, **changes)
-        return TowerReadings(towers, missing)
-
-    def output(self, state: TowerReadings) -> Towers:
-        return state.towers
-
-    def close(self) -> None:
-        super().close()
-        self._pool.shutdown(wait=False, cancel_futures=True)
+            if not princess:
+                continue
+            if (
+                hp is not None
+                or bar_share(tower, "enemy" in name) >= BAR_SHARE
+            ):
+                self._unseen_since[name] = None
+                continue
+            since = self._unseen_since[name]
+            if since is None:
+                self._unseen_since[name] = since = now
+            if now - since >= RUBBLE_SECONDS:
+                changes[name] = Tower(hp=0, level=last.level)
+        self._towers = dataclasses.replace(self._towers, **changes)
+        return self._towers

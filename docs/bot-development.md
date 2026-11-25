@@ -10,14 +10,16 @@ Each step the `Bot` (`clashroyalebuildabot/bot/bot.py`) does the following:
 class State:
     allies: list[UnitDetection]
     enemies: list[UnitDetection]
-    numbers: Numbers
-    # Five cards: the next card, then the four in hand.
-    cards: list[Card]
+    elixir: int
+    towers: Towers
+    timer: Timer
+    # Five cards: the next card, then the four in hand. None is an empty slot.
+    cards: list[Card | None]
     # Playable hand positions (0-3). Hand position i is cards[i + 1].
     ready: list[int]
     screen: ScreenName
 ```
-`numbers` holds plain values: `numbers.elixir` (0 to 10), `numbers.towers` with an `hp` and `level` for each tower (`numbers.towers.left_enemy_princess.hp`), and `numbers.timer` (`time_left` in seconds, and `overtime`). A tower's HP is `inf` until it's been read, and 0 once it's destroyed.
+`elixir` is 0 to 10, `towers` has an `hp` and `level` for each tower (`state.towers.left_enemy_princess.hp`), and `timer` has `time_left` in seconds and `overtime`. A tower's HP is `inf` until it's been read, and 0 once it's destroyed.
 
 The state tracks ally units, enemy units, tower health and elixir, your cards and the current screen. `cards` holds five cards: the next card first, then the four in your hand. `ready` lists the hand positions (0 to 3) that can be played, so hand position `i` is `cards[i + 1]`. See [Bot State](bot-state.md) for how it's calculated.
 
@@ -25,7 +27,7 @@ The state tracks ally units, enemy units, tower health and elixir, your cards an
 Actions are scored on a per-card basis, so you'll need to write one for each card in your deck.
 There are some pre-made actions in `clashroyalebuildabot/actions`.
 
-An action is one card on one tile. Each step, the bot creates an action for every tile a ready card can be played on, if you have enough elixir for it. Troops and buildings can only go on your side of the arena, plus the enemy side once a princess tower there is destroyed. Spells, and cards like Goblin Barrel and Graveyard, can go anywhere.
+An action is one card on one tile. Each step, the bot creates an action for every tile a ready card can be played on, if you have enough elixir for it. Troops and buildings can only go on your side of the arena, apart from the tiles under your own towers, plus the enemy side once a princess tower there is destroyed. Spells, and cards like Goblin Barrel and Graveyard, can go anywhere.
 
 `calculate_score` returns a list of numbers. Lists are compared item by item, so the first number matters most and later numbers break ties. The bot only plays an action if the first number of the best score is above 0. Return `[0]` for "don't play here".
 
@@ -87,3 +89,22 @@ def main() -> None:
 Then start the bot with `uv run python main.py` and press start (▶) in the window.
 
 Join the Discord (https://discord.com/invite/K4UfbsfcMa) to discuss and improve the current action classes, and to share your ClashRoyaleBuildABot story :)
+
+## Writing a policy
+
+Actions score one card on one tile at a time. To decide in your own way instead, for example by looking at the whole hand at once, write a policy: a class with a `choose` method that takes the `State` and returns a `Play`, or `None` to play nothing this frame.
+```python
+from clashroyalebuildabot.bot.plays import Play, affordable_hand
+
+
+class FirstCardPolicy:
+    def choose(self, state):
+        hand = affordable_hand(state)
+        if not hand:
+            return None
+        hand_index, _card = hand[0]
+        return Play(hand_index=hand_index, tile_x=9, tile_y=5)
+```
+To use it, set `POLICY = FirstCardPolicy()` in `main.py`. Keep the list of actions there too: their cards tell the bot which deck to look for. The bot checks each play against the rules before tapping it (see `clashroyalebuildabot/bot/plays.py`), and `plays.tiles_for(card, state)` lists the tiles a card can go on. The built-in policy, `ScoringPolicy` in `clashroyalebuildabot/bot/policy.py`, is the scoring described above.
+
+To decide in another language, or in another program, use the HTTP API instead: see [Playing the game from your own program](headless-and-api.md#playing-the-game-from-your-own-program).

@@ -1,6 +1,5 @@
 """The thumbnails the ScreenDetector compares frames with,
-as RGB pixels, row by row, in hex: each button's at 16x6, and the elixir
-drop's at 8x8.
+as RGB pixels, row by row, in hex: each button's at 16x6.
 
 Generated from reference screenshots by dev/screens/screen_hashes.py; don't
 edit.
@@ -17,5 +16,3 @@ BUTTON_HASHES = {
         "57b5ff5ab6ff5ab7ff5ab7ff5ab7ff5ab7ff5ab7ff5ab7ff5ab6ff5ab6ff5ab7ff5ab7ff5ab7ff5ab7ff5ab6ff59b6ff64b9ff68bbff68bbff68bbff68bbff68bbff79b8eb86beec75b4e775b2e56ab5f268bbff68bbff68bbff68bbff68bbff5bb5ff5db6ff5db6ff5db6ff5db6ff5cb1f8cdd8e0bacad7d4daded1d8dd58a4e25db6ff5db6ff5db6ff5db6ff5db6ff4eafff4eafff4eafff4eafff4eafff4dabf88fa8bc98acbd899dad889dae519ddb4eafff4eafff4eafff4eafff4eafff4eafff4eafff4eafff4eafff4eafff4eafff4eaefe4eaefe4dadfc4dadfd4eaffe4eafff4eafff4eafff4eafff4eafff3297fb3699fc369afc369afc369afd369afd369afc369afc369afd369afd369afd369afd369afd369afc3699fc3499fc"
     ),
 }
-
-BATTLE_DROP_HASH = "06529a07519b114c9733328d791f99bd1fb9e62dd9d821cc094e981d408f622093cc21cbf629e7fd46f2fe5df8f640eb1e3e8f731d97de24d5fa2be8fd43f0fd7af9ffc5fff880f5541f86cb21caed2de1fc4cecfc5aeffe8afaffb2fffb82f87a168bc61fc7d822d1ed37e1f343e8fa5ceffe65f3fc46ee5f1279a61eaeb81db8d01ecae021d6e924dbf022dcf51edd2a23746a137c951d9ca91daabe1db8cf1dc0d81ec4d01dbc0b39812427744e0f69750e788813868e138a7e0e7c540c69"

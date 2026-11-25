@@ -6,16 +6,20 @@ import pytest
 
 from clashroyalebuildabot.constants.screenshot import CARD_BOXES
 from clashroyalebuildabot.detectors.card_detector import (
+    EMPTY_ART,
     CardDetector,
-    art_thumbnails,
-    card_thumbnail,
+    art_embeddings,
 )
 from clashroyalebuildabot.game.cards import Card, Cards
 from clashroyalebuildabot.utils.image import load, resize
 
-# The art of the cards these tests draw. The bot ships only the hashes; the
-# rest of the art is kept by maintainers (see dev/synthetic/card_hashes.py).
+# The art of the cards these tests draw. The bot ships only the art's
+# vectors; the rest of the art is kept by maintainers (see dev/cards).
 ART_DIR = Path(__file__).parent / "data" / "cards"
+# How the game greys a card the player can't afford, from the art's
+# brightness, as (scale, offset): washed out, and in the darker wedge.
+WASHED_OUT = (0.355, 163.0)
+WEDGE = (0.592, 36.0)
 
 DECK = [
     Cards.ARCHERS,
@@ -35,9 +39,9 @@ def test_does_not_modify_the_given_cards():
     assert cards == DECK
 
 
-def test_adds_a_blank_for_each_hand_slot():
+def test_adds_an_empty_slot_for_each_hand_position():
     detector = CardDetector(DECK)
-    assert detector.cards == DECK + [Cards.BLANK] * CardDetector.HAND_SIZE
+    assert detector.cards == DECK + [None] * CardDetector.HAND_SIZE
 
 
 def test_accepts_a_tuple():
@@ -45,20 +49,26 @@ def test_accepts_a_tuple():
     assert detector.cards[: len(DECK)] == DECK
 
 
-def test_every_card_has_a_hash():
-    cards = [c for c in vars(Cards).values() if isinstance(c, Card)]
-    missing = [c.name for c in cards if c.name not in art_thumbnails()]
+def test_every_card_has_an_embedding():
+    arts = [EMPTY_ART, *(card.name for card in Cards.all())]
+    missing = [art for art in arts if art not in art_embeddings()]
     assert not missing
 
 
 @pytest.mark.parametrize(
     "path", sorted(ART_DIR.glob("*.jpg")), ids=lambda p: p.stem
 )
-def test_hashes_match_the_art(path):
-    """The test art is the art the shipped hashes were made from."""
-    assert np.array_equal(
-        card_thumbnail(load(str(path))), art_thumbnails()[path.stem]
-    )
+def test_embeddings_match_the_art(path):
+    """The shipped vectors are the model's, for this art: so the vectors
+    and the model belong together."""
+    (vector,) = CardDetector(DECK).embed([load(str(path))])
+    assert float(vector @ art_embeddings()[path.stem]) > 0.999
+
+
+def test_unknown_card_fails_clearly():
+    unknown = Card("not_a_card", cost=1, id_=0)
+    with pytest.raises(Exception, match="No card embedding for not_a_card"):
+        CardDetector([*DECK[:7], unknown])
 
 
 def card_art(name, look, size):
@@ -69,9 +79,7 @@ def card_art(name, look, size):
     if look == "colour":
         return art
     grey = cv2.cvtColor(art, cv2.COLOR_RGB2GRAY).astype(np.float32)
-    scale, offset = (
-        CardDetector.WEDGE if look == "grey" else CardDetector.WASHED_OUT
-    )
+    scale, offset = WEDGE if look == "grey" else WASHED_OUT
     grey = (scale * grey + offset).clip(0, 255).astype(np.uint8)
     return cv2.cvtColor(grey, cv2.COLOR_GRAY2RGB)
 
@@ -102,7 +110,7 @@ def test_reads_the_hand_and_which_cards_are_ready():
         Cards.MUSKETEER,
         Cards.ARCHERS,
         Cards.KNIGHT,
-        Cards.BLANK,
+        None,
         Cards.WITCH,
     ]
     # The greyed knight can't be afforded, and an empty slot is never

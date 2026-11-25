@@ -8,7 +8,7 @@ A required import is missing. Install the dependencies by running `uv sync` in t
 
 
 ### Error E002
-Parsing of config file failed. Your settings are in `config.yaml` in the project folder. If the error lists settings, fix each one it names: an unknown setting is usually misspelt or in the wrong section, and the others have a value of the wrong kind (for example text where a number should be). Otherwise, check the file is valid YAML. Compare it with [the defaults](../clashroyalebuildabot/default_config.yaml). To go back to the default settings, delete your `config.yaml`.
+Parsing of config file failed. Your settings are in `config.yaml` in the project folder. If the error lists settings, fix each one it names: an unknown setting is usually misspelt or in the wrong section, and the others have a value of the wrong kind (for example text where a number should be). Otherwise, check the file is valid YAML. Compare it with [the defaults](https://github.com/Pbatch/ClashRoyaleBuildABot/blob/main/clashroyalebuildabot/default_config.yaml). To go back to the default settings, delete your `config.yaml`.
 
 
 ### Error E003
@@ -20,7 +20,7 @@ GUI couldn't initialize. If you see this error despite not having modified files
 
 
 ### Error E005
-Strategy definition error: some part of the bot's strategy has been misconfigured (actions, cards, etc.). Check that you've listed exactly 8 actions in `main.py`, one for each card in your deck, and that each card has a hash in `clashroyalebuildabot/constants/card_hashes.py` (a card the game added recently may not have one yet). See [the bot development tutorial](bot-development.md) for more details.
+Strategy definition error: some part of the bot's strategy has been misconfigured (actions, cards, etc.). Check that you've listed exactly 8 actions in `main.py`, one for each card in your deck, and that each card has an embedding in `clashroyalebuildabot/models/card_embeddings.npz` (a card the game added recently may not have one yet). See [the bot development tutorial](bot-development.md) for more details.
 
 Also, don't forget that each Action class must have a CARD attribute:
 ```

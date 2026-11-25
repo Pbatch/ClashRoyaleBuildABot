@@ -61,21 +61,23 @@ class Channel:
 
 
 class EventHub:
-    """The API's two streams: JSON events (status changes and log lines),
-    and annotated frames as JPEG bytes."""
+    """The API's streams: JSON events (status changes and log lines),
+    annotated frames as JPEG bytes, and each frame's state as JSON."""
 
     def __init__(self) -> None:
         self.events = Channel(queue_size=1000)
-        # Only the newest frame matters to a viewer.
+        # Only the newest frame matters to a viewer, and the newest state to
+        # a client playing the game.
         self.frames = Channel(queue_size=1)
+        self.states = Channel(queue_size=1)
 
     def attach(self, loop: asyncio.AbstractEventLoop) -> None:
-        self.events.attach(loop)
-        self.frames.attach(loop)
+        for channel in (self.events, self.frames, self.states):
+            channel.attach(loop)
 
     def detach(self) -> None:
-        self.events.detach()
-        self.frames.detach()
+        for channel in (self.events, self.frames, self.states):
+            channel.detach()
 
     def log_sink(self, message: "Message") -> None:
         """A loguru sink. Mustn't log itself, or it would loop."""

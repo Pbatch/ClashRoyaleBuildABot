@@ -1,6 +1,6 @@
 ## Wiki: Setup `uv` & Git
 
-The bot only runs on Linux (see [Bot Installation](bot-installation.md#prerequisites)), so these steps are for Linux.
+The bot runs on Linux and Windows (see [Bot Installation](bot-installation.md#prerequisites)).
 
 ---
 
@@ -8,9 +8,14 @@ The bot only runs on Linux (see [Bot Installation](bot-installation.md#prerequis
 `uv` is a standalone executable that manages your Python versions and environments automatically.
 
 1.  **Install `uv`:**
-    ```bash
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-    ```
+    * **Linux:**
+        ```bash
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        ```
+    * **Windows,** in PowerShell:
+        ```powershell
+        powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+        ```
 
 2.  **Restart your terminal** to ensure the `uv` command is available in your PATH.
 
@@ -18,7 +23,11 @@ The bot only runs on Linux (see [Bot Installation](bot-installation.md#prerequis
 
 ### Step 2: Install Git
 
-Git is used to download the bot and to get updates (`git pull`). Many distributions already include it; run `git --version` to check. Otherwise, install it with your package manager:
+Git is used to download the bot and to get updates (`git pull`). Run `git --version` to check whether it's installed.
+
+On Windows, install [Git for Windows](https://git-scm.com/download/win), or run `winget install --id Git.Git -e`.
+
+Many Linux distributions already include Git. Otherwise, install it with your package manager:
 
 * **Debian / Ubuntu:**
     ```bash

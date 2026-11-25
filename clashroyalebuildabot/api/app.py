@@ -8,13 +8,35 @@ REST, under /api:
     PATCH /config   Some settings, e.g. {"bot": {"load_deck": true}}. A bot
                     already running keeps its settings; they apply from the
                     next start. 422, and nothing changed, if any is invalid.
+    POST  /config/save   Save the settings to config.yaml.
+
+    For clients that play the game themselves (bot.policy: external):
+    GET   /meta     The grid, the deck, every card and unit, the elixir
+                    timeline and tower stats.
+    GET   /units/{name}?level=   A unit's stats at a level (default 11).
+    GET   /cards/{name}?level=   A card's stats, with its units'.
+    GET   /state    The latest frame's state. 404 until the bot reads one.
+    GET   /actions  What can be played now, and where, or why nothing can.
+    POST  /play     {"hand_index", "tile_x", "tile_y", "frame"?, "max_age"?}
+                    Waits until the bot has tapped it: 200 with the play,
+                    or 409 with {"reason", "message"} if it wasn't made.
+    GET   /screenshot.jpg   The latest annotated frame, while
+                    visuals.show_images is on. 404 until there is one.
+
+The same operations are MCP tools, for AI agents, at /mcp (streamable
+HTTP). Both are built from api/operations.py, so they always match.
 
 WebSockets, under /api:
     /events   JSON: the current status on connect, then
-              {"type": "status", "status": ...} on each change and
-              {"type": "log", "time", "level", "source", "message"}.
+              {"type": "status", "status": ...} on each change,
+              {"type": "config", "config": ...} after each settings change
+              and {"type": "log", "time", "level", "source", "message"}.
+    /states   JSON: each frame's state, as GET /state returns it. Slow
+              clients skip to the newest.
     /frames   Binary: each annotated frame as a JPEG, while
               visuals.show_images is on. Slow clients skip frames.
+
+The web UI, clashroyalebuildabot/web/index.html, is served at /.
 
 There's no authentication: anyone who can reach the server can drive the
 device, so serve it on localhost unless the network is trusted.
@@ -22,36 +44,32 @@ device, so serve it on localhost unless the network is trusted.
 
 import asyncio
 import contextlib
-import json
+import functools
+import inspect
+import os
 from collections.abc import AsyncGenerator, Awaitable, Callable
 from typing import Any
 
 import anyio
-import cv2
 import numpy as np
-from fastapi import APIRouter, Body, FastAPI, HTTPException, WebSocket
+from fastapi import APIRouter, FastAPI, Request, WebSocket
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.websockets import WebSocketDisconnect
-from pydantic import BaseModel, ValidationError
+from fastmcp.utilities.lifespan import combine_lifespans
 
 from clashroyalebuildabot.api.events import EventHub
-from clashroyalebuildabot.bot.controller import BotController, BotStatus
-
-JPEG_QUALITY = 80
-
-
-class StatusResponse(BaseModel):
-    status: BotStatus
-
-
-def encode_jpeg(frame: np.ndarray) -> bytes:
-    """An RGB frame as JPEG bytes."""
-    bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-    ok, buffer = cv2.imencode(
-        ".jpg", bgr, [cv2.IMWRITE_JPEG_QUALITY, JPEG_QUALITY]
-    )
-    if not ok:
-        raise ValueError("Couldn't encode the frame as JPEG.")
-    return buffer.tobytes()
+from clashroyalebuildabot.api.mcp import create_mcp
+from clashroyalebuildabot.api.operations import (
+    ApiError,
+    Jpeg,
+    Operation,
+    encode_jpeg,
+    operations,
+)
+from clashroyalebuildabot.api.schemas import StateOut
+from clashroyalebuildabot.bot.bot import Observation
+from clashroyalebuildabot.bot.controller import BotController
+from clashroyalebuildabot.constants.paths import LOGO_PATH, WEB_UI_PATH
 
 
 async def _pump(
@@ -80,11 +98,36 @@ async def _pump(
         group.cancel_scope.cancel()
 
 
+def _add_route(router: APIRouter, operation: Operation) -> None:
+    """operation as a route. FastAPI runs it in its threadpool, as it's
+    sync, and takes its schema from its signature and docstring."""
+    fn = operation.fn
+    endpoint: Callable[..., Any] = fn
+    extra: dict[str, Any] = {}
+    if inspect.signature(fn).return_annotation is Jpeg:
+
+        @functools.wraps(fn)
+        def endpoint(*args: Any, **kwargs: Any) -> Response:  # noqa: ANN401
+            return Response(fn(*args, **kwargs).data, media_type="image/jpeg")
+
+        extra = {"response_model": None, "response_class": Response}
+    router.add_api_route(
+        operation.path,
+        endpoint,
+        methods=[operation.method],
+        name=operation.name,
+        operation_id=operation.name,
+        responses=operation.responses,
+        **extra,
+    )
+
+
 def create_app(
     controller: BotController, hub: EventHub | None = None
 ) -> FastAPI:
-    """The API for controller. Pass the hub whose log_sink is attached to
-    the logger, so log lines reach /events.
+    """The API for controller: REST and WebSockets under /api, and MCP at
+    /mcp. Pass the hub whose log_sink is attached to the logger, so log
+    lines reach /api/events.
 
     Shutting the app down stops the bot.
     """
@@ -96,12 +139,31 @@ def create_app(
         )
     )
 
+    controller.add_config_listener(
+        lambda config: hub.events.publish(
+            {"type": "config", "config": config.model_dump()}
+        )
+    )
+
     def publish_frame(frame: np.ndarray) -> None:
         # Encoded on the bot's thread, so only when someone is watching.
         if hub.frames.has_subscribers:
             hub.frames.publish(encode_jpeg(frame))
 
     controller.add_frame_listener(publish_frame)
+
+    def publish_state(observation: Observation) -> None:
+        # Converted on the bot's thread, so only when someone is watching.
+        if hub.states.has_subscribers:
+            hub.states.publish(
+                StateOut.of(observation).model_dump(mode="json")
+            )
+
+    controller.add_observation_listener(publish_state)
+
+    ops = operations(controller)
+    mcp = create_mcp(ops)
+    mcp_app = mcp.http_app(path="/mcp")
 
     @contextlib.asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
@@ -113,52 +175,27 @@ def create_app(
             # Waits for the bot to close the emulator, off the event loop.
             await asyncio.to_thread(controller.close)
 
-    app = FastAPI(title="Clash Royale Build-A-Bot", lifespan=lifespan)
+    app = FastAPI(
+        title="Clash Royale Build-A-Bot",
+        # Entered first, so it exits last: the bot stops after MCP's
+        # sessions have closed.
+        lifespan=combine_lifespans(lifespan, mcp_app.lifespan),
+    )
+    app.state.mcp = mcp
+
+    @app.exception_handler(ApiError)
+    def api_error(_request: Request, error: ApiError) -> JSONResponse:
+        return JSONResponse(error.body(), status_code=error.status)
+
     router = APIRouter(prefix="/api")
+    for operation in ops:
+        _add_route(router, operation)
 
-    def status_or_conflict(changed: bool, action: str) -> StatusResponse:
-        status = controller.status
-        if not changed:
-            raise HTTPException(
-                409, f"Can't {action} while the bot is {status}."
-            )
-        return StatusResponse(status=status)
-
-    @router.get("/status")
-    def get_status() -> StatusResponse:
-        return StatusResponse(status=controller.status)
-
-    @router.post("/start")
-    def start() -> StatusResponse:
-        return status_or_conflict(controller.start(), "start")
-
-    @router.post("/stop")
-    def stop() -> StatusResponse:
-        return status_or_conflict(controller.stop(), "stop")
-
-    @router.post("/pause")
-    def pause() -> StatusResponse:
-        return status_or_conflict(controller.pause(), "pause")
-
-    @router.post("/resume")
-    def resume() -> StatusResponse:
-        return status_or_conflict(controller.resume(), "resume")
-
-    @router.get("/config")
-    def get_config() -> dict[str, Any]:
-        return controller.config.model_dump()
-
-    @router.patch("/config")
-    def patch_config(
-        changes: dict[str, Any] = Body(...),  # noqa: B008
-    ) -> dict[str, Any]:
-        try:
-            controller.update_config(changes)
-        except ValidationError as e:
-            raise HTTPException(
-                422, json.loads(e.json(include_url=False))
-            ) from e
-        return controller.config.model_dump()
+    @router.websocket("/states")
+    async def states(websocket: WebSocket) -> None:
+        await websocket.accept()
+        with hub.states.subscribe() as queue:
+            await _pump(websocket, queue, websocket.send_json)
 
     @router.websocket("/events")
     async def events(websocket: WebSocket) -> None:
@@ -176,4 +213,19 @@ def create_app(
             await _pump(websocket, queue, websocket.send_bytes)
 
     app.include_router(router)
+
+    @app.get("/", include_in_schema=False)
+    def web_ui() -> FileResponse:
+        return FileResponse(WEB_UI_PATH, media_type="text/html")
+
+    @app.get("/logo.png", include_in_schema=False)
+    def logo() -> Response:
+        # In the project folder, not the package, so an installed bot may
+        # not have it. The page hides the image then.
+        if not os.path.exists(LOGO_PATH):
+            return Response(status_code=404)
+        return FileResponse(LOGO_PATH, media_type="image/png")
+
+    # Last, so it only gets what no route above matched. It serves /mcp.
+    app.mount("/", mcp_app)
     return app

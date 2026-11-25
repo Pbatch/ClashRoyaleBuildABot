@@ -1,10 +1,8 @@
-import os
 from collections.abc import Sequence
 
 import numpy as np
 from loguru import logger
 
-from clashroyalebuildabot.constants.paths import MODELS_DIR
 from clashroyalebuildabot.detectors.card_detector import CardDetector
 from clashroyalebuildabot.detectors.elixir_reader import ElixirReader
 from clashroyalebuildabot.detectors.screen_detector import ScreenDetector
@@ -13,7 +11,6 @@ from clashroyalebuildabot.detectors.tower_hp_reader import TowerHPReader
 from clashroyalebuildabot.detectors.unit_detector import UnitDetector
 from clashroyalebuildabot.game import ScreenName, State
 from clashroyalebuildabot.game.cards import DECK_SIZE, Card
-from clashroyalebuildabot.game.numbers import Numbers
 from clashroyalebuildabot.utils.error_handling import WikifiedError
 
 # Screens that only come between battles, so a battle has ended.
@@ -24,7 +21,7 @@ BETWEEN_BATTLES = {
 }
 
 
-class Detector:
+class StateReader:
     def __init__(self, cards: Sequence[Card]) -> None:
         if len(cards) != DECK_SIZE:
             raise WikifiedError(
@@ -37,12 +34,18 @@ class Detector:
 
         self.card_detector = CardDetector(self.cards)
         self.elixir_reader = ElixirReader()
-        self.unit_detector = UnitDetector(
-            os.path.join(MODELS_DIR, "units_tiles.onnx"), self.cards
-        )
+        self.unit_detector = UnitDetector(self.cards)
         self.screen_detector = ScreenDetector()
         self.tower_hp_reader = TowerHPReader()
         self.timer_reader = TimerReader()
+
+        # Parts that remember the battle so far, which start afresh with
+        # each battle: each has a reset().
+        self._battle_memory = [
+            self.tower_hp_reader,
+            self.timer_reader,
+            self.card_detector,
+        ]
 
     def run(self, image: np.ndarray) -> State | None:
         """
@@ -55,8 +58,8 @@ class Detector:
         no units or cards and 0 elixir.
 
         Whether this is a battle comes from the frame itself (the
-        ScreenDetector looks for the elixir drop), so the bot plays as soon
-        as a battle starts, and stops as soon as it ends.
+        ScreenDetector reads the timer and looks for the elixir bar), so the
+        bot plays as soon as a battle starts, and stops as soon as it ends.
         """
         logger.debug("Setting state...")
         try:
@@ -64,9 +67,8 @@ class Detector:
             if screen != ScreenName.IN_GAME:
                 if screen in BETWEEN_BATTLES:
                     # Start the next battle with fresh readings.
-                    self.tower_hp_reader.reset()
-                    self.timer_reader.reset()
-                    self.card_detector.reset()
+                    for part in self._battle_memory:
+                        part.reset()
                 # Otherwise it's a screen the bot waits through, or the
                 # elixir bar is hidden for a moment mid-battle: keep the
                 # readings in case the battle goes on.
@@ -77,19 +79,32 @@ class Detector:
             elixir = self.elixir_reader.run(image)
             towers = self.tower_hp_reader.run(image)
             timer = self.timer_reader.run(image)
-            numbers = Numbers(elixir=elixir, towers=towers, timer=timer)
         except Exception:
             logger.exception("Detection failed, skipping this screenshot.")
             return None
-        return State(allies, enemies, numbers, cards, ready, screen)
+        return State(
+            allies=allies,
+            enemies=enemies,
+            elixir=elixir,
+            towers=towers,
+            timer=timer,
+            cards=cards,
+            ready=ready,
+            screen=screen,
+        )
 
     def _state_outside_battle(self, screen: ScreenName) -> State:
-        numbers = Numbers(
+        return State(
+            allies=[],
+            enemies=[],
+            elixir=0,
             towers=self.tower_hp_reader.latest(),
             timer=self.timer_reader.latest(),
+            cards=[],
+            ready=[],
+            screen=screen,
         )
-        return State([], [], numbers, [], [], screen)
 
     def close(self) -> None:
-        self.tower_hp_reader.close()
-        self.timer_reader.close()
+        """Nothing to release: every part reads frames as they come, with no
+        threads of its own. The bot calls this when it stops."""
