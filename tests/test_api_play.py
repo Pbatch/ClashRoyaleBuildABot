@@ -18,7 +18,7 @@ from clashroyalebuildabot.game import ScreenName
 from clashroyalebuildabot.game.cards import Cards
 from clashroyalebuildabot.game.timer import Timer
 from tests.conftest import make_state
-from tests.test_api import wait_until
+from tests.test_api import LOCAL, LOCAL_WS, wait_until
 from tests.test_bot_lifecycle import ACTIONS, FakeVisualizer, make_config
 
 # The next card, then the hand: knight (3), archers (3), witch (5), cannon (3).
@@ -89,7 +89,7 @@ def make_client(monkeypatch, device, reader):
         config = make_config()
         config.bot.policy = policy
         controller = BotController(config, ACTIONS)
-        return TestClient(create_app(controller, EventHub()))
+        return TestClient(create_app(controller, EventHub()), base_url=LOCAL)
 
     return make
 
@@ -330,7 +330,7 @@ def test_the_builtin_policy_refuses_client_plays(make_client):
 def test_states_stream(make_client):
     with make_client() as client:
         start(client)
-        with client.websocket_connect("/api/states") as ws:
+        with client.websocket_connect(LOCAL_WS + "/api/states") as ws:
             first = ws.receive_json()
             second = ws.receive_json()
     assert first["screen"] == "in_game"

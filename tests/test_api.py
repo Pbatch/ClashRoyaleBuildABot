@@ -16,6 +16,12 @@ from clashroyalebuildabot.bot.controller import BotController
 from clashroyalebuildabot.constants import paths
 from tests.conftest import default_config
 
+# Where a client on the same machine reaches the API. TestClient's default,
+# testserver, isn't a loopback name, so the API would refuse it.
+LOCAL = "http://127.0.0.1:8000"
+# TestClient connects WebSockets to ws://testserver unless given a full URL.
+LOCAL_WS = "ws://127.0.0.1:8000"
+
 
 class FakeBot:
     """Runs until stopped. When `hold` is set, it keeps running after
@@ -75,7 +81,9 @@ def hub():
 
 @pytest.fixture
 def client(controller, hub):
-    with TestClient(create_app(controller, hub)) as test_client:
+    with TestClient(
+        create_app(controller, hub), base_url=LOCAL
+    ) as test_client:
         yield test_client
 
 
@@ -173,7 +181,7 @@ def test_log_level_change_reconfigures_logging(
 
 
 def test_events_stream_status_changes(client, controller):
-    with client.websocket_connect("/api/events") as ws:
+    with client.websocket_connect(LOCAL_WS + "/api/events") as ws:
         assert ws.receive_json() == {"type": "status", "status": "stopped"}
         started(client, controller)
         assert ws.receive_json() == {"type": "status", "status": "running"}
@@ -184,7 +192,7 @@ def test_events_stream_status_changes(client, controller):
 def test_events_stream_logs(client, hub):
     sink_id = logger.add(hub.log_sink)
     try:
-        with client.websocket_connect("/api/events") as ws:
+        with client.websocket_connect(LOCAL_WS + "/api/events") as ws:
             ws.receive_json()  # the current status
             # Logged from another thread, as the bot does.
             thread = threading.Thread(target=lambda: logger.info("hello"))
@@ -202,7 +210,7 @@ def test_frames_stream_as_jpeg(client, controller, hub):
     started(client, controller)
     frame = np.zeros((40, 30, 3), np.uint8)
     frame[..., 0] = 255  # red, in RGB
-    with client.websocket_connect("/api/frames") as ws:
+    with client.websocket_connect(LOCAL_WS + "/api/frames") as ws:
         wait_until(lambda: hub.frames.has_subscribers)
         send_frame(frame)
         data = ws.receive_bytes()
@@ -226,13 +234,15 @@ def test_frames_arent_encoded_without_viewers(client, controller, monkeypatch):
 
 
 def test_disconnected_viewers_are_unsubscribed(client, hub):
-    with client.websocket_connect("/api/frames"):
+    with client.websocket_connect(LOCAL_WS + "/api/frames"):
         wait_until(lambda: hub.frames.has_subscribers)
     wait_until(lambda: not hub.frames.has_subscribers)
 
 
 def test_shutting_down_stops_the_bot(controller, hub):
-    with TestClient(create_app(controller, hub)) as test_client:
+    with TestClient(
+        create_app(controller, hub), base_url=LOCAL
+    ) as test_client:
         started(test_client, controller)
         bot = FakeBot.instances[0]
     assert bot.stopped.is_set()
@@ -240,7 +250,7 @@ def test_shutting_down_stops_the_bot(controller, hub):
 
 
 def test_events_stream_config_changes(client):
-    with client.websocket_connect("/api/events") as ws:
+    with client.websocket_connect(LOCAL_WS + "/api/events") as ws:
         ws.receive_json()  # the current status
         client.patch("/api/config", json={"bot": {"load_deck": True}})
         event = ws.receive_json()

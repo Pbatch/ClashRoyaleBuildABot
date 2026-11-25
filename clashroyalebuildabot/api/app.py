@@ -67,6 +67,7 @@ from clashroyalebuildabot.api.operations import (
     operations,
 )
 from clashroyalebuildabot.api.schemas import StateOut
+from clashroyalebuildabot.api.security import SameOriginOnly, is_loopback
 from clashroyalebuildabot.bot.bot import Observation
 from clashroyalebuildabot.bot.controller import BotController
 from clashroyalebuildabot.constants.paths import LOGO_PATH, WEB_UI_PATH
@@ -123,11 +124,15 @@ def _add_route(router: APIRouter, operation: Operation) -> None:
 
 
 def create_app(
-    controller: BotController, hub: EventHub | None = None
+    controller: BotController,
+    hub: EventHub | None = None,
+    *,
+    host: str = "127.0.0.1",
 ) -> FastAPI:
     """The API for controller: REST and WebSockets under /api, and MCP at
     /mcp. Pass the hub whose log_sink is attached to the logger, so log
-    lines reach /api/events.
+    lines reach /api/events, and the address the server listens on as host:
+    on loopback, requests must name a loopback host (see api/security.py).
 
     Shutting the app down stops the bot.
     """
@@ -182,6 +187,7 @@ def create_app(
         lifespan=combine_lifespans(lifespan, mcp_app.lifespan),
     )
     app.state.mcp = mcp
+    app.add_middleware(SameOriginOnly, check_host=is_loopback(host))
 
     @app.exception_handler(ApiError)
     def api_error(_request: Request, error: ApiError) -> JSONResponse:

@@ -3,7 +3,6 @@ from clashroyalebuildabot.utils.error_handling import WikifiedError
 try:
     import argparse
     import contextlib
-    import ipaddress
     import signal
     import sys
     import threading
@@ -27,6 +26,7 @@ try:
     )
     from clashroyalebuildabot.actions.generic.action import Action
     from clashroyalebuildabot.api import EventHub, create_app
+    from clashroyalebuildabot.api.security import is_loopback
     from clashroyalebuildabot.bot.controller import BotController
     from clashroyalebuildabot.bot.policy import Policy
     from clashroyalebuildabot.config import Config, load_config
@@ -83,17 +83,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _is_loopback(host: str) -> bool:
-    if host == "localhost":
-        return True
-    try:
-        return ipaddress.ip_address(host).is_loopback
-    except ValueError:
-        return False
-
-
 def _warn_if_exposed(host: str) -> None:
-    if not _is_loopback(host):
+    if not is_loopback(host):
         logger.warning(
             f"The API has no authentication, and {host} may be reachable "
             "from other machines: anyone who can reach it can control the "
@@ -105,7 +96,7 @@ def _api_server(
     controller: BotController, hub: EventHub, host: str, port: int
 ) -> uvicorn.Server:
     _warn_if_exposed(host)
-    app = create_app(controller, hub)
+    app = create_app(controller, hub, host=host)
     logger.info(
         f"Web UI at http://{host}:{port}/, API at http://{host}:{port}/api "
         f"(docs at /docs), MCP at http://{host}:{port}/mcp"
