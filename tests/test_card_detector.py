@@ -1,12 +1,21 @@
-import os
+from pathlib import Path
 
+import cv2
 import numpy as np
-from PIL import Image
+import pytest
 
-from clashroyalebuildabot.constants.paths import IMAGES_DIR
 from clashroyalebuildabot.constants.screenshot import CARD_BOXES
-from clashroyalebuildabot.detectors.card_detector import CardDetector
-from clashroyalebuildabot.game.cards import Cards
+from clashroyalebuildabot.detectors.card_detector import (
+    CardDetector,
+    card_thumbnails,
+    thumbnail,
+)
+from clashroyalebuildabot.game.cards import Card, Cards
+from clashroyalebuildabot.utils.image import load, resize
+
+# The art of the cards these tests draw. The bot ships only the hashes; the
+# rest of the art is kept by maintainers (see dev/synthetic/card_hashes.py).
+ART_DIR = Path(__file__).parent / "data" / "cards"
 
 DECK = [
     Cards.ARCHERS,
@@ -36,29 +45,45 @@ def test_accepts_a_tuple():
     assert detector.cards[: len(DECK)] == DECK
 
 
+def test_every_card_has_a_hash():
+    cards = [c for c in vars(Cards).values() if isinstance(c, Card)]
+    missing = [c.name for c in cards if c.name not in card_thumbnails()]
+    assert not missing
+
+
+@pytest.mark.parametrize(
+    "path", sorted(ART_DIR.glob("*.jpg")), ids=lambda p: p.stem
+)
+def test_hashes_match_the_art(path):
+    """The test art is the art the shipped hashes were made from."""
+    assert np.array_equal(
+        thumbnail(load(str(path))), card_thumbnails()[path.stem]
+    )
+
+
 def card_art(name, look, size):
     """A card's art as the game draws it: "colour", "grey" (can't be
     afforded, with the wedge over the whole card) or "washed" (can't be
     afforded, no wedge yet)."""
-    art = Image.open(os.path.join(IMAGES_DIR, "cards", f"{name}.jpg"))
-    art = art.convert("RGB").resize(size)
+    art = resize(load(str(ART_DIR / f"{name}.jpg")), size)
     if look == "colour":
         return art
-    grey = np.asarray(art.convert("L"), dtype=np.float32)
+    grey = cv2.cvtColor(art, cv2.COLOR_RGB2GRAY).astype(np.float32)
     scale, offset = (
         CardDetector.WEDGE if look == "grey" else CardDetector.WASHED_OUT
     )
     grey = (scale * grey + offset).clip(0, 255).astype(np.uint8)
-    return Image.fromarray(grey).convert("RGB")
+    return cv2.cvtColor(grey, cv2.COLOR_GRAY2RGB)
 
 
 def screenshot(slots):
     """A 368x652 frame on the blue hand panel, with each (art name, look)
     pasted into its box in CARD_BOXES."""
-    image = Image.new("RGB", (368, 652), (30, 110, 200))
+    image = np.full((652, 368, 3), (30, 110, 200), np.uint8)
     for (name, look), box in zip(slots, CARD_BOXES, strict=True):
-        size = (box[2] - box[0], box[3] - box[1])
-        image.paste(card_art(name, look, size), box[:2])
+        left, top, right, bottom = box
+        size = (right - left, bottom - top)
+        image[top:bottom, left:right] = card_art(name, look, size)
     return image
 
 

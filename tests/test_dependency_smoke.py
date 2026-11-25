@@ -1,6 +1,6 @@
 """
 Exercise the parts of the bot that lean hardest on third-party libraries
-(onnxruntime, av, Pillow), so dependency upgrades that break them fail here.
+(onnxruntime, av, OpenCV), so dependency upgrades that break them fail here.
 """
 
 import io
@@ -9,17 +9,28 @@ import os
 import av
 import numpy as np
 import pytest
-from PIL import Image
 
+from clashroyalebuildabot.constants.device_screen import (
+    DISPLAY_HEIGHT,
+    DISPLAY_WIDTH,
+    TILE_HEIGHT,
+    TILE_INIT_X,
+    TILE_INIT_Y,
+    TILE_WIDTH,
+)
 from clashroyalebuildabot.constants.paths import MODELS_DIR
 from clashroyalebuildabot.constants.screenshot import (
     SCREENSHOT_HEIGHT,
     SCREENSHOT_WIDTH,
 )
 from clashroyalebuildabot.detectors.number_detector import NumberDetector
-from clashroyalebuildabot.detectors.unit_detector import UnitDetector
+from clashroyalebuildabot.detectors.unit_detector import (
+    DETECTOR_UNITS,
+    UnitDetector,
+)
 from clashroyalebuildabot.emulator.emulator import Emulator
 from clashroyalebuildabot.game.cards import Cards
+from clashroyalebuildabot.game.units import Units
 
 DECK = [
     Cards.ARCHERS,
@@ -34,23 +45,118 @@ DECK = [
 
 
 def blank_screenshot():
-    return Image.new("RGB", (SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT))
+    return np.zeros((SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH, 3), np.uint8)
 
 
-def test_unit_detector_models_run():
-    detector = UnitDetector(
-        os.path.join(MODELS_DIR, "units_M_480x352.onnx"), DECK
+def unit_detector():
+    return UnitDetector(os.path.join(MODELS_DIR, "units_tiles.onnx"), DECK)
+
+
+def test_unit_detector_model_runs():
+    allies, enemies = unit_detector().run(blank_screenshot())
+    assert allies == []
+    assert enemies == []
+
+
+def test_unit_detector_reads_the_tile_grid():
+    detector = unit_detector()
+    view = np.random.default_rng(0).integers(
+        0, 256, (1, *detector.sess.get_inputs()[0].shape[1:]), np.uint8
     )
-    allies, enemies = detector.run(blank_screenshot())
-    assert allies == [] and enemies == []
-
-
-def test_side_detector_model_runs():
-    detector = UnitDetector(
-        os.path.join(MODELS_DIR, "units_M_480x352.onnx"), DECK
+    probs = detector._infer(view)
+    assert probs.shape == (1, 2 * len(DETECTOR_UNITS), 32, 18)
+    assert ((probs >= 0) & (probs <= 1)).all()
+    top, bottom = detector.view_rows()
+    assert (bottom - top, SCREENSHOT_WIDTH) == (
+        detector.model_height,
+        detector.model_width,
     )
-    side = detector.side_detector.run(Image.new("RGB", (20, 20)))
-    assert side in ("ally", "enemy")
+
+
+def _probs():
+    return np.zeros((2 * len(DETECTOR_UNITS), 32, 18), np.float32)
+
+
+def _channel(unit, side):
+    return 2 * DETECTOR_UNITS.index(unit) + (side == "enemy")
+
+
+def test_unit_detector_keeps_a_swarm_and_drops_edge_doubles():
+    detector = unit_detector()
+    probs = _probs()
+    skeleton = _channel(Units.SKELETON, "enemy")
+    # Two skeletons on neighbouring tiles, both confident.
+    probs[skeleton, 10, 4] = 0.95
+    probs[skeleton, 10, 5] = 0.9
+    # A knight whose foot is near a tile edge: a half-confident neighbour.
+    knight = _channel(Units.KNIGHT, "enemy")
+    probs[knight, 20, 8] = 0.8
+    probs[knight, 21, 8] = 0.5
+    _, enemies = detector.decode(probs)
+    found = sorted(
+        (d.unit.name, d.position.tile_x, d.position.tile_y) for d in enemies
+    )
+    # Rows count down from the top in the model, up from the bottom in the bot.
+    assert found == [
+        ("knight", 8, 11),
+        ("skeleton", 4, 21),
+        ("skeleton", 5, 21),
+    ]
+
+
+def _found(detections):
+    return sorted(
+        (d.unit.name, d.position.tile_x, d.position.tile_y, d.position.conf)
+        for d in detections
+    )
+
+
+def test_unit_detector_names_allies_from_the_deck():
+    detector = unit_detector()
+    probs = _probs()
+    # One of ours the model takes for a golem, which isn't in the deck, but
+    # rates a little as a knight: it's our knight, as sure as the golem was.
+    probs[_channel(Units.GOLEM, "ally"), 25, 3] = 0.9
+    probs[_channel(Units.KNIGHT, "ally"), 25, 3] = 0.2
+    # Enemies can be anything.
+    probs[_channel(Units.GOLEM, "enemy"), 5, 3] = 0.9
+    allies, enemies = detector.decode(probs)
+    assert _found(allies) == [("knight", 3, 6, pytest.approx(0.9))]
+    assert _found(enemies) == [("golem", 3, 26, pytest.approx(0.9))]
+
+
+def test_unit_detector_keeps_neighbouring_allies_apart():
+    detector = unit_detector()
+    probs = _probs()
+    probs[_channel(Units.KNIGHT, "ally"), 25, 9] = 0.9
+    probs[_channel(Units.MUSKETEER, "ally"), 25, 10] = 0.6
+    allies, _ = detector.decode(probs)
+    assert [(n, x) for n, x, _, _ in _found(allies)] == [
+        ("knight", 9),
+        ("musketeer", 10),
+    ]
+
+
+def test_unit_detector_counts_spawned_units_as_the_decks():
+    # The witch in DECK brings skeletons.
+    detector = unit_detector()
+    probs = _probs()
+    probs[_channel(Units.SKELETON, "ally"), 20, 4] = 0.9
+    allies, _ = detector.decode(probs)
+    assert [d.unit.name for d in allies] == ["skeleton"]
+
+
+@pytest.mark.parametrize(("col", "row"), [(0, 0), (17, 0), (0, 31), (9, 15)])
+def test_unit_detector_tile_bbox_is_its_tile(col, row):
+    left, top, right, bottom = UnitDetector._tile_bbox(col, row)
+    assert 0 <= left < right <= SCREENSHOT_WIDTH
+    assert 0 <= top < bottom <= SCREENSHOT_HEIGHT
+    # The box's centre, back in display pixels, is on the same tile.
+    x = (left + right) / 2 * DISPLAY_WIDTH / SCREENSHOT_WIDTH
+    y = (top + bottom) / 2 * DISPLAY_HEIGHT / SCREENSHOT_HEIGHT
+    tile_x = int((x - TILE_INIT_X) // TILE_WIDTH)
+    tile_y = int((DISPLAY_HEIGHT - TILE_INIT_Y - y) // TILE_HEIGHT)
+    assert (tile_x, tile_y) == (col, 31 - row)
 
 
 def test_number_detector_runs():
@@ -100,7 +206,7 @@ def test_h264_frames_decode_to_screenshots(chunker):
         last = frame
 
     assert last is not None
-    image = last.reformat(
+    image = last.to_ndarray(
         width=SCREENSHOT_WIDTH, height=SCREENSHOT_HEIGHT, format="rgb24"
-    ).to_image()
-    assert image.size == (SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT)
+    )
+    assert image.shape == (SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH, 3)

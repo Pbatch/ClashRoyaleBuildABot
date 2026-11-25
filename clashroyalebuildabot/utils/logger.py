@@ -1,15 +1,21 @@
 import os
 import sys
+from typing import TYPE_CHECKING
 
 from loguru import logger
 
 from clashroyalebuildabot.config import Config
 from clashroyalebuildabot.constants.paths import DEBUG_DIR
 
-COLORS = dict(context_info="#118aa2", time="#459028")
+if TYPE_CHECKING:
+    from loguru import Message
+
+    from clashroyalebuildabot.gui.main_window import MainWindow
+
+COLORS = {"context_info": "#118aa2", "time": "#459028"}
 
 
-def setup_logger(main_window, config: Config):
+def setup_logger(main_window: "MainWindow", config: Config) -> None:
     log_level = config.bot.log_level
     logger.remove()
     logger.add(sys.stdout, level=log_level)
@@ -25,7 +31,8 @@ def setup_logger(main_window, config: Config):
     )
 
 
-def colorize_log(message):
+def colorize_log(message: "Message") -> str:
+
     log_record = message.record
     level = log_record["level"].name
     time = log_record["time"].strftime("%Y-%m-%d %H:%M:%S")

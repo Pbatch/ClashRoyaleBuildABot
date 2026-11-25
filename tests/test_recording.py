@@ -26,7 +26,8 @@ def test_records_at_screenshot_width_keeping_the_shape(screen, expected):
 def test_sizes_are_multiples_of_16():
     for width, height in [(720, 1280), (1080, 2340), (1440, 3200)]:
         w, h = recording_size(width, height)
-        assert w % 16 == 0 and h % 16 == 0
+        assert w % 16 == 0
+        assert h % 16 == 0
         assert w == SCREENSHOT_WIDTH
 
 

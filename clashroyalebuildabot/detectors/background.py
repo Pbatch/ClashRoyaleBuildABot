@@ -4,14 +4,14 @@ import threading
 import time
 from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
-from typing import Generic, TypeVar
+from typing import TypeVar
 
-from PIL import Image
+import numpy as np
 
 T = TypeVar("T")
 
 
-class LatestResult(Generic[T]):
+class LatestResult[T]:
     """Compute a value from frames in the background, at most every
     ``interval`` seconds, and hand back the most recent one.
 
@@ -23,12 +23,12 @@ class LatestResult(Generic[T]):
 
     def __init__(
         self,
-        compute: Callable[[Image.Image], T],
+        compute: Callable[[np.ndarray], T],
         default: T,
-        interval=1.0,
+        interval: float = 1.0,
         max_age: float | None = 5.0,
-        name="background",
-    ):
+        name: str = "background",
+    ) -> None:
         self.compute = compute
         self.default = default
         self.interval = interval
@@ -46,7 +46,7 @@ class LatestResult(Generic[T]):
         # isn't stored afterwards.
         self._generation = 0
 
-    def _refresh(self, image: Image.Image, generation: int):
+    def _refresh(self, image: np.ndarray, generation: int) -> None:
         # Runs on the worker thread and stores its own answer. A done
         # callback could instead run inline on the caller, which already
         # holds the lock, if the request finished before it was attached.
@@ -56,7 +56,7 @@ class LatestResult(Generic[T]):
                 self._value = value
                 self._value_time = time.monotonic()
 
-    def run(self, image: Image.Image) -> T:
+    def run(self, image: np.ndarray) -> T:
         """Return the latest answer, refreshing it in the background."""
         now = time.monotonic()
         with self._lock:
@@ -77,7 +77,7 @@ class LatestResult(Generic[T]):
         with self._lock:
             return self._value
 
-    def reset(self):
+    def reset(self) -> None:
         """Forget the current answer and any request still in flight."""
         with self._lock:
             self._generation += 1
@@ -85,12 +85,12 @@ class LatestResult(Generic[T]):
             self._value_time = float("-inf")
             self._last_submit = float("-inf")
 
-    def wait(self, timeout: float | None = None):
+    def wait(self, timeout: float | None = None) -> None:
         """Block until any in-flight request finishes."""
         with self._lock:
             pending = self._pending
         if pending is not None:
             pending.result(timeout=timeout)
 
-    def close(self):
+    def close(self) -> None:
         self._executor.shutdown(wait=False, cancel_futures=True)

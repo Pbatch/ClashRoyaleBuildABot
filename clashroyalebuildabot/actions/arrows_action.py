@@ -4,4 +4,4 @@ from clashroyalebuildabot.game.cards import Cards
 
 class ArrowsAction(SpellAction):
     CARD = Cards.ARROWS
-    RADIUS = 4
+    RADIUS = 3.5

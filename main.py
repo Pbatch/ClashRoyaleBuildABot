@@ -24,7 +24,7 @@ except Exception as e:
     raise WikifiedError("001", "Missing imports.") from e
 
 
-def main():
+def main() -> None:
     actions = [
         ArchersAction,
         GoblinBarrelAction,

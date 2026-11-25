@@ -30,9 +30,10 @@ visuals:
   show_images: False
 
 ingame:
-  # The delay between actions.
-  # The default is 1. For faster action execution on high-performance PCs, you can set this to 0.5.
-  # For lower-performance PCs, consider using 1.25 to 1.5.
+  # After playing a card, the bot waits until the screen shows it played (it
+  # leaves the hand, or elixir drops) before playing another, so it doesn't
+  # play the same card twice. This is the longest it waits, in seconds, if
+  # the screen never shows it, e.g. when the tap missed.
   play_action: 1
 
 screen_detector:

@@ -1,7 +1,7 @@
 import math
 import threading
 
-from PIL import Image
+import numpy as np
 
 from clashroyalebuildabot.constants.screenshot import (
     KING_TOWER_BOXES,
@@ -53,8 +53,8 @@ class FakeClient:
         self.crops = []
 
     def ask(self, image, prompt, schema):
-        self.crops.append(image.size)
-        name = TOWERS[image.getpixel((0, 0))[0] // SHADE][0]
+        self.crops.append(image.shape[1::-1])
+        name = TOWERS[image[0, 0, 0] // SHADE][0]
         expected = KingReading if "king" in name else TowerReading
         assert schema is expected
         if name in self.fail:
@@ -63,9 +63,9 @@ class FakeClient:
 
 
 def frame():
-    image = Image.new("RGB", (368, 652))
-    for i, (_, box, _) in enumerate(TOWERS):
-        image.paste((i * SHADE,) * 3, box)
+    image = np.zeros((652, 368, 3), np.uint8)
+    for i, (_, (left, top, right, bottom), _) in enumerate(TOWERS):
+        image[top:bottom, left:right] = i * SHADE
     return image
 
 

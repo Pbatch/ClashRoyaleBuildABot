@@ -1,36 +1,35 @@
 import os
 import threading
 import time
-from types import SimpleNamespace
+from typing import ClassVar
 
 import pytest
 import yaml
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from loguru import logger  # noqa: E402
-from PyQt6.QtWidgets import QApplication  # noqa: E402
+from loguru import logger
+from PyQt6.QtWidgets import QApplication
 
-import clashroyalebuildabot.gui.main_window as main_window_module  # noqa: E402
-from clashroyalebuildabot.config import save_config  # noqa: E402
+import clashroyalebuildabot.bot.controller as controller_module
+import clashroyalebuildabot.gui.main_window as main_window_module
+from clashroyalebuildabot.config import save_config
 from clashroyalebuildabot.utils.error_handling import (
-    WikifiedError,  # noqa: E402
+    WikifiedError,
 )
-from tests.conftest import default_config  # noqa: E402
+from tests.conftest import default_config
 
 
 class FakeBot:
     """Runs until stopped. `gate` lets a test hold the bot mid-construction."""
 
-    instances: list["FakeBot"] = []
-    gate: threading.Event | None = None
+    instances: ClassVar[list["FakeBot"]] = []
+    gate: ClassVar[threading.Event | None] = None
 
-    def __init__(self, actions, config):
+    def __init__(self, actions, config, on_frame=None):
         if FakeBot.gate is not None:
             FakeBot.gate.wait(timeout=5)
-        self.visualizer = SimpleNamespace(
-            frame_ready=SimpleNamespace(connect=lambda slot: None)
-        )
+        self.on_frame = on_frame
         self.stopped = threading.Event()
         self.is_paused = False
         self.finished = False
@@ -75,8 +74,8 @@ class FakeVLMServer:
 def window(qapp, monkeypatch):
     FakeBot.instances = []
     FakeBot.gate = None
-    monkeypatch.setattr(main_window_module, "Bot", FakeBot)
-    monkeypatch.setattr(main_window_module, "VLMServer", FakeVLMServer)
+    monkeypatch.setattr(controller_module, "Bot", FakeBot)
+    monkeypatch.setattr(controller_module, "VLMServer", FakeVLMServer)
     monkeypatch.setattr(
         main_window_module.keyboard, "add_hotkey", lambda *args: None
     )
@@ -98,7 +97,7 @@ def wait_until(condition, timeout=3.0):
 
 def test_start_then_stop(window):
     window.start_bot()
-    wait_until(lambda: window.bot is not None)
+    wait_until(lambda: window.controller._bot is not None)
     assert window.is_running
     assert window.server_id_label.text() == "Status - Running"
 
@@ -106,16 +105,16 @@ def test_start_then_stop(window):
     assert window.server_id_label.text() == "Status - Stopping..."
     assert not window.start_stop_button.isEnabled()
 
-    wait_until(lambda: not window.is_running)
-    assert window.bot is None
-    assert window.server_id_label.text() == "Status - Stopped"
+    # is_running clears on the bot's thread; the label follows once the
+    # queued finished signal reaches the GUI thread.
+    wait_until(lambda: window.server_id_label.text() == "Status - Stopped")
     assert window.start_stop_button.isEnabled()
     assert FakeBot.instances[0].finished
 
 
 def test_cannot_start_while_previous_bot_is_stopping(window):
     window.start_bot()
-    wait_until(lambda: window.bot is not None)
+    wait_until(lambda: window.controller._bot is not None)
     window.stop_bot()
 
     window.start_bot()  # ignored: the first bot hasn't finished yet
@@ -124,7 +123,8 @@ def test_cannot_start_while_previous_bot_is_stopping(window):
     wait_until(lambda: not window.is_running)
     window.start_bot()
     wait_until(lambda: len(FakeBot.instances) == 2)
-    assert window.bot is FakeBot.instances[1]
+    # The bot is handed to the controller just after it's constructed.
+    wait_until(lambda: window.controller._bot is FakeBot.instances[1])
     assert not FakeBot.instances[1].stopped.is_set()
 
 
@@ -139,17 +139,17 @@ def test_stop_while_bot_is_being_created(window):
 
 
 def test_bot_waits_for_the_vision_model_server(window):
-    window.vlm_server.ready.clear()
+    window.controller.vlm_server.ready.clear()
     window.start_bot()
     time.sleep(0.1)
     assert FakeBot.instances == []
 
-    window.vlm_server.ready.set()
+    window.controller.vlm_server.ready.set()
     wait_until(lambda: len(FakeBot.instances) == 1)
 
 
 def test_stop_while_the_server_is_starting(window):
-    window.vlm_server.ready.clear()
+    window.controller.vlm_server.ready.clear()
     window.start_bot()
     window.stop_bot()
     wait_until(lambda: not window.is_running)
@@ -158,7 +158,7 @@ def test_stop_while_the_server_is_starting(window):
 
 def test_closing_window_stops_the_server(window):
     window.close()
-    assert window.vlm_server.stopped
+    assert window.controller.vlm_server.stopped
 
 
 def test_logs_from_other_threads_reach_the_log_panel(window):
@@ -176,8 +176,8 @@ def test_logs_from_other_threads_reach_the_log_panel(window):
 
 def test_closing_window_stops_running_bot(window):
     window.start_bot()
-    wait_until(lambda: window.bot is not None)
-    bot = window.bot
+    wait_until(lambda: window.controller._bot is not None)
+    bot = window.controller._bot
 
     window.close()
 
@@ -194,7 +194,7 @@ def test_bot_error_is_logged_and_window_resets(window, monkeypatch):
     sink_id = logger.add(lambda m: messages.append(m.record["message"]))
     try:
         window.start_bot()
-        wait_until(lambda: not window.is_running)
+        wait_until(lambda: window.server_id_label.text() == "Status - Stopped")
     finally:
         logger.remove(sink_id)
 
@@ -247,3 +247,40 @@ def test_saving_writes_only_changed_screen_settings(window, tmp_path):
 
     saved = yaml.safe_load(user_config.read_text(encoding="utf-8"))
     assert saved == {"screen_detector": {"interval": 2.5}}
+
+
+def wait_for_label(window, text):
+    wait_until(lambda: window.server_id_label.text() == f"Status - {text}")
+
+
+def test_pause_shows_in_the_controls(window):
+    window.start_bot()
+    wait_until(lambda: window.controller._bot is not None)
+
+    window.toggle_pause_resume_and_display()
+    assert window.server_id_label.text() == "Status - Paused"
+    assert window.play_pause_button.text() == "▶"
+
+    window.toggle_pause_resume_and_display()
+    assert window.server_id_label.text() == "Status - Running"
+    assert window.play_pause_button.text() == "⏸️"
+
+
+def test_controls_follow_changes_made_outside_the_window(window):
+    """An API driving the controller from another thread must show up in
+    the window too."""
+    thread = threading.Thread(target=window.controller.start)
+    thread.start()
+    thread.join()
+    wait_for_label(window, "Running")
+    assert window.start_stop_button.text() == "■"
+    assert window.play_pause_button.isVisibleTo(window)
+
+    wait_until(lambda: window.controller._bot is not None)
+    thread = threading.Thread(target=window.controller.stop)
+    thread.start()
+    thread.join()
+    wait_for_label(window, "Stopped")
+    assert window.start_stop_button.text() == "▶"
+    assert window.start_stop_button.isEnabled()
+    assert not window.play_pause_button.isVisibleTo(window)

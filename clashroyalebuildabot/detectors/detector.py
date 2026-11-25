@@ -1,5 +1,7 @@
 import os
+from collections.abc import Sequence
 
+import numpy as np
 from loguru import logger
 
 from clashroyalebuildabot.config import ScreenDetectorConfig
@@ -13,13 +15,15 @@ from clashroyalebuildabot.detectors.tower_hp_reader import TowerHPReader
 from clashroyalebuildabot.detectors.unit_detector import UnitDetector
 from clashroyalebuildabot.detectors.vlm_client import make_client
 from clashroyalebuildabot.game import ScreenName, State
-from clashroyalebuildabot.game.cards import DECK_SIZE
+from clashroyalebuildabot.game.cards import DECK_SIZE, Card
 from clashroyalebuildabot.game.numbers import Numbers
 from clashroyalebuildabot.utils.error_handling import WikifiedError
 
 
 class Detector:
-    def __init__(self, cards, screen_config: ScreenDetectorConfig):
+    def __init__(
+        self, cards: Sequence[Card], screen_config: ScreenDetectorConfig
+    ) -> None:
         if len(cards) != DECK_SIZE:
             raise WikifiedError(
                 "005",
@@ -33,7 +37,7 @@ class Detector:
         self.number_detector = NumberDetector()
         self.battle_check = BattleCheck()
         self.unit_detector = UnitDetector(
-            os.path.join(MODELS_DIR, "units_M_480x352.onnx"), self.cards
+            os.path.join(MODELS_DIR, "units_tiles.onnx"), self.cards
         )
         # Screens, tower HP and the timer are read by the same vision model
         # server.
@@ -45,7 +49,7 @@ class Detector:
         self.tower_hp_reader = TowerHPReader(client, interval=interval)
         self.timer_reader = TimerReader(client, interval=interval)
 
-    def run(self, image) -> State | None:
+    def run(self, image: np.ndarray) -> State | None:
         """
         Detect the state of one screenshot. Returns None if detection fails,
         and the bot moves on to the next screenshot. Retrying the same image
@@ -54,25 +58,35 @@ class Detector:
         Cards, units, elixir, tower HP and the timer are only read in a
         battle. On other screens they would be meaningless, so the state has
         no units or cards and 0 elixir.
+
+        Whether this is a battle comes from the frame itself (BattleCheck),
+        not the screen detector, whose answer is a second or more old. So
+        the bot plays as soon as a battle starts, and stops as soon as it
+        ends.
         """
         logger.debug("Setting state...")
         try:
+            # Asked on every frame, so its answer is fresh when the battle
+            # ends.
             screen = self.screen_detector.run(image)
-            if screen != ScreenName.IN_GAME:
-                # Between battles: start the next one with fresh readings.
-                self.tower_hp_reader.reset()
-                self.timer_reader.reset()
-                self.card_detector.reset()
-                return self._state_outside_battle(screen)
-            if not self.battle_check.run(image):
+            if self.battle_check.run(image):
+                screen = ScreenName.IN_GAME
+            elif screen == ScreenName.IN_GAME:
                 # The screen detector's answer is older than this frame, and
-                # the battle has ended or not yet begun. Keep the tower and
-                # timer readings in case this is a brief flicker mid-battle.
+                # the battle has just ended, or the elixir bar is briefly
+                # hidden. Keep the tower and timer readings in case it's a
+                # flicker mid-battle.
                 logger.debug(
                     "The screen detector says in game, but no "
                     "elixir bar is visible."
                 )
                 return self._state_outside_battle(ScreenName.UNKNOWN)
+            else:
+                # Between battles: start the next one with fresh readings.
+                self.tower_hp_reader.reset()
+                self.timer_reader.reset()
+                self.card_detector.reset()
+                return self._state_outside_battle(screen)
 
             cards, ready = self.card_detector.run(image)
             allies, enemies = self.unit_detector.run(image)
@@ -92,7 +106,7 @@ class Detector:
         )
         return State([], [], numbers, [], [], screen)
 
-    def close(self):
+    def close(self) -> None:
         self.screen_detector.close()
         self.tower_hp_reader.close()
         self.timer_reader.close()

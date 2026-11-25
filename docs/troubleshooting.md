@@ -20,7 +20,7 @@ GUI couldn't initialize. If you see this error despite not having modified files
 
 
 ### Error E005
-Strategy definition error: some part of the bot's strategy has been misconfigured (actions, cards, etc.). Check that you've listed exactly 8 actions in `main.py`, one for each card in your deck, and that each card has an image in `clashroyalebuildabot/images/cards`. See [the bot development tutorial](bot-development.md) for more details.
+Strategy definition error: some part of the bot's strategy has been misconfigured (actions, cards, etc.). Check that you've listed exactly 8 actions in `main.py`, one for each card in your deck, and that each card has a hash in `clashroyalebuildabot/constants/card_hashes.py` (a card the game added recently may not have one yet). See [the bot development tutorial](bot-development.md) for more details.
 
 Also, don't forget that each Action class must have a CARD attribute:
 ```
@@ -50,7 +50,9 @@ The bot couldn't reach the vision model server it uses to read the screen. The b
 
 
 ### Error E011
-The bot's copy of ADB isn't installed. Run `uv run python -m clashroyalebuildabot.install` in the project folder (see [Bot Installation](bot-installation.md#step-7-run-setup)). It downloads ADB into `platform-tools/`.
+The bot's copy of ADB isn't installed, and the bot couldn't install it itself; the error says why (usually no internet). Run `uv run python -m clashroyalebuildabot.install` in the project folder (see [Bot Installation](bot-installation.md#step-7-run-setup)). It downloads ADB into `platform-tools/`.
+
+If you also have another `adb` installed, for example from your package manager or Android Studio, don't run it while the bot is running: two different versions of ADB keep restarting each other's server, which drops the bot's connection.
 
 
 ### Error E012

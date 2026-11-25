@@ -7,8 +7,8 @@ SCREENSHOT_WIDTH = 368
 SCREENSHOT_HEIGHT = 652
 
 # Cards. Each box is the card's face (its art and thin dark border), the same
-# framing as the images in images/cards, without the frame around it.
-# Measured by matching those images to battle frames.
+# framing as the card art card_hashes.py is made from, without the frame
+# around it. Measured by matching that art to battle frames.
 NEXT_CARD_BOX = (27, 610, 55, 645)
 _CARD_Y = 546
 _CARD_INIT_X = 87

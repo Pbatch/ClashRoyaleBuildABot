@@ -1,14 +1,37 @@
-import os
 from collections.abc import Sequence
+from functools import cache
 
+import cv2
 import numpy as np
-from PIL import Image
 from scipy.optimize import linear_sum_assignment
 
-from clashroyalebuildabot.constants.paths import IMAGES_DIR
+from clashroyalebuildabot.constants.card_hashes import CARD_HASHES
 from clashroyalebuildabot.constants.screenshot import CARD_BOXES
 from clashroyalebuildabot.game.cards import Card, Cards
 from clashroyalebuildabot.utils.error_handling import WikifiedError
+from clashroyalebuildabot.utils.image import crop, resize
+
+# Card thumbnails are this many pixels across and down.
+THUMBNAIL_SIZE = (8, 10)
+
+
+def thumbnail(image: np.ndarray) -> np.ndarray:
+    """An RGB image shrunk to a (height, width) greyscale uint8 thumbnail:
+    what a card position, or a card's art, is matched by."""
+    small = resize(image, THUMBNAIL_SIZE, cv2.INTER_LINEAR)
+    return cv2.cvtColor(small, cv2.COLOR_RGB2GRAY)
+
+
+@cache
+def card_thumbnails() -> dict[str, np.ndarray]:
+    """Every card art's thumbnail, by art name (``<card>`` and, for an
+    evolution, ``<card>_ev1``). They're made from the art by maintainers,
+    so the art itself doesn't ship with the bot."""
+    width, height = THUMBNAIL_SIZE
+    return {
+        name: np.frombuffer(bytes.fromhex(h), np.uint8).reshape(height, width)
+        for name, h in CARD_HASHES.items()
+    }
 
 
 class CardDetector:
@@ -29,8 +52,6 @@ class CardDetector:
 
     # The next card plus the four in hand.
     HAND_SIZE = 5
-    HASH_WIDTH = 8
-    HASH_HEIGHT = 10
     # The bottom rows hold the cost badge, which the card art doesn't have.
     HASH_ROWS = 8
     # How a greyed card's brightness relates to the art's, as (scale,
@@ -46,7 +67,7 @@ class CardDetector:
         self,
         cards: Sequence[Card],
         grey_std_threshold: int = 5,
-    ):
+    ) -> None:
         # Build a new list rather than extending the caller's. The blanks let
         # the matcher assign empty hand slots.
         self.cards = [*cards, *([Cards.BLANK] * self.HAND_SIZE)]
@@ -55,51 +76,48 @@ class CardDetector:
         self.card_hashes, self.hash_owners = self._calculate_card_hashes()
         self._last: list[Card] | None = None
 
-    def reset(self):
+    def reset(self) -> None:
         """Forget the last hand, for the start of a new battle."""
         self._last = None
 
-    def _calculate_hash(self, image):
-        small = image.resize(
-            (self.HASH_WIDTH, self.HASH_HEIGHT), Image.Resampling.BILINEAR
-        ).convert("L")
-        return np.asarray(small, dtype=np.float32)[: self.HASH_ROWS].ravel()
+    def _hash(self, thumb: np.ndarray) -> np.ndarray:
+        return thumb.astype(np.float32)[: self.HASH_ROWS].ravel()
 
-    def _calculate_multi_hash(self, image):
+    def _calculate_hash(self, image: np.ndarray) -> np.ndarray:
+        return self._hash(thumbnail(image))
+
+    def _calculate_multi_hash(self, thumb: np.ndarray) -> np.ndarray:
         """The art's hash as drawn normally (first), washed out and in the
         wedge."""
-        gray = self._calculate_hash(image)
+        gray = self._hash(thumb)
         variants = [gray]
         for scale, offset in (self.WASHED_OUT, self.WEDGE):
             variants.append(scale * gray + offset)
         return np.stack(variants)
 
     @staticmethod
-    def _art_paths(card: Card) -> list[str]:
+    def _art_thumbnails(card: Card) -> list[np.ndarray]:
         """The card's art, plus its evolution's art if it has one: an
         evolved card is drawn with that instead."""
-        base = os.path.join(IMAGES_DIR, "cards", card.name)
-        paths = [f"{base}.jpg"]
-        if os.path.exists(f"{base}_ev1.jpg"):
-            paths.append(f"{base}_ev1.jpg")
-        return paths
+        thumbs = card_thumbnails()
+        if card.name not in thumbs:
+            raise WikifiedError("005", f"No card hash for {card.name}.")
+        names = [card.name, f"{card.name}_ev1"]
+        return [thumbs[n] for n in names if n in thumbs]
 
-    def _calculate_card_hashes(self):
+    def _calculate_card_hashes(self) -> tuple[np.ndarray, np.ndarray]:
         """Every art's multi-hash, and the index in self.cards it belongs
         to."""
         hashes, owners = [], []
-        try:
-            for i, card in enumerate(self.cards):
-                for path in self._art_paths(card):
-                    hashes.append(self._calculate_multi_hash(Image.open(path)))
-                    owners.append(i)
-        except Exception as e:
-            raise WikifiedError(
-                "005", "Can't load cards and their images."
-            ) from e
+        for i, card in enumerate(self.cards):
+            for thumb in self._art_thumbnails(card):
+                hashes.append(self._calculate_multi_hash(thumb))
+                owners.append(i)
         return np.stack(hashes), np.array(owners)
 
-    def _match_costs(self, crops, coloured):
+    def _match_costs(
+        self, crops: list[np.ndarray], coloured: list[bool]
+    ) -> np.ndarray:
         """(positions, cards): how unlike each card each position looks."""
         crop_hashes = np.stack([self._calculate_hash(c) for c in crops])
         # (positions, arts, variants, pixels).
@@ -119,7 +137,7 @@ class CardDetector:
             costs[:, owner] = np.minimum(costs[:, owner], art_costs[:, art])
         return costs
 
-    def _apply_memory(self, costs):
+    def _apply_memory(self, costs: np.ndarray) -> np.ndarray:
         if self._last is None:
             return costs
         costs = costs.copy()
@@ -132,36 +150,34 @@ class CardDetector:
                     costs[position, j] -= self.MEMORY_BONUS
         return costs
 
-    def _detect_cards(self, crops, coloured):
+    def _detect_cards(
+        self, crops: list[np.ndarray], coloured: list[bool]
+    ) -> list[Card]:
         costs = self._apply_memory(self._match_costs(crops, coloured))
         # Every position holds a different card.
         _, idx = linear_sum_assignment(costs)
         return [self.cards[i] for i in idx]
 
     @staticmethod
-    def _art_area(crop):
+    def _art_area(card: np.ndarray) -> np.ndarray:
         """The middle of a card's art: clear of the blue panel around the
         card and the cost badge along its bottom, which keep some colour
         even when the card is greyed out."""
-        width, height = crop.size
-        return crop.crop(
-            (
-                round(0.2 * width),
-                round(0.1 * height),
-                round(0.8 * width),
-                round(0.7 * height),
-            )
+        height, width = card.shape[:2]
+        return crop(
+            card,
+            (0.2 * width, 0.1 * height, 0.8 * width, 0.7 * height),
         )
 
-    def _is_coloured(self, crop) -> bool:
+    def _is_coloured(self, card: np.ndarray) -> bool:
         """Whether the card is drawn in colour rather than grey. An empty
         slot's blue counts as colour."""
-        art = np.asarray(self._art_area(crop), dtype=np.float32)
+        art = self._art_area(card).astype(np.float32)
         # How far each pixel is from grey, on average.
         return bool(np.mean(np.std(art, axis=2)) > self.grey_std_threshold)
 
     @staticmethod
-    def _detect_if_ready(cards, coloured):
+    def _detect_if_ready(cards: list[Card], coloured: list[bool]) -> list[int]:
         """Hand positions whose card is in colour. A card the player can't
         afford is drawn in grey, and an empty slot is never ready."""
         return [
@@ -172,9 +188,10 @@ class CardDetector:
             if colour and card != Cards.BLANK
         ]
 
-    def run(self, image):
-        crops = [image.crop(position) for position in CARD_BOXES]
-        coloured = [self._is_coloured(crop) for crop in crops]
+    def run(self, image: np.ndarray) -> tuple[list[Card], list[int]]:
+
+        crops = [crop(image, position) for position in CARD_BOXES]
+        coloured = [self._is_coloured(card) for card in crops]
         cards = self._detect_cards(crops, coloured)
         ready = self._detect_if_ready(cards, coloured)
         self._last = cards

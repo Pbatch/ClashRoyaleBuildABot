@@ -1,4 +1,5 @@
 from clashroyalebuildabot.actions.generic.action import Action
+from clashroyalebuildabot.game.state import State
 
 
 class DefenseAction(Action):
@@ -7,7 +8,7 @@ class DefenseAction(Action):
     play the card in a defensive position
     """
 
-    def calculate_score(self, state):
+    def calculate_score(self, state: State) -> list[float]:
         if (self.tile_x, self.tile_y) not in {(8, 9), (9, 9)}:
             return [0]
 

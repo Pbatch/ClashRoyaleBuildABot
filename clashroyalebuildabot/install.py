@@ -1,14 +1,21 @@
-"""One-time setup, run after ``uv sync``:
+"""Setup, run after ``uv sync``:
 
     uv run python -m clashroyalebuildabot.install
 
 Downloads Google's ADB (Android platform-tools) into the project folder, so
 the bot talks to the device with a known copy rather than whichever ``adb``
 is on the PATH, and the vision model into the Hugging Face cache. Safe to
-run again: what's already there is kept.
+run again: what's already there is kept, and an ADB other than the
+pinned version is replaced.
+
+The bot installs or updates ADB itself when it starts, and vLLM downloads the model
+when it first starts, so this only gets both out of the way up front.
 """
 
+import hashlib
 import os
+import shutil
+import tempfile
 import zipfile
 
 import requests
@@ -17,12 +24,20 @@ from tqdm import tqdm
 
 from clashroyalebuildabot.constants.paths import ADB_DIR, ADB_PATH, APP_DIR
 
+# Pinned, so every install gets the same ADB. To update, take the version
+# from https://dl.google.com/android/repository/repository2-3.xml (which
+# lists the zip's SHA-1) and record the zip's SHA-256 here.
+ADB_VERSION = "37.0.3"
 ADB_URL = (
-    "https://dl.google.com/android/repository/platform-tools-latest-linux.zip"
+    "https://dl.google.com/android/repository/"
+    f"platform-tools_r{ADB_VERSION}-linux.zip"
 )
+ADB_SHA256 = "214548146cadb2ca3508143d8a1d4be4c59de5bb837253e3ede89ed74cf450d1"
 
 
-def extract_zip(zip_path, dest):
+def extract_zip(
+    zip_path: str | os.PathLike[str], dest: str | os.PathLike[str]
+) -> None:
     """Extract a zip, keeping Unix permissions such as the executable bit.
 
     zipfile.extractall drops them, which leaves adb unable to run.
@@ -35,42 +50,85 @@ def extract_zip(zip_path, dest):
                 os.chmod(path, mode)
 
 
+def download(url: str, path: str | os.PathLike[str], sha256: str) -> None:
+    """Download ``url`` to ``path``, failing if its SHA-256 isn't
+    ``sha256``."""
+    digest = hashlib.sha256()
+    with requests.get(url, stream=True, timeout=60) as response:
+        response.raise_for_status()
+        total = int(response.headers.get("content-length", 0))
+        with (
+            open(path, "wb") as file,
+            tqdm(
+                desc=f"Downloading {os.path.basename(url)}",
+                total=total or None,
+                unit="B",
+                unit_scale=True,
+                unit_divisor=1024,
+            ) as pbar,
+        ):
+            for chunk in response.iter_content(chunk_size=1024 * 1024):
+                file.write(chunk)
+                digest.update(chunk)
+                pbar.update(len(chunk))
+    if digest.hexdigest() != sha256:
+        raise ValueError(
+            f"{url} has SHA-256 {digest.hexdigest()}, expected {sha256}"
+        )
+
+
 def adb_installed() -> bool:
     return os.access(ADB_PATH, os.X_OK)
 
 
-def install_adb():
+def installed_adb_version() -> str | None:
+    """The version of the installed platform-tools, from the
+    ``source.properties`` file Google ships in the zip."""
+    try:
+        with open(os.path.join(ADB_DIR, "source.properties")) as file:
+            for line in file:
+                key, _, value = line.partition("=")
+                if key.strip() == "Pkg.Revision":
+                    return value.strip()
+    except OSError:
+        pass
+    return None
+
+
+def adb_up_to_date() -> bool:
+    return adb_installed() and installed_adb_version() == ADB_VERSION
+
+
+def install_adb() -> None:
+    """Install the pinned ADB, replacing any other version."""
     if os.path.isfile(ADB_PATH):
-        # Earlier versions lost the executable bit when extracting.
-        if not adb_installed():
-            os.chmod(ADB_PATH, os.stat(ADB_PATH).st_mode | 0o111)
-        logger.info(f"ADB is already installed at {ADB_PATH}")
-        return
+        version = installed_adb_version()
+        if version == ADB_VERSION:
+            # Earlier versions lost the executable bit when extracting.
+            if not adb_installed():
+                os.chmod(ADB_PATH, os.stat(ADB_PATH).st_mode | 0o111)
+            logger.info(f"ADB {ADB_VERSION} is already installed")
+            return
+        logger.info(
+            f"Updating ADB from {version or 'an unknown version'} "
+            f"to {ADB_VERSION}"
+        )
 
-    zip_path = os.path.join(APP_DIR, os.path.basename(ADB_URL))
-    response = requests.get(ADB_URL, stream=True, timeout=60)
-    response.raise_for_status()
-    chunk_size = 1024 * 1024  # 1 MB chunks
-    total_mb = int(response.headers.get("content-length", 0)) / chunk_size
-
-    with open(zip_path, "wb") as file:
-        with tqdm(
-            unit="MB",
-            desc="Downloading ADB",
-            unit_scale=True,
-            unit_divisor=1024,
-            total=total_mb,
-        ) as pbar:
-            for chunk in response.iter_content(chunk_size=chunk_size):
-                if chunk:
-                    pbar.update(file.write(chunk) / chunk_size)
-    # The zip holds a platform-tools folder, so this creates ADB_DIR.
-    extract_zip(zip_path, APP_DIR)
-    os.remove(zip_path)
-    logger.info(f"Installed ADB in {ADB_DIR}")
+    # Download and extract in a temporary folder next to ADB_DIR, then move
+    # the result into place in one step, so an interrupted install leaves
+    # nothing behind that looks installed.
+    with tempfile.TemporaryDirectory(dir=APP_DIR) as tmp:
+        zip_path = os.path.join(tmp, os.path.basename(ADB_URL))
+        download(ADB_URL, zip_path, ADB_SHA256)
+        extract_zip(zip_path, tmp)
+        # The old version, or what's left of an interrupted install.
+        shutil.rmtree(ADB_DIR, ignore_errors=True)
+        # The zip holds a platform-tools folder.
+        os.replace(os.path.join(tmp, "platform-tools"), ADB_DIR)
+    logger.info(f"Installed ADB {ADB_VERSION} in {ADB_DIR}")
 
 
-def download_model(model: str):
+def download_model(model: str) -> None:
     """Download the vision model into the Hugging Face cache, where vLLM
     looks for it, so the bot's first start doesn't wait for it."""
     from huggingface_hub import snapshot_download
@@ -80,7 +138,7 @@ def download_model(model: str):
     logger.info(f"{model} is in {path}")
 
 
-def main():
+def main() -> None:
     from clashroyalebuildabot.config import load_config
 
     install_adb()

@@ -1,5 +1,6 @@
 import threading
 import time
+from typing import ClassVar
 
 import pytest
 
@@ -30,7 +31,7 @@ ACTIONS = [
 
 
 class FakeEmulator:
-    instances: list["FakeEmulator"] = []
+    instances: ClassVar[list["FakeEmulator"]] = []
 
     def __init__(self, device_serial):
         self.device_serial = device_serial
@@ -39,7 +40,7 @@ class FakeEmulator:
 
     def take_screenshot(self):
         time.sleep(0.01)
-        return None
+        return
 
     def load_deck(self, cards):
         raise RuntimeError("deck link failed")

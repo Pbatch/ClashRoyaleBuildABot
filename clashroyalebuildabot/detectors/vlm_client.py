@@ -8,15 +8,15 @@ vLLM only lets the model produce output that fits, so the reply parses.
 """
 
 import base64
-import io
 from typing import Protocol, TypeVar
 
+import numpy as np
 import openai
-from PIL import Image
 from pydantic import BaseModel, ValidationError
 
 from clashroyalebuildabot.config import ScreenDetectorConfig
 from clashroyalebuildabot.utils.error_handling import WikifiedError
+from clashroyalebuildabot.utils.image import encode_png, resize
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -27,7 +27,7 @@ class VisionError(Exception):
 
 
 class VisionClient(Protocol):
-    def ask(self, image: Image.Image, prompt: str, schema: type[T]) -> T:
+    def ask(self, image: np.ndarray, prompt: str, schema: type[T]) -> T:
         """Answer a question about an image, in the shape of ``schema``.
 
         Raises VisionError if there's no answer.
@@ -35,20 +35,28 @@ class VisionClient(Protocol):
         ...
 
 
-def encode_image(image: Image.Image, max_side=652) -> str:
-    """Encode an image as a PNG data URI, downscaling it if needed."""
-    image = image.convert("RGB")
-    image.thumbnail((max_side, max_side))
-    buffer = io.BytesIO()
-    image.save(buffer, format="PNG")
-    data = base64.b64encode(buffer.getvalue()).decode("ascii")
+def encode_image(image: np.ndarray, max_side: int = 652) -> str:
+    """Encode an image as a PNG data URI, shrinking it to fit within
+    ``max_side`` pixels on its longer side if needed."""
+    height, width = image.shape[:2]
+    scale = max_side / max(height, width)
+    if scale < 1:
+        size = (max(1, round(width * scale)), max(1, round(height * scale)))
+        image = resize(image, size)
+    data = base64.b64encode(encode_png(image)).decode("ascii")
     return f"data:image/png;base64,{data}"
 
 
 class VLMClient:
     def __init__(
-        self, base_url, model, timeout=10.0, max_side=652, max_tokens=64
-    ):
+        self,
+        base_url: str,
+        model: str,
+        timeout: float = 10.0,
+        max_side: int = 652,
+        max_tokens: int = 64,
+    ) -> None:
+
         self.base_url = base_url.rstrip("/")
         self.model = model
         self.max_side = max_side
@@ -64,7 +72,7 @@ class VLMClient:
             max_retries=0,
         )
 
-    def check(self):
+    def check(self) -> None:
         """Raise if the vLLM server can't be reached."""
         try:
             self.client.models.list()
@@ -76,7 +84,7 @@ class VLMClient:
                 "clashroyalebuildabot.vlm_server` before starting the bot.",
             ) from e
 
-    def ask(self, image: Image.Image, prompt: str, schema: type[T]) -> T:
+    def ask(self, image: np.ndarray, prompt: str, schema: type[T]) -> T:
         try:
             completion = self.client.chat.completions.parse(
                 model=self.model,

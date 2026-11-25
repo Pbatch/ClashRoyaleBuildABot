@@ -8,6 +8,7 @@ from clashroyalebuildabot.constants.screenshot import (
     SCREENSHOT_HEIGHT,
     SCREENSHOT_WIDTH,
 )
+from clashroyalebuildabot.utils.image import Box
 
 DISPLAY_WIDTH = 720
 DISPLAY_HEIGHT = 1280
@@ -47,7 +48,8 @@ RIGHT_PRINCESS_TILES += [
 ]
 
 
-def _scale_to_display(box):
+def _scale_to_display(box: Box) -> Box:
+
     sx = DISPLAY_WIDTH / SCREENSHOT_WIDTH
     sy = DISPLAY_HEIGHT / SCREENSHOT_HEIGHT
     left, top, right, bottom = box

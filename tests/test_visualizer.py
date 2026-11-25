@@ -1,9 +1,9 @@
 import os
 
+import numpy as np
 import pytest
-from PIL import Image
 
-from clashroyalebuildabot.gui.visualizer import Visualizer
+from clashroyalebuildabot.bot.visualizer import Visualizer
 
 
 @pytest.fixture
@@ -30,7 +30,8 @@ def saved(directory):
 
 def test_creates_dirs_and_starts_at_one(dirs):
     visualizer = make_visualizer(dirs)
-    assert dirs[0].is_dir() and dirs[1].is_dir()
+    assert dirs[0].is_dir()
+    assert dirs[1].is_dir()
     assert visualizer._next_index == 1
 
 
@@ -54,14 +55,14 @@ def test_does_not_scan_dirs_per_frame(dirs, state_factory, monkeypatch):
         raise AssertionError("os.listdir called during run()")
 
     monkeypatch.setattr(os, "listdir", fail)
-    image = Image.new("RGB", (368, 652))
+    image = np.zeros((652, 368, 3), np.uint8)
     for _ in range(3):
         visualizer.run(image.copy(), state_factory())
 
 
 def test_label_and_screenshot_share_a_number(dirs, state_factory):
     visualizer = make_visualizer(dirs)
-    image = Image.new("RGB", (368, 652))
+    image = np.zeros((652, 368, 3), np.uint8)
     for _ in range(2):
         visualizer.run(image.copy(), state_factory())
 
@@ -71,7 +72,7 @@ def test_label_and_screenshot_share_a_number(dirs, state_factory):
 
 def test_counter_does_not_advance_when_not_saving(dirs, state_factory):
     visualizer = make_visualizer(dirs, save_labels=False, save_images=False)
-    visualizer.run(Image.new("RGB", (368, 652)), state_factory())
+    visualizer.run(np.zeros((652, 368, 3), np.uint8), state_factory())
     assert visualizer._next_index == 1
 
 

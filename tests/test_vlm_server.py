@@ -90,7 +90,8 @@ def test_starts_a_server_and_waits_until_it_is_up(server, monkeypatch):
     assert server.ensure_running(CONFIG)
     assert len(started) == 1
     process = server.process
-    assert process is not None and process.poll() is None
+    assert process is not None
+    assert process.poll() is None
 
     server.stop()
     assert process.poll() is not None

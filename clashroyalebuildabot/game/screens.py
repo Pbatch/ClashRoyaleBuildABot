@@ -1,4 +1,5 @@
 from enum import StrEnum, auto
+from typing import ClassVar
 
 from pydantic.dataclasses import dataclass
 
@@ -82,7 +83,9 @@ class Screens:
             "opening",
         ),
     )
-    _BY_NAME = {screen.name: screen for screen in _ALL}
+    _BY_NAME: ClassVar[dict[ScreenName, Screen]] = {
+        screen.name: screen for screen in _ALL
+    }
 
     @classmethod
     def get(cls, name: ScreenName) -> Screen:

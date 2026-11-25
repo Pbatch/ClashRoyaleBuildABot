@@ -90,7 +90,7 @@ def detector(monkeypatch):
         lambda: FakeSubDetector(result=7),
     )
     monkeypatch.setattr(
-        detector_module, "BattleCheck", lambda: FakeSubDetector(result=True)
+        detector_module, "BattleCheck", lambda: FakeSubDetector(result=False)
     )
     monkeypatch.setattr(detector_module, "make_client", lambda config: None)
     monkeypatch.setattr(
@@ -107,13 +107,39 @@ def detector(monkeypatch):
     return detector_module.Detector(DECK, default_config().screen_detector)
 
 
+def in_battle(detector, screen=ScreenName.IN_GAME):
+    """The frame shows a battle, and the screen detector says ``screen``."""
+    detector.screen_detector.result = screen
+    detector.battle_check.result = True
+
+
 def test_returns_state_in_game(detector):
-    detector.screen_detector.result = ScreenName.IN_GAME
+    in_battle(detector)
     state = detector.run(image=None)
     assert isinstance(state, State)
     assert state.screen == ScreenName.IN_GAME
     assert state.cards == DECK[:5]
     assert state.ready == [0, 1]
+
+
+@pytest.mark.parametrize(
+    "stale", [ScreenName.LOADING, ScreenName.VS, ScreenName.UNKNOWN]
+)
+def test_frame_with_a_battle_wins_over_a_stale_screen(detector, stale):
+    # The battle has just begun, and the screen detector hasn't caught up.
+    in_battle(detector, screen=stale)
+    state = detector.run(image=None)
+    assert state.screen == ScreenName.IN_GAME
+    assert state.ready == [0, 1]
+    assert detector.tower_hp_reader.calls == 1
+    assert detector.timer_reader.calls == 1
+
+
+def test_screen_detector_is_asked_in_a_battle(detector):
+    # Keeps its answer fresh for when the battle ends.
+    in_battle(detector)
+    detector.run(image=None)
+    assert detector.screen_detector.calls == 1
 
 
 def battle_detectors(detector):
@@ -128,7 +154,6 @@ def test_skips_battle_detectors_outside_a_battle(detector):
     state = detector.run(image=None)  # lobby
     assert state.screen == ScreenName.LOBBY
     assert [d.calls for d in battle_detectors(detector)] == [0, 0, 0]
-    assert detector.battle_check.calls == 0
     assert (state.allies, state.enemies) == ([], [])
     assert (state.cards, state.ready) == ([], [])
     assert state.numbers.elixir == 0
@@ -158,7 +183,7 @@ def test_forgets_the_hand_between_battles(detector):
 
 
 def test_reads_tower_hp_in_game(detector):
-    detector.screen_detector.result = ScreenName.IN_GAME
+    in_battle(detector)
     state = detector.run(image=None)
     assert state.numbers.towers.left_enemy_princess.hp == 1918
     assert state.numbers.towers.left_enemy_princess.level == 8
@@ -167,7 +192,7 @@ def test_reads_tower_hp_in_game(detector):
 
 
 def test_reads_timer_in_game(detector):
-    detector.screen_detector.result = ScreenName.IN_GAME
+    in_battle(detector)
     state = detector.run(image=None)
     assert state.numbers.timer.time_left == 117
     assert state.numbers.timer.overtime is False
@@ -190,7 +215,7 @@ def test_resets_tower_hp_between_battles(detector):
 
 
 def test_failure_returns_none_after_one_attempt(detector):
-    detector.screen_detector.result = ScreenName.IN_GAME
+    in_battle(detector)
     detector.unit_detector.error = RuntimeError("model failed")
     messages = []
     sink = logger.add(lambda m: messages.append(m.record["message"]))

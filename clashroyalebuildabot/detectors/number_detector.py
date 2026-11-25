@@ -1,6 +1,7 @@
 import numpy as np
 
 from clashroyalebuildabot.constants.screenshot import ELIXIR_BOX
+from clashroyalebuildabot.utils.image import crop
 
 
 class NumberDetector:
@@ -10,9 +11,11 @@ class NumberDetector:
     """
 
     @staticmethod
-    def _calculate_elixir(image, window_size=10, threshold=50):
-        crop = image.crop(ELIXIR_BOX)
-        std = np.array(crop).std(axis=(0, 2))
+    def _calculate_elixir(
+        image: np.ndarray, window_size: int = 10, threshold: float = 50
+    ) -> int:
+        bar = crop(image, ELIXIR_BOX)
+        std = bar.std(axis=(0, 2))
         rolling_std = np.convolve(
             std, np.ones(window_size) / window_size, mode="valid"
         )
@@ -20,8 +23,8 @@ class NumberDetector:
         if len(change_points) == 0:
             elixir = 10
         else:
-            elixir = (change_points[0] + window_size) * 10 // crop.width
-        return elixir
+            elixir = (change_points[0] + window_size) * 10 // bar.shape[1]
+        return int(elixir)
 
-    def run(self, image) -> int:
-        return int(self._calculate_elixir(image))
+    def run(self, image: np.ndarray) -> int:
+        return self._calculate_elixir(image)

@@ -1,9 +1,14 @@
 import random
 import threading
+import time
+from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import cast
 
 from loguru import logger
 
+from clashroyalebuildabot.actions.generic.action import Action
+from clashroyalebuildabot.bot.visualizer import FrameCallback, Visualizer
 from clashroyalebuildabot.config import Config
 from clashroyalebuildabot.constants.device_screen import (
     ALL_TILES,
@@ -20,8 +25,8 @@ from clashroyalebuildabot.constants.device_screen import (
 from clashroyalebuildabot.detectors.detector import Detector
 from clashroyalebuildabot.emulator.emulator import Emulator
 from clashroyalebuildabot.game import ScreenName, Screens
+from clashroyalebuildabot.game.cards import Card
 from clashroyalebuildabot.game.state import State
-from clashroyalebuildabot.gui.visualizer import Visualizer
 
 # Screens the bot just waits through.
 WAITING_SCREENS = {
@@ -36,8 +41,34 @@ WAITING_SCREENS = {
 SCREEN_POLL_DELAY = 0.5
 
 
+@dataclass(frozen=True)
+class PendingPlay:
+    """A card the bot has tapped, which the frames don't yet show played."""
+
+    card: Card
+    # Hand position, 0-3.
+    index: int
+    # Elixir just before the play.
+    elixir: int
+    started: float
+    deadline: float
+
+    def landed(self, state: State) -> bool:
+        """Whether the frame shows the card played: it has left its place
+        in the hand, or elixir has been spent."""
+        position = self.index + 1
+        if len(state.cards) > position and state.cards[position] != self.card:
+            return True
+        return state.numbers.elixir < self.elixir
+
+
 class Bot:
-    def __init__(self, actions, config: Config):
+    def __init__(
+        self,
+        actions: Sequence[type[Action]],
+        config: Config,
+        on_frame: FrameCallback | None = None,
+    ) -> None:
         self.actions = actions
         self.auto_start = config.bot.auto_start_game
         self.end_of_game_clicked = False
@@ -49,8 +80,12 @@ class Bot:
         cards = [action.CARD for action in actions]
         self.cards_to_actions = dict(zip(cards, actions, strict=False))
 
+        # The longest the bot waits for a card it played to show as played.
         self.play_action_delay = config.ingame.play_action
-        self.visualizer = Visualizer(**config.visuals.model_dump())
+        self.pending_play: PendingPlay | None = None
+        self.visualizer = Visualizer(
+            **config.visuals.model_dump(), on_frame=on_frame
+        )
         self.detector = Detector(
             cards=cards, screen_config=config.screen_detector
         )
@@ -65,7 +100,7 @@ class Bot:
             self.emulator.close()
             raise
 
-    def _log_and_wait(self, prefix, delay):
+    def _log_and_wait(self, prefix: str, delay: float) -> None:
         suffix = ""
         if delay > 1:
             suffix = "s"
@@ -78,35 +113,35 @@ class Bot:
     def is_paused(self) -> bool:
         return self._pause_event.is_set()
 
-    def pause(self):
+    def pause(self) -> None:
         if not self.is_paused:
             self._pause_event.set()
             logger.info("Bot paused.")
 
-    def resume(self):
+    def resume(self) -> None:
         if self.is_paused:
             self._pause_event.clear()
             logger.info("Bot resumed.")
 
-    def toggle_pause(self):
+    def toggle_pause(self) -> None:
         if self.is_paused:
             self.resume()
         else:
             self.pause()
 
     @staticmethod
-    def _get_tile_centre(tile_x, tile_y):
+    def _get_tile_centre(tile_x: int, tile_y: int) -> tuple[float, float]:
         x = TILE_INIT_X + (tile_x + 0.5) * TILE_WIDTH
         y = DISPLAY_HEIGHT - TILE_INIT_Y - (tile_y + 0.5) * TILE_HEIGHT
         return x, y
 
     @staticmethod
-    def _get_card_centre(card_n):
+    def _get_card_centre(card_n: int) -> tuple[float, float]:
         left, top, right, bottom = HAND_CARD_BOXES[card_n]
         return (left + right) / 2, (top + bottom) / 2
 
     @staticmethod
-    def _get_valid_tiles(state: State):
+    def _get_valid_tiles(state: State) -> list[list[int]]:
         tiles = list(ALLY_TILES)
         if state.numbers.towers.left_enemy_princess.hp == 0:
             tiles += LEFT_PRINCESS_TILES
@@ -114,9 +149,9 @@ class Bot:
             tiles += RIGHT_PRINCESS_TILES
         return tiles
 
-    def get_actions(self, state: State):
+    def get_actions(self, state: State) -> list[Action]:
         valid_tiles = self._get_valid_tiles(state)
-        actions = []
+        actions: list[Action] = []
         for i in state.ready:
             card = state.cards[i + 1]
             if state.numbers.elixir < card.cost:
@@ -139,12 +174,13 @@ class Bot:
             self.visualizer.run(screenshot, state)
         return state
 
-    def play_action(self, action):
+    def play_action(self, action: Action) -> None:
         card_centre = self._get_card_centre(action.index)
         tile_centre = self._get_tile_centre(action.tile_x, action.tile_y)
         self.emulator.tap_sequence([card_centre, tile_centre])
 
-    def step(self, state: State | None):
+    def step(self, state: State | None) -> State | None:
+
         old_screen = state.screen if state else None
         state = self.compute_state()
         if state is None:
@@ -166,7 +202,7 @@ class Bot:
             if not self.end_of_game_clicked:
                 self.emulator.click(
                     *cast(
-                        tuple[int, int],
+                        "tuple[int, int]",
                         Screens.get(ScreenName.END_OF_GAME).click_xy,
                     )
                 )
@@ -179,7 +215,7 @@ class Bot:
             if not self.bypass_end_of_game_clicked:
                 self.emulator.click(
                     *cast(
-                        tuple[int, int],
+                        "tuple[int, int]",
                         Screens.get(ScreenName.BYPASS_END_OF_GAME).click_xy,
                     )
                 )
@@ -190,7 +226,9 @@ class Bot:
 
         if self.auto_start and new_screen == ScreenName.LOBBY:
             self.emulator.click(
-                *cast(tuple[int, int], Screens.get(ScreenName.LOBBY).click_xy)
+                *cast(
+                    "tuple[int, int]", Screens.get(ScreenName.LOBBY).click_xy
+                )
             )
             self._log_and_wait("Starting game", 2)
             return state
@@ -205,17 +243,44 @@ class Bot:
         self._handle_game_step(state)
         return state
 
-    def _handle_game_step(self, state: State):
-        # Only playing a card is followed by a wait, for it to land and the
-        # elixir to drop. Otherwise the bot looks again at the next frame,
-        # so it plays as soon as a card is affordable or worth playing.
+    def _waiting_for_play(self, state: State) -> bool:
+        """Whether a card the bot played hasn't yet shown as played. Until
+        it does, the frames still show it in hand with the elixir unspent,
+        and the bot would play it again."""
+        pending = self.pending_play
+        if pending is None:
+            return False
+        now = time.monotonic()
+        if pending.landed(state):
+            logger.debug(
+                f"{pending.card.name} played after "
+                f"{now - pending.started:.2f} seconds."
+            )
+        elif now < pending.deadline:
+            return True
+        else:
+            logger.debug(
+                f"{pending.card.name} not seen played after "
+                f"{self.play_action_delay} seconds, moving on."
+            )
+        self.pending_play = None
+        return False
+
+    def _handle_game_step(self, state: State) -> None:
+        # The bot never sleeps in a battle: it looks again at the next
+        # frame, so it plays as soon as a card is affordable or worth
+        # playing, and as soon as the last card it played has landed.
+        if self._waiting_for_play(state):
+            return
+
         actions = self.get_actions(state)
         if not actions:
             logger.debug("No actions available")
             return
 
         random.shuffle(actions)
-        best_score = [0]
+        best_score: list[float] = [0]
+
         best_action = None
         for action in actions:
             score = action.calculate_score(state)
@@ -223,17 +288,22 @@ class Bot:
                 best_action = action
                 best_score = score
 
-        if best_score[0] == 0:
+        if best_action is None or best_score[0] == 0:
             logger.debug("No good actions available")
             return
 
+        logger.info(f"Playing {best_action} with score {best_score}")
         self.play_action(best_action)
-        self._log_and_wait(
-            f"Playing {best_action} with score {best_score}",
-            self.play_action_delay,
+        now = time.monotonic()
+        self.pending_play = PendingPlay(
+            card=state.cards[best_action.index + 1],
+            index=best_action.index,
+            elixir=state.numbers.elixir,
+            started=now,
+            deadline=now + self.play_action_delay,
         )
 
-    def run(self):
+    def run(self) -> None:
         """Play until stop() is called. Always closes the emulator on exit."""
         state = None
         try:
@@ -250,6 +320,6 @@ class Bot:
             self.emulator.close()
         logger.info("Thanks for using CRBAB, see you next time!")
 
-    def stop(self):
+    def stop(self) -> None:
         """Ask run() to return. Safe to call from any thread."""
         self._stop_event.set()

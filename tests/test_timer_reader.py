@@ -1,6 +1,6 @@
 import math
 
-from PIL import Image
+import numpy as np
 
 from clashroyalebuildabot.constants.screenshot import TIMER_BOX
 from clashroyalebuildabot.detectors.timer_reader import (
@@ -22,14 +22,14 @@ class FakeClient:
 
     def ask(self, image, prompt, schema):
         assert schema is TimerReading
-        self.crops.append(image.size)
+        self.crops.append(image.shape[1::-1])
         if self.fail:
             raise VisionError("down")
         return self.answer
 
 
 def frame():
-    return Image.new("RGB", (368, 652))
+    return np.zeros((652, 368, 3), np.uint8)
 
 
 def read_in_background(reader):

@@ -1,5 +1,4 @@
 import numpy as np
-from PIL import Image
 
 from clashroyalebuildabot.constants.screenshot import (
     BATTLE_CHECK_BOX,
@@ -10,17 +9,19 @@ from clashroyalebuildabot.detectors.battle_check import (
     REFERENCE_PATH,
     BattleCheck,
 )
+from clashroyalebuildabot.utils.image import load, resize
 
 
 def frame(fill=(0, 0, 0)):
-    return Image.new("RGB", (SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT), fill)
+    return np.full((SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH, 3), fill, np.uint8)
 
 
 def frame_with_elixir_drop():
     image = frame()
     left, top, right, bottom = BATTLE_CHECK_BOX
-    drop = Image.open(REFERENCE_PATH).resize((right - left, bottom - top))
-    image.paste(drop, (left, top))
+    image[top:bottom, left:right] = resize(
+        load(REFERENCE_PATH), (right - left, bottom - top)
+    )
     return image
 
 
@@ -41,4 +42,4 @@ def test_rejects_noise():
     pixels = rng.integers(
         0, 256, (SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH, 3), dtype=np.uint8
     )
-    assert not BattleCheck().run(Image.fromarray(pixels))
+    assert not BattleCheck().run(pixels)

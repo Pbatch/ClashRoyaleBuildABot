@@ -2,13 +2,13 @@
 
 Each step, the [detector](../clashroyalebuildabot/detectors/detector.py) turns a screenshot into a `State`: the units on the field, tower health, the time left, elixir, the cards in your hand and the current screen.
 
-It combines six detectors: card, screen, unit, tower HP, timer and number (elixir). The unit detector also uses the side detector to decide which units are yours.
+It combines six detectors: card, screen, unit, tower HP, timer and number (elixir).
 
 ## Card detector
 
 To work out which cards are in your hand, and which card comes next, we use the [card_detector](../clashroyalebuildabot/detectors/card_detector.py).
 
-Before the game starts, the art of each card in your deck is shrunk to a tiny greyscale thumbnail (a hash), along with blank cards for empty hand slots. The art is in [images/cards](../clashroyalebuildabot/images/cards), cropped to the card's face, which is how cards are framed in your hand. A card with an evolution also has its evolved art (`<card>_ev1.jpg`), since an evolved card is drawn with that instead.
+Each card's art, cropped to the card's face (which is how cards are framed in your hand), has been shrunk to a tiny greyscale thumbnail (a hash). The hashes ship in [constants/card_hashes.py](../clashroyalebuildabot/constants/card_hashes.py); the art itself doesn't. Before the game starts, the detector loads the hashes of the cards in your deck, along with blank cards for empty hand slots. A card with an evolution also has a hash of its evolved art (`<card>_ev1`), since an evolved card is drawn with that instead.
 
 Then, each step, we hash the screen at each card position and match the hashes to the cards, so that every position gets a different card. The bottom of each card is left out: in your hand it has the elixir cost badge, which the art doesn't.
 
@@ -18,7 +18,7 @@ Washed-out cards can look alike, so the detector also remembers what it saw. A c
 
 A card is ready to play when the middle of its art is in colour rather than grey. An empty slot is never ready.
 
-If the game's card art changes, the card positions are `CARD_BOXES` in [constants/screenshot.py](../clashroyalebuildabot/constants/screenshot.py), and the art comes from RoyaleAPI's card images (`https://cdn.royaleapi.com/static/img/cards/<card-name>.png`), cropped to the face inside the rarity border.
+If the game's card art changes, the card positions are `CARD_BOXES` in [constants/screenshot.py](../clashroyalebuildabot/constants/screenshot.py). The maintainers keep the card art and remake the hashes from it when cards are added or their art changes.
 
 ## Screen detector
 
@@ -28,7 +28,7 @@ It asks [Qwen3.5-0.8B](https://huggingface.co/Qwen/Qwen3.5-0.8B), a small vision
 
 The answer is shaped by a Pydantic model, `ScreenAnswer`: vLLM only lets the model produce JSON that fits its schema, so it can only name a known screen. The choices come straight from [screens.py](../clashroyalebuildabot/game/screens.py): lobby, in game and end of game, plus the screens in between (searching for an opponent, loading, the VS screen and the Match Over! banner), which the bot waits through without tapping or playing cards. Naming the in-between screens matters: given only lobby, in game and end of game to choose from, a model confidently picks the closest wrong one. Names matter too: with `matchmaking` and `match_over` as choices, the model wrote `match` and then picked the wrong ending, so the first is called `searching_for_opponent`. The same answer says where the OK button is, to tell the two end-of-game layouts apart.
 
-The model takes a few hundred milliseconds, so it runs in the background about once a second and the bot uses its latest answer. That answer is a second or more old, so when a battle ends it still says "in game" while the results screen is up. Before the bot plays a card, the [battle_check](../clashroyalebuildabot/detectors/battle_check.py) confirms the current frame shows the elixir drop at the left end of the elixir bar, which only a battle shows, by comparing a few pixels with [in_game.jpg](../clashroyalebuildabot/images/screen/in_game.jpg). If it doesn't, the screen counts as unknown and the bot waits. The card, unit, elixir, tower HP and timer detectors only run in a battle. On other screens the state has no units or cards and 0 elixir.
+The model takes a few hundred milliseconds, so it runs in the background about once a second and the bot uses its latest answer. That answer is a second or more old, so it says "in game" a moment after a battle starts, and keeps saying it while the results screen is up. So whether the frame shows a battle is decided by the [battle_check](../clashroyalebuildabot/detectors/battle_check.py) instead: it looks for the elixir drop at the left end of the elixir bar, which only a battle shows, by comparing a few pixels with [in_game.jpg](../clashroyalebuildabot/images/screen/in_game.jpg). If the drop is there, the screen is in game, whatever the model last said, so the bot plays as soon as a battle starts. If the model says "in game" but the drop isn't there, the battle has just ended (or the bar is briefly hidden), so the screen counts as unknown and the bot waits. The card, unit, elixir, tower HP and timer detectors only run in a battle. On other screens the state has no units or cards and 0 elixir.
 
 The settings are under `screen_detector` in [default_config.yaml](../clashroyalebuildabot/default_config.yaml), and where to tap on each screen is in [screens.py](../clashroyalebuildabot/game/screens.py).
 
@@ -36,12 +36,14 @@ The settings are under `screen_detector` in [default_config.yaml](../clashroyale
 
 To work out what units are on the battlefield, we use the [unit_detector](../clashroyalebuildabot/detectors/unit_detector.py).
 
-It uses YOLOv10 (an object detector), trained on many labelled screenshots. The ONNX runtime is used to perform fast inference.
+It uses one model, [units_tiles.onnx](../clashroyalebuildabot/models/units_tiles.onnx), run with the ONNX runtime. Instead of drawing boxes, it reads the arena as its grid of 18 x 32 tiles and gives, for every tile, the chance that each unit, ours or the enemy's, is standing on it. A unit stands where its feet are, so a tile's answer can come from the sprite drawn above it.
 
-![image](https://github.com/Pbatch/ClashRoyaleBuildABot/assets/37177749/0887a413-880d-4381-a577-e757a8d87443)
+- **Model:** a MobileNetV4 that reads the strip of the screenshot between the top of the arena and the cards. Its features at 1/8, 1/16 and 1/32 of the screen's size are combined, so a tile is about 2 x 2 feature cells, then read at each tile's centre.
+- **Which tiles count:** a unit is reported on a tile that is the most likely of its 3 x 3 neighbours for that unit (with at least a 40% chance), or that is at least 70% likely on its own. The second rule keeps every member of a swarm on neighbouring tiles. The first alone would merge them into one, while a tile beside a unit whose feet are near a tile edge, which is often half likely, isn't reported twice.
+- **Allies:** your units can only come from your deck, including the units your cards spawn, like a witch's skeletons. So an ally is always named from your deck. On each tile, the model's strongest ally guess, whatever unit it's for, says how likely it is that one of yours is there, and it's named after the deck unit the model rates highest on that tile. A unit of yours that the model mistakes for one you don't have is still found, under the right name. Enemies can be any unit. The units the model knows are `DETECTOR_UNITS`, in the same file.
+- **Positions:** each detection's tile is in `tile_x` and `tile_y`, counted from the bottom left as elsewhere in the bot. There is no box around the sprite: `bbox` is the tile itself, in screenshot pixels.
 
-Here you can see the confusion matrix of the performance. If you are interested in a certain deck where your cards have not been labelled,
-post your deck in the Issues section and I'll see what I can do.
+The model is trained on synthetic frames: sprites of every unit pasted onto empty arenas, with health bars, spells and other clutter, so no frames need labelling by hand. The sprites come from the game's own textures and the [KataCR dataset](https://github.com/wty-yy/Clash-Royale-Detection-Dataset). It has only been measured on synthetic frames so far (81% of units found and 90% of reports right); on real battles it misses some units and sometimes names the wrong one.
 
 ## Tower HP reader
 
@@ -68,9 +70,3 @@ The timer's position is `TIMER_BOX` in [constants/screenshot.py](../clashroyaleb
 ## Number detector
 
 To read elixir, we use the [number_detector](../clashroyalebuildabot/detectors/number_detector.py). It doesn't use a model: the filled part of the elixir bar is more varied in colour than the empty part, so the point where it becomes uniform gives the elixir, from 0 to 10, in `State.numbers.elixir`. The bar position is `ELIXIR_BOX` in [constants/screenshot.py](../clashroyalebuildabot/constants/screenshot.py).
-
-## Side detector
-
-To work out if a unit is an ally or an enemy, we use the [side_detector](../clashroyalebuildabot/detectors/side_detector.py).
-
-It is a small CNN that runs on 16x16 images. If a unit can't come from a card in your deck, it is always treated as an enemy.

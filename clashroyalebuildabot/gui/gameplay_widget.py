@@ -1,9 +1,10 @@
+import numpy as np
 from PyQt6.QtGui import QImage, QPixmap
 from PyQt6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
 
 class ImageStreamWindow(QWidget):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.image = QLabel(self)
@@ -28,7 +29,7 @@ class ImageStreamWindow(QWidget):
         layout.addWidget(self.image)
         self.setLayout(layout)
 
-    def update_frame(self, annotated_image):
+    def update_frame(self, annotated_image: np.ndarray) -> None:
         height, width, _ = annotated_image.shape
         bytes_per_line = 3 * width
         q_image = QImage(
@@ -42,7 +43,8 @@ class ImageStreamWindow(QWidget):
         pixmap = QPixmap.fromImage(q_image)
         self.image.setPixmap(pixmap)
 
-    def update_active_state(self, active):
+    def update_active_state(self, active: bool) -> None:
+
         if not active:
             self.inactiveIndicator.show()
         else:

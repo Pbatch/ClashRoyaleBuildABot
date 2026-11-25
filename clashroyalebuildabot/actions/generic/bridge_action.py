@@ -1,4 +1,10 @@
 from clashroyalebuildabot.actions.generic.action import Action
+from clashroyalebuildabot.game.state import State
+
+# The last row on our side, in front of each bridge. The bridge itself
+# (y=15) is only playable once that enemy princess tower is destroyed.
+LEFT_BRIDGE = (3, 14)
+RIGHT_BRIDGE = (14, 14)
 
 
 class BridgeAction(Action):
@@ -7,8 +13,9 @@ class BridgeAction(Action):
     play this card at the bridge on the side of the weakest tower
     """
 
-    def calculate_score(self, state):
-        if (self.tile_x, self.tile_y) not in {(3, 15), (14, 15)}:
+    def calculate_score(self, state: State) -> list[float]:
+        tile = (self.tile_x, self.tile_y)
+        if tile not in {LEFT_BRIDGE, RIGHT_BRIDGE}:
             return [0]
 
         if state.numbers.elixir != 10:
@@ -16,10 +23,6 @@ class BridgeAction(Action):
 
         left_hp = state.numbers.towers.left_enemy_princess.hp
         right_hp = state.numbers.towers.right_enemy_princess.hp
-        if self.tile_x == 3:
-            score = [1, left_hp > 0, left_hp <= right_hp]
-        else:
-            # self.tile_x == 14
-            score = [1, right_hp > 0, right_hp <= left_hp]
-
-        return score
+        if tile == LEFT_BRIDGE:
+            return [1, left_hp > 0, left_hp <= right_hp]
+        return [1, right_hp > 0, right_hp <= left_hp]

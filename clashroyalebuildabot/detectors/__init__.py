@@ -7,10 +7,10 @@ from .screen_detector import ScreenDetector
 from .unit_detector import UnitDetector
 
 __all__ = [
+    "CardDetector",
     "Detector",
+    "NumberDetector",
     "OnnxDetector",
     "ScreenDetector",
-    "NumberDetector",
     "UnitDetector",
-    "CardDetector",
 ]

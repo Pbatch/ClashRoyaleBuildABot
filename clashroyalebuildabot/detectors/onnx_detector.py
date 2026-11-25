@@ -1,8 +1,11 @@
 import functools
+from typing import cast
 
 import numpy as np
 import onnxruntime as ort
 from loguru import logger
+
+from clashroyalebuildabot.utils import image as image_utils
 
 CUDA = "CUDAExecutionProvider"
 CPU = "CPUExecutionProvider"
@@ -22,13 +25,13 @@ def _providers() -> list[str]:
         return [CPU]
     try:
         ort.preload_dlls()
-    except Exception as e:  # noqa: BLE001 - the CPU still works
+    except Exception as e:
         logger.warning(f"Couldn't preload the CUDA libraries: {e}")
     return [CUDA, CPU]
 
 
 class OnnxDetector:
-    def __init__(self, model_path):
+    def __init__(self, model_path: str) -> None:
         self.model_path = model_path
 
         providers = _providers()
@@ -50,8 +53,8 @@ class OnnxDetector:
         self.input_name = input_.name
         self.model_height, self.model_width = input_.shape[1:3]
 
-    def resize(self, x):
-        ratio = x.height / x.width
+    def resize(self, x: np.ndarray) -> np.ndarray:
+        ratio = x.shape[0] / x.shape[1]
         if ratio > self.model_height / self.model_width:
             height = self.model_height
             width = int(self.model_height / ratio)
@@ -59,10 +62,9 @@ class OnnxDetector:
             width = self.model_width
             height = int(self.model_width * ratio)
 
-        x = x.resize((width, height))
-        return x
+        return image_utils.resize(x, (width, height))
 
-    def pad(self, x):
+    def pad(self, x: np.ndarray) -> tuple[np.ndarray, list[int]]:
         height, width = x.shape[:2]
         dx = self.model_width - width
         dy = self.model_height - height
@@ -79,12 +81,14 @@ class OnnxDetector:
         )
         return x, padding
 
-    def resize_and_pad(self, image):
-        image = self.resize(image)
-        image = np.asarray(image, dtype=np.uint8)
-        return self.pad(image)
+    def resize_and_pad(
+        self, image: np.ndarray
+    ) -> tuple[np.ndarray, list[int]]:
+        return self.pad(self.resize(image))
 
-    def fix_bboxes(self, x, width, height, padding):
+    def fix_bboxes(
+        self, x: np.ndarray, width: int, height: int, padding: list[int]
+    ) -> np.ndarray:
         x[:, [0, 2]] -= padding[0]
         x[:, [1, 3]] -= padding[2]
         x[..., [0, 2]] *= width / (self.model_width - padding[0] - padding[1])
@@ -93,8 +97,10 @@ class OnnxDetector:
         )
         return x
 
-    def _infer(self, x):
-        return self.sess.run([self.output_name], {self.input_name: x})[0]
+    def _infer(self, x: np.ndarray) -> np.ndarray:
+        outputs = self.sess.run([self.output_name], {self.input_name: x})
+        return cast("np.ndarray", outputs[0])
 
-    def run(self, image):
+    def run(self, image: np.ndarray) -> object:
+
         raise NotImplementedError

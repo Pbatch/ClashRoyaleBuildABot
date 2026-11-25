@@ -283,12 +283,13 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "av", marker = "sys_platform == 'linux'" },
+    { name = "huggingface-hub", marker = "sys_platform == 'linux'" },
     { name = "keyboard", marker = "sys_platform == 'linux'" },
     { name = "loguru", marker = "sys_platform == 'linux'" },
     { name = "numpy", marker = "sys_platform == 'linux'" },
     { name = "onnxruntime-gpu", marker = "sys_platform == 'linux'" },
     { name = "openai", marker = "sys_platform == 'linux'" },
-    { name = "pillow", marker = "sys_platform == 'linux'" },
+    { name = "opencv-python-headless", marker = "sys_platform == 'linux'" },
     { name = "pydantic", marker = "sys_platform == 'linux'" },
     { name = "pyqt6", marker = "sys_platform == 'linux'" },
     { name = "pyyaml", marker = "sys_platform == 'linux'" },
@@ -309,12 +310,13 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "av", specifier = "==19.0.2" },
+    { name = "huggingface-hub", specifier = "==2.4.0" },
     { name = "keyboard", specifier = "==0.13.5" },
     { name = "loguru", specifier = "==0.8.0" },
     { name = "numpy", specifier = "==2.3.5" },
     { name = "onnxruntime-gpu", specifier = "==1.32.0" },
     { name = "openai", specifier = "==3.54.0" },
-    { name = "pillow", specifier = "==13.0.0" },
+    { name = "opencv-python-headless", specifier = "==5.1.0.95" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = "==4.7.0" },
     { name = "pydantic", specifier = "==2.12.5" },
     { name = "pyqt6", specifier = "==6.12.1" },

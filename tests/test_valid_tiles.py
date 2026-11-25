@@ -36,4 +36,4 @@ def test_does_not_mutate_ally_tiles(state_factory):
     for _ in range(5):
         Bot._get_valid_tiles(state)
 
-    assert ALLY_TILES == original
+    assert original == ALLY_TILES

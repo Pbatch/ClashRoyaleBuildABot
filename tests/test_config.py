@@ -87,7 +87,7 @@ def test_invalid_setting_raises_e002_naming_it(
 
 
 def test_gui_assignment_is_validated(defaults):
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="greater than 0"):
         defaults.screen_detector.interval = -1
 
 

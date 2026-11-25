@@ -52,7 +52,7 @@
   ```bash
   uv run python -m clashroyalebuildabot.install
   ```
-- This downloads the bot's own copy of [ADB](https://developer.android.com/tools/adb), which it uses to talk to your device, into `platform-tools/`. It also downloads [Qwen3.5-0.8B](https://huggingface.co/Qwen/Qwen3.5-0.8B), the small vision model the bot reads the screen with (about 1.7 GB), into the Hugging Face cache. Running it again keeps what's already there.
+- This downloads the bot's own copy of [ADB](https://developer.android.com/tools/adb), which it uses to talk to your device, into `platform-tools/`. It also downloads [Qwen3.5-0.8B](https://huggingface.co/Qwen/Qwen3.5-0.8B), the small vision model the bot reads the screen with (about 1.7 GB), into the Hugging Face cache. Running it again keeps what's already there. If you skip this step, the bot downloads ADB when it starts (and updates it when a new version of the bot needs a newer one), and vLLM downloads the model when the vision model's server first starts.
 
 ### Testing the Bot
 Now, let’s verify that the bot operates correctly:

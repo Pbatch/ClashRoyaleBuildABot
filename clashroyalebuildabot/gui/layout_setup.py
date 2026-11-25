@@ -1,5 +1,5 @@
 import os
-from typing import get_args
+from typing import TYPE_CHECKING, get_args
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont, QPixmap
@@ -26,8 +26,11 @@ from clashroyalebuildabot.config import LogLevel, save_config
 from clashroyalebuildabot.constants.paths import IMAGES_DIR
 from clashroyalebuildabot.gui.gameplay_widget import ImageStreamWindow
 
+if TYPE_CHECKING:
+    from clashroyalebuildabot.gui.main_window import MainWindow
 
-def setup_top_bar(main_window):
+
+def setup_top_bar(main_window: "MainWindow") -> QFrame:
     top_bar = QFrame()
     top_bar.setStyleSheet("background-color: #1E272E;")
     top_bar_layout = QHBoxLayout(top_bar)
@@ -131,7 +134,7 @@ def setup_top_bar(main_window):
     return top_bar
 
 
-def setup_tabs(main_window):
+def setup_tabs(main_window: "MainWindow") -> QTabWidget:
     tab_widget = QTabWidget()
     tab_widget.setStyleSheet(
         """
@@ -231,7 +234,7 @@ def setup_tabs(main_window):
         main_window.config.ingame.play_action
     )
     ingame_layout.addRow(
-        "Action Delay (sec):", main_window.play_action_delay_input
+        "Max Action Delay (sec):", main_window.play_action_delay_input
     )
 
     main_window.load_deck_checkbox = QCheckBox("Load deck on startup")
@@ -259,7 +262,14 @@ def setup_tabs(main_window):
     return tab_widget
 
 
-def _spin_box(value, minimum, maximum, step, tooltip, decimals=2):
+def _spin_box(
+    value: float,
+    minimum: float,
+    maximum: float,
+    step: float,
+    tooltip: str,
+    decimals: int = 2,
+) -> QDoubleSpinBox:
     box = QDoubleSpinBox()
     box.setRange(minimum, maximum)
     box.setSingleStep(step)
@@ -269,7 +279,8 @@ def _spin_box(value, minimum, maximum, step, tooltip, decimals=2):
     return box
 
 
-def _setup_screen_detector_group(main_window):
+def _setup_screen_detector_group(main_window: "MainWindow") -> QGroupBox:
+
     config = main_window.config.screen_detector
     group = QGroupBox("Screen Detector")
     layout = QFormLayout()

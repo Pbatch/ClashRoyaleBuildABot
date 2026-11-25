@@ -1,7 +1,8 @@
-from threading import Thread
-from typing import cast
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, cast
 
 import keyboard
+import numpy as np
 from loguru import logger
 from PyQt6.QtCore import QPropertyAnimation, Qt, pyqtSignal
 from PyQt6.QtGui import QCloseEvent, QIcon, QPixmap
@@ -19,7 +20,8 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from clashroyalebuildabot import Bot
+from clashroyalebuildabot.actions.generic.action import Action
+from clashroyalebuildabot.bot.controller import BotController, BotStatus
 from clashroyalebuildabot.config import Config, LogLevel
 from clashroyalebuildabot.gui.animations import start_play_button_animation
 from clashroyalebuildabot.gui.gameplay_widget import ImageStreamWindow
@@ -27,9 +29,19 @@ from clashroyalebuildabot.gui.layout_setup import setup_tabs, setup_top_bar
 from clashroyalebuildabot.gui.styles import set_styles
 from clashroyalebuildabot.utils.error_handling import WikifiedError
 from clashroyalebuildabot.utils.logger import colorize_log, setup_logger
-from clashroyalebuildabot.vlm_server import VLMServer
+
+if TYPE_CHECKING:
+    from loguru import Message
+
 
 PAUSE_HOTKEY = "ctrl+p"
+
+STATUS_LABELS = {
+    BotStatus.STOPPED: "Stopped",
+    BotStatus.RUNNING: "Running",
+    BotStatus.PAUSED: "Paused",
+    BotStatus.STOPPING: "Stopping...",
+}
 
 
 class MainWindow(QMainWindow):
@@ -38,7 +50,8 @@ class MainWindow(QMainWindow):
     # (The ignores work around PyQt6 6.12's stubs, which wrongly mark the
     # optional `arguments` parameter of pyqtSignal as required.)
     log_received = pyqtSignal(str)  # ty: ignore[missing-argument]
-    bot_finished = pyqtSignal()  # ty: ignore[missing-argument]
+    status_changed = pyqtSignal()  # ty: ignore[missing-argument]
+    frame_received = pyqtSignal(np.ndarray)  # ty: ignore[missing-argument]
     pause_hotkey_pressed = pyqtSignal()  # ty: ignore[missing-argument]
 
     # Widgets attached by layout_setup.py and animations.py
@@ -63,15 +76,14 @@ class MainWindow(QMainWindow):
     glow_effect: QGraphicsDropShadowEffect
     glow_animation: QPropertyAnimation
 
-    def __init__(self, config: Config, actions):
+    def __init__(
+        self, config: Config, actions: Sequence[type[Action]]
+    ) -> None:
         try:
             super().__init__()
             self.config = config
-            self.actions = actions
-            self.bot: Bot | None = None
-            self.bot_thread: Thread | None = None
-            self._stop_requested = False
-            self.vlm_server = VLMServer()
+            self.controller = BotController(config, actions)
+            self._shown_status: BotStatus | None = None
 
             self.setWindowTitle(" ")
             self.setGeometry(100, 100, 900, 600)
@@ -94,7 +106,16 @@ class MainWindow(QMainWindow):
             start_play_button_animation(self)
 
             self.log_received.connect(self._append_log)
-            self.bot_finished.connect(self._on_bot_finished)
+            self.status_changed.connect(self._show_status)
+            self.frame_received.connect(self.visualize_tab.update_frame)
+            # The controller may call these on the bot's thread; the signals
+            # carry them over to the GUI thread. (Emitted on the GUI thread,
+            # they run straight away.)
+            self.controller.add_status_listener(
+                lambda _status: self.status_changed.emit()
+            )
+            self.controller.add_frame_listener(self.frame_received.emit)
+            self._show_status()
             self.pause_hotkey_pressed.connect(
                 self.toggle_pause_resume_and_display
             )
@@ -102,7 +123,7 @@ class MainWindow(QMainWindow):
         except Exception as e:
             raise WikifiedError("004", "Error in GUI initialization.") from e
 
-    def _register_pause_hotkey(self):
+    def _register_pause_hotkey(self) -> None:
         # Registered once per app. keyboard calls it on its own thread,
         # so it only emits a signal.
         try:
@@ -112,73 +133,59 @@ class MainWindow(QMainWindow):
 
     @property
     def is_running(self) -> bool:
-        return self.bot_thread is not None
+        return self.controller.is_running
 
-    def log_handler_function(self, message):
+    def log_handler_function(self, message: "Message") -> None:
         # Loguru sink: called on whichever thread logged the message.
         self.log_received.emit(colorize_log(message))
 
-    def _append_log(self, formatted_message):
+    def _append_log(self, formatted_message: str) -> None:
         self.log_display.append(formatted_message)
         scrollbar = self.log_display.verticalScrollBar()
         if scrollbar is not None:
             scrollbar.setValue(scrollbar.maximum())
 
-    def toggle_start_stop(self):
+    def toggle_start_stop(self) -> None:
         if self.is_running:
             self.stop_bot()
         else:
             self.start_bot()
 
-    def toggle_pause_resume_and_display(self):
-        if self.bot is None or self._stop_requested:
-            return
-        self.bot.toggle_pause()
-        self.play_pause_button.setText("▶" if self.bot.is_paused else "⏸️")
+    def toggle_pause_resume_and_display(self) -> None:
+        self.controller.toggle_pause()
 
-    def start_bot(self):
-        # bot_thread is only cleared once the previous bot has fully shut
-        # down, so two bots can never run at the same time.
+    def start_bot(self) -> None:
+        # The controller refuses to start until the previous bot has fully
+        # shut down, so two bots can never run at the same time.
         if self.is_running:
             return
         self.update_config()
-        self._stop_requested = False
-        self.bot_thread = Thread(target=self.bot_task, daemon=True)
-        self.bot_thread.start()
+        self.controller.start()
 
-        self.glow_animation.stop()
-        self.start_stop_button.setText("■")
-        self.play_pause_button.setText("⏸️")
-        self.play_pause_button.show()
-        self.server_id_label.setText("Status - Running")
-        logger.info("Starting bot")
+    def stop_bot(self) -> None:
+        self.controller.stop()
 
-    def stop_bot(self):
-        if not self.is_running or self._stop_requested:
+    def _show_status(self) -> None:
+        """Make the controls match the controller. It reads the status
+        afresh, since queued signals may arrive after later changes."""
+        status = self.controller.status
+        if status == self._shown_status:
             return
-        self._stop_requested = True
-        if self.bot is not None:
-            self.bot.stop()
-        # If the bot is still being created, bot_task sees _stop_requested.
+        self._shown_status = status
 
-        self.start_stop_button.setEnabled(False)
-        self.play_pause_button.hide()
-        self.server_id_label.setText("Status - Stopping...")
-        logger.info("Stopping bot")
-
-    def _on_bot_finished(self):
-        if self.bot_thread is not None:
-            self.bot_thread.join()
-        self.bot_thread = None
-        self.bot = None
-        self._stop_requested = False
-
-        self.start_stop_button.setEnabled(True)
-        self.start_stop_button.setText("▶")
-        self.play_pause_button.hide()
-        self.server_id_label.setText("Status - Stopped")
-        self.glow_animation.start()
-        logger.info("Bot stopped")
+        stopped = status == BotStatus.STOPPED
+        active = status in (BotStatus.RUNNING, BotStatus.PAUSED)
+        self.start_stop_button.setText("▶" if stopped else "■")
+        self.start_stop_button.setEnabled(status != BotStatus.STOPPING)
+        self.play_pause_button.setText(
+            "▶" if status == BotStatus.PAUSED else "⏸️"
+        )
+        self.play_pause_button.setVisible(active)
+        self.server_id_label.setText(f"Status - {STATUS_LABELS[status]}")
+        if stopped:
+            self.glow_animation.start()
+        else:
+            self.glow_animation.stop()
 
     def update_config(self) -> Config:
         self.config.visuals.save_labels = self.save_labels_checkbox.isChecked()
@@ -190,7 +197,7 @@ class MainWindow(QMainWindow):
             self.auto_start_game_checkbox.isChecked()
         )
         # The dropdown only offers valid levels.
-        log_level = cast(LogLevel, self.log_level_dropdown.currentText())
+        log_level = cast("LogLevel", self.log_level_dropdown.currentText())
         log_level_changed = self.config.bot.log_level != log_level
         self.config.bot.log_level = log_level
         if log_level_changed:
@@ -212,39 +219,6 @@ class MainWindow(QMainWindow):
         screen.timeout = round(self.screen_timeout_input.value(), 1)
         return self.config
 
-    def bot_task(self):
-        """Runs on bot_thread. Talks to the GUI only through signals."""
-        try:
-            if not self.vlm_server.ensure_running(
-                self.config.screen_detector,
-                cancelled=lambda: self._stop_requested,
-            ):
-                return  # stopped while the server was starting
-            bot = Bot(actions=self.actions, config=self.config)
-            bot.visualizer.frame_ready.connect(self.visualize_tab.update_frame)
-            self.bot = bot
-            if self._stop_requested:
-                bot.stop()
-            bot.run()
-        except Exception as e:
-            # Raising here would only reach the console, so log instead:
-            # that reaches the console, the log file and the Logs tab.
-            if not isinstance(e, WikifiedError):
-                crash = WikifiedError("003", "Bot crashed.")
-                crash.__cause__ = e
-                e = crash
-            logger.opt(exception=e).error(str(e).strip())
-        finally:
-            self.bot_finished.emit()
-
-    def closeEvent(self, a0: QCloseEvent | None):
-        # Shut the bot down cleanly so the screen recording doesn't outlive
-        # the app.
-        if self.is_running:
-            self._stop_requested = True
-            if self.bot is not None:
-                self.bot.stop()
-            if self.bot_thread is not None:
-                self.bot_thread.join(timeout=10)
-        self.vlm_server.stop()
+    def closeEvent(self, a0: QCloseEvent | None) -> None:
+        self.controller.close()
         super().closeEvent(a0)

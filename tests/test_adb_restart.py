@@ -4,7 +4,7 @@ from clashroyalebuildabot.emulator.emulator import Emulator
 
 
 @pytest.mark.parametrize(
-    "reachable, expected",
+    ("reachable", "expected"),
     [(True, []), (False, [["kill-server"], ["start-server"]])],
 )
 def test_server_only_restarts_when_device_unreachable(

@@ -11,8 +11,8 @@ seconds and returns the most recent answer.
 
 from typing import Literal
 
+import numpy as np
 from loguru import logger
-from PIL import Image
 from pydantic import BaseModel, Field, field_validator
 
 from clashroyalebuildabot.config import ScreenDetectorConfig
@@ -75,9 +75,9 @@ class ScreenDetector:
     def __init__(
         self,
         client: VisionClient,
-        interval=1.0,
-        max_age=5.0,
-    ):
+        interval: float = 1.0,
+        max_age: float | None = 5.0,
+    ) -> None:
         self.client = client
         self._latest = LatestResult(
             self.classify,
@@ -106,7 +106,7 @@ class ScreenDetector:
             max_age=config.max_age,
         )
 
-    def classify(self, image: Image.Image) -> ScreenName:
+    def classify(self, image: np.ndarray) -> ScreenName:
         """Blocking classification of one frame."""
         try:
             answer = self.client.ask(image, PROMPT, ScreenAnswer)
@@ -118,12 +118,12 @@ class ScreenDetector:
             screen = OK_BUTTON_SCREENS[answer.ok_button]
         return screen
 
-    def run(self, image: Image.Image) -> ScreenName:
+    def run(self, image: np.ndarray) -> ScreenName:
         """Return the latest answer, refreshing it in the background."""
         return self._latest.run(image)
 
-    def wait(self, timeout: float | None = None):
+    def wait(self, timeout: float | None = None) -> None:
         self._latest.wait(timeout)
 
-    def close(self):
+    def close(self) -> None:
         self._latest.close()

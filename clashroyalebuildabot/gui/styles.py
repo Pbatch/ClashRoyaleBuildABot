@@ -1,4 +1,8 @@
-def set_styles(window):
+from PyQt6.QtWidgets import QWidget
+
+
+def set_styles(window: QWidget) -> None:
+
     window.setStyleSheet(
         """
         QMainWindow {

@@ -4,9 +4,9 @@ fake vLLM server behind a mock HTTP transport."""
 import json
 
 import httpx2
+import numpy as np
 import openai
 import pytest
-from PIL import Image
 from pydantic import BaseModel
 
 from clashroyalebuildabot.detectors.vlm_client import VisionError, VLMClient
@@ -66,7 +66,7 @@ def client_with(server: FakeVLLM) -> VLMClient:
 
 
 def image():
-    return Image.new("RGB", (368, 652), (40, 40, 40))
+    return np.full((652, 368, 3), 40, np.uint8)
 
 
 def test_request_sends_schema_image_and_prompt():

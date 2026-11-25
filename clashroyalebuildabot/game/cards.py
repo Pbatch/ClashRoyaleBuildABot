@@ -40,7 +40,7 @@ class _CardsNamespace:
     )
     BARBARIAN_HUT: Card = Card(
         "barbarian_hut",
-        cost=7,
+        cost=6,
         id_=27000005,
         units=(Units.BARBARIAN_HUT, Units.BARBARIAN),
     )
@@ -54,10 +54,16 @@ class _CardsNamespace:
     BATTLE_RAM: Card = Card(
         "battle_ram", cost=4, id_=26000036, units=(Units.BATTLE_RAM,)
     )
+    BERSERKER: Card = Card(
+        "berserker", cost=2, id_=26000102, units=(Units.BERSERKER,)
+    )
     BLANK: Card = Card("blank", cost=11, id_=-1)
     BOMBER: Card = Card("bomber", cost=2, id_=26000013, units=(Units.BOMBER,))
     BOMB_TOWER: Card = Card(
         "bomb_tower", cost=4, id_=27000004, units=(Units.BOMB_TOWER,)
+    )
+    BOSS_BANDIT: Card = Card(
+        "boss_bandit", cost=6, id_=26000103, units=(Units.BOSS_BANDIT,)
     )
     BOWLER: Card = Card("bowler", cost=5, id_=26000034, units=(Units.BOWLER,))
     CANNON: Card = Card("cannon", cost=3, id_=27000000, units=(Units.CANNON,))
@@ -66,10 +72,10 @@ class _CardsNamespace:
     )
     CLONE: Card = Card("clone", cost=3, id_=28000013, target_anywhere=True)
     DART_GOBLIN: Card = Card(
-        "dart_goblin", cost=3, id_=26000027, units=(Units.DART_GOBLIN,)
+        "dart_goblin", cost=3, id_=26000040, units=(Units.DART_GOBLIN,)
     )
     DARK_PRINCE: Card = Card(
-        "dark_prince", cost=4, id_=26000040, units=(Units.DARK_PRINCE,)
+        "dark_prince", cost=4, id_=26000027, units=(Units.DARK_PRINCE,)
     )
     EARTHQUAKE: Card = Card(
         "earthquake", cost=3, id_=28000014, target_anywhere=True
@@ -137,6 +143,18 @@ class _CardsNamespace:
     GIANT_SNOWBALL: Card = Card(
         "giant_snowball", cost=2, id_=28000017, target_anywhere=True
     )
+    GOBLIN_CURSE: Card = Card(
+        "goblin_curse", cost=2, id_=28000024, target_anywhere=True
+    )
+    GOBLIN_DEMOLISHER: Card = Card(
+        "goblin_demolisher",
+        cost=4,
+        id_=26000095,
+        units=(Units.GOBLIN_DEMOLISHER,),
+    )
+    GOBLIN_MACHINE: Card = Card(
+        "goblin_machine", cost=5, id_=26000096, units=(Units.GOBLIN_MACHINE,)
+    )
     GOBLINS: Card = Card(
         "goblins", cost=2, id_=26000002, units=(Units.GOBLIN,)
     )
@@ -171,9 +189,15 @@ class _CardsNamespace:
     )
     GOBLIN_HUT: Card = Card(
         "goblin_hut",
-        cost=5,
+        cost=4,
         id_=27000001,
         units=(Units.GOBLIN_HUT, Units.SPEAR_GOBLIN),
+    )
+    GOBLINSTEIN: Card = Card(
+        "goblinstein",
+        cost=5,
+        id_=26000099,
+        units=(Units.GOBLINSTEIN, Units.GOBLINSTEIN_DOCTOR),
     )
     GOLDEN_KNIGHT: Card = Card(
         "golden_knight", cost=4, id_=26000074, units=(Units.GOLDEN_KNIGHT,)
@@ -308,6 +332,9 @@ class _CardsNamespace:
     ROYAL_RECRUITS: Card = Card(
         "royal_recruits", cost=7, id_=26000047, units=(Units.ROYAL_RECRUIT,)
     )
+    RUNE_GIANT: Card = Card(
+        "rune_giant", cost=4, id_=26000101, units=(Units.RUNE_GIANT,)
+    )
     SKELETONS: Card = Card(
         "skeletons", cost=1, id_=26000010, units=(Units.SKELETON,)
     )
@@ -333,6 +360,15 @@ class _CardsNamespace:
     SPEAR_GOBLINS: Card = Card(
         "spear_goblins", cost=2, id_=26000019, units=(Units.SPEAR_GOBLIN,)
     )
+    SPIRIT_EMPRESS: Card = Card(
+        "spirit_empress",
+        cost=6,
+        id_=28000025,
+        units=(Units.SPIRIT_EMPRESS, Units.SPIRIT_EMPRESS_MOUNTED),
+    )
+    SUSPICIOUS_BUSH: Card = Card(
+        "suspicious_bush", cost=2, id_=26000097, units=(Units.SUSPICIOUS_BUSH,)
+    )
     TESLA: Card = Card("tesla", cost=4, id_=27000006, units=(Units.TESLA,))
     THE_LOG: Card = Card("the_log", cost=2, id_=28000011, target_anywhere=True)
     THREE_MUSKETEERS: Card = Card(
@@ -345,6 +381,8 @@ class _CardsNamespace:
     VALKYRIE: Card = Card(
         "valkyrie", cost=4, id_=26000011, units=(Units.VALKYRIE,)
     )
+    VINES: Card = Card("vines", cost=3, id_=28000026, target_anywhere=True)
+    VOID: Card = Card("void", cost=5, id_=28000023, target_anywhere=True)
     WALL_BREAKERS: Card = Card(
         "wall_breakers", cost=2, id_=26000058, units=(Units.WALL_BREAKER,)
     )

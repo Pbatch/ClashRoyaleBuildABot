@@ -29,6 +29,8 @@ An action is one card on one tile. Each step, the bot creates an action for ever
 
 `calculate_score` returns a list of numbers. Lists are compared item by item, so the first number matters most and later numbers break ties. The bot only plays an action if the first number of the best score is above 0. Return `[0]` for "don't play here".
 
+After playing a card, the bot doesn't score anything until the screen shows the card played (it has left your hand, or your elixir has dropped), so it doesn't play the same card twice. If that never shows, for example because the tap missed, it moves on after `play_action` seconds (under `ingame` in the [configuration](bot-installation.md#configuration)).
+
 When developing an action, you should start off as simply as possible.
 ```python
 import random
@@ -56,30 +58,30 @@ class MinipekkaAction(Action):
     CARD = Cards.MINIPEKKA
 
     def calculate_score(self, state):
-        if (self.tile_x, self.tile_y) in {(3, 15), (14, 15)}:
+        if (self.tile_x, self.tile_y) in {(3, 14), (14, 14)}:
             return [1]
 
         return [0]
 ```
-This will only play minipekka on the bridge.
+This will only play minipekka in front of the bridges.
 
-I used the tile-map to work out which squares corresponded to the start of the bridge.
+I used the tile-map to work out which squares are in front of each bridge. The bridges themselves (`y = 15`) are on the enemy's side, so a troop can only go there once that princess tower is destroyed.
 ![tile-map](https://user-images.githubusercontent.com/37177749/170822401-076fc4ec-93f0-441b-ac7b-3d7b875f683f.png)
 
 For common behaviours, you can inherit from the generic actions in `clashroyalebuildabot/actions/generic` instead of writing `calculate_score` yourself. For example, the bundled `MinipekkaAction` inherits from `BridgeAction`, and `KnightAction` from `DefenseAction`.
 
 3.) Once you've written an action for each card, list them in `main.py`. You need exactly 8 actions, one for each card in your deck.
 ```python
-def main():
+def main() -> None:
     actions = [
         ArchersAction,
-        ZapAction,
         GoblinBarrelAction,
-        GiantAction,
+        BabyDragonAction,
+        CannonAction,
         KnightAction,
-        MinionsAction,
         MinipekkaAction,
         MusketeerAction,
+        WitchAction,
     ]
 ```
 Then start the bot with `uv run python main.py` and press start (▶) in the window.

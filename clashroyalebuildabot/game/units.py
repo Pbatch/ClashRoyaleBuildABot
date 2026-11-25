@@ -100,6 +100,12 @@ class _UnitsNamespace:
         target=Target.BUILDINGS,
         transport=Transport.GROUND,
     )
+    BERSERKER: Unit = Unit(
+        "berserker",
+        category=UnitCategory.TROOP,
+        target=Target.GROUND,
+        transport=Transport.GROUND,
+    )
     BOMB_TOWER: Unit = Unit(
         "bomb_tower",
         category=UnitCategory.BUILDING,
@@ -108,6 +114,12 @@ class _UnitsNamespace:
     )
     BOMBER: Unit = Unit(
         "bomber",
+        category=UnitCategory.TROOP,
+        target=Target.GROUND,
+        transport=Transport.GROUND,
+    )
+    BOSS_BANDIT: Unit = Unit(
+        "boss_bandit",
         category=UnitCategory.TROOP,
         target=Target.GROUND,
         transport=Transport.GROUND,
@@ -233,7 +245,7 @@ class _UnitsNamespace:
     GIANT: Unit = Unit(
         "giant",
         category=UnitCategory.TROOP,
-        target=Target.GROUND,
+        target=Target.BUILDINGS,
         transport=Transport.GROUND,
     )
     GIANT_SKELETON: Unit = Unit(
@@ -250,10 +262,34 @@ class _UnitsNamespace:
         transport=Transport.GROUND,
     )
     GOBLIN_CAGE: Unit = Unit("goblin_cage", category=UnitCategory.BUILDING)
+    GOBLIN_DEMOLISHER: Unit = Unit(
+        "goblin_demolisher",
+        category=UnitCategory.TROOP,
+        target=Target.GROUND,
+        transport=Transport.GROUND,
+    )
     GOBLIN_DRILL: Unit = Unit(
         "goblin_drill", category=UnitCategory.BUILDING, target=Target.GROUND
     )
     GOBLIN_HUT: Unit = Unit("goblin_hut", category=UnitCategory.BUILDING)
+    GOBLIN_MACHINE: Unit = Unit(
+        "goblin_machine",
+        category=UnitCategory.TROOP,
+        target=Target.GROUND,
+        transport=Transport.GROUND,
+    )
+    GOBLINSTEIN: Unit = Unit(
+        "goblinstein",
+        category=UnitCategory.TROOP,
+        target=Target.BUILDINGS,
+        transport=Transport.GROUND,
+    )
+    GOBLINSTEIN_DOCTOR: Unit = Unit(
+        "goblinstein_doctor",
+        category=UnitCategory.TROOP,
+        target=Target.ALL,
+        transport=Transport.GROUND,
+    )
     GOLDEN_KNIGHT: Unit = Unit(
         "golden_knight",
         category=UnitCategory.TROOP,
@@ -318,7 +354,7 @@ class _UnitsNamespace:
         "ice_wizard",
         category=UnitCategory.TROOP,
         target=Target.ALL,
-        transport=Transport.AIR,
+        transport=Transport.GROUND,
     )
     INFERNO_DRAGON: Unit = Unit(
         "inferno_dragon",
@@ -342,7 +378,7 @@ class _UnitsNamespace:
     LAVA_PUP: Unit = Unit(
         "lava_pup",
         category=UnitCategory.TROOP,
-        target=Target.BUILDINGS,
+        target=Target.ALL,
         transport=Transport.AIR,
     )
     LITTLE_PRINCE: Unit = Unit(
@@ -426,13 +462,13 @@ class _UnitsNamespace:
     NIGHT_WITCH: Unit = Unit(
         "night_witch",
         category=UnitCategory.TROOP,
-        target=Target.ALL,
+        target=Target.GROUND,
         transport=Transport.GROUND,
     )
     PEKKA: Unit = Unit(
         "pekka",
         category=UnitCategory.TROOP,
-        target=Target.ALL,
+        target=Target.GROUND,
         transport=Transport.GROUND,
     )
     PHOENIX_EGG: Unit = Unit(
@@ -510,6 +546,12 @@ class _UnitsNamespace:
         target=Target.GROUND,
         transport=Transport.GROUND,
     )
+    RUNE_GIANT: Unit = Unit(
+        "rune_giant",
+        category=UnitCategory.TROOP,
+        target=Target.BUILDINGS,
+        transport=Transport.GROUND,
+    )
     SKELETON: Unit = Unit(
         "skeleton",
         category=UnitCategory.TROOP,
@@ -538,6 +580,24 @@ class _UnitsNamespace:
         "spear_goblin",
         category=UnitCategory.TROOP,
         target=Target.ALL,
+        transport=Transport.GROUND,
+    )
+    SPIRIT_EMPRESS: Unit = Unit(
+        "spirit_empress",
+        category=UnitCategory.TROOP,
+        target=Target.GROUND,
+        transport=Transport.GROUND,
+    )
+    SPIRIT_EMPRESS_MOUNTED: Unit = Unit(
+        "spirit_empress_mounted",
+        category=UnitCategory.TROOP,
+        target=Target.ALL,
+        transport=Transport.AIR,
+    )
+    SUSPICIOUS_BUSH: Unit = Unit(
+        "suspicious_bush",
+        category=UnitCategory.TROOP,
+        target=Target.BUILDINGS,
         transport=Transport.GROUND,
     )
     TESLA: Unit = Unit(

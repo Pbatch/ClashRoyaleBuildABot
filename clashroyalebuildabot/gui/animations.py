@@ -1,8 +1,13 @@
+from typing import TYPE_CHECKING
+
 from PyQt6.QtCore import QEasingCurve, QPropertyAnimation, Qt
 from PyQt6.QtWidgets import QGraphicsDropShadowEffect
 
+if TYPE_CHECKING:
+    from clashroyalebuildabot.gui.main_window import MainWindow
 
-def start_play_button_animation(self):
+
+def start_play_button_animation(self: "MainWindow") -> None:
     self.glow_effect = QGraphicsDropShadowEffect(self)
     self.glow_effect.setBlurRadius(
         10
@@ -16,7 +21,7 @@ def start_play_button_animation(self):
     _start_glow_animation(self)
 
 
-def _start_glow_animation(self):
+def _start_glow_animation(self: "MainWindow") -> None:
     """Create a glow effect animation."""
     self.glow_animation = QPropertyAnimation(self.glow_effect, b"blurRadius")
     self.glow_animation.setStartValue(0)

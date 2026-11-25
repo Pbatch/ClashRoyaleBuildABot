@@ -11,6 +11,7 @@ To run the server by itself, with the same settings:
     uv run python -m clashroyalebuildabot.vlm_server
 """
 
+import contextlib
 import os
 import signal
 import subprocess
@@ -79,7 +80,7 @@ def serve_command(config: ScreenDetectorConfig) -> list[str]:
     ]
 
 
-def is_up(config: ScreenDetectorConfig, timeout=2.0) -> bool:
+def is_up(config: ScreenDetectorConfig, timeout: float = 2.0) -> bool:
     try:
         response = requests.get(
             config.base_url.rstrip("/") + "/v1/models", timeout=timeout
@@ -92,7 +93,7 @@ def is_up(config: ScreenDetectorConfig, timeout=2.0) -> bool:
 class VLMServer:
     """The vLLM server process this app started, if any."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.process: subprocess.Popen | None = None
         self._command: list[str] | None = None
         # The server exits when the thread that started it ends (see
@@ -130,7 +131,7 @@ class VLMServer:
             self._start(command)
         return self._wait_until_up(config, cancelled)
 
-    def _start(self, command: list[str]):
+    def _start(self, command: list[str]) -> None:
         logger.info(
             "Starting the vision model server. This takes about a minute, "
             f"or a few the first time. Its log is in {LOG_PATH}"
@@ -154,7 +155,10 @@ class VLMServer:
             ).result()
         self._command = command
 
-    def _wait_until_up(self, config: ScreenDetectorConfig, cancelled) -> bool:
+    def _wait_until_up(
+        self, config: ScreenDetectorConfig, cancelled: Callable[[], bool]
+    ) -> bool:
+
         timeout = config.startup_timeout
         deadline = time.monotonic() + timeout
         while not is_up(config):
@@ -179,7 +183,7 @@ class VLMServer:
         logger.info("The vision model server is ready")
         return True
 
-    def stop(self):
+    def stop(self) -> None:
         """Stop the server, if this app started it."""
         process, self.process = self.process, None
         if process is None or process.poll() is not None:
@@ -193,14 +197,12 @@ class VLMServer:
             process.wait()
 
     @staticmethod
-    def _signal(process: subprocess.Popen, sig: int):
-        try:
+    def _signal(process: subprocess.Popen, sig: int) -> None:
+        with contextlib.suppress(ProcessLookupError):
             os.killpg(process.pid, sig)
-        except ProcessLookupError:
-            pass
 
 
-def main():
+def main() -> None:
     from clashroyalebuildabot.config import load_config
 
     command = serve_command(load_config().screen_detector)

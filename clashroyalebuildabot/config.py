@@ -26,6 +26,10 @@ from clashroyalebuildabot.constants.paths import (
 )
 from clashroyalebuildabot.utils.error_handling import WikifiedError
 
+# A file path, as a string or a pathlib.Path.
+type StrPath = str | os.PathLike[str]
+
+
 _USER_CONFIG_HEADER = """\
 # Your settings. They override clashroyalebuildabot/default_config.yaml,
 # so this file only needs the settings you want to change.
@@ -53,7 +57,7 @@ class BotConfig(_Section):
 
     @field_validator("log_level", mode="before")
     @classmethod
-    def _upper_case(cls, value):
+    def _upper_case(cls, value: object) -> object:
         return value.upper() if isinstance(value, str) else value
 
 
@@ -115,7 +119,7 @@ def _changes(config: dict, defaults: dict) -> dict:
     return changes
 
 
-def _read_yaml(path) -> dict:
+def _read_yaml(path: StrPath) -> dict:
     with open(path, encoding="utf-8") as file:
         data = yaml.safe_load(file)
     if data is None:
@@ -139,7 +143,8 @@ def _describe(error: ValidationError) -> str:
 
 
 def load_config(
-    user_config_path=USER_CONFIG_PATH, default_config_path=DEFAULT_CONFIG_PATH
+    user_config_path: StrPath = USER_CONFIG_PATH,
+    default_config_path: StrPath = DEFAULT_CONFIG_PATH,
 ) -> Config:
     """The default settings, with the user's config.yaml applied on top."""
     try:
@@ -157,9 +162,9 @@ def load_config(
 
 def save_config(
     config: Config,
-    user_config_path=USER_CONFIG_PATH,
-    default_config_path=DEFAULT_CONFIG_PATH,
-):
+    user_config_path: StrPath = USER_CONFIG_PATH,
+    default_config_path: StrPath = DEFAULT_CONFIG_PATH,
+) -> None:
     """Save the settings that differ from the defaults to config.yaml."""
     try:
         defaults = Config.model_validate(_read_yaml(default_config_path))

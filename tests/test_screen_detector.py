@@ -1,7 +1,7 @@
 import threading
 
+import numpy as np
 import pytest
-from PIL import Image
 from pydantic import ValidationError
 
 from clashroyalebuildabot.detectors.screen_detector import (
@@ -33,7 +33,7 @@ class FakeClient:
 
 
 def frame():
-    return Image.new("RGB", (368, 652), (40, 40, 40))
+    return np.full((652, 368, 3), 40, np.uint8)
 
 
 def test_schema_offers_every_described_screen():
@@ -67,7 +67,7 @@ def test_answer_is_the_named_screen(screen):
 
 
 @pytest.mark.parametrize(
-    "ok_button, expected",
+    ("ok_button", "expected"),
     [
         ("right", ScreenName.END_OF_GAME),
         ("centre", ScreenName.BYPASS_END_OF_GAME),
