@@ -40,6 +40,9 @@ MIN_HP_SCORE = 0.72
 # like a 1.
 MIN_LONE_DIGIT_SCORE = 0.92
 MIN_TIMER_MATCH = 0.6
+# Elixir is accepted from this mean match score. The number fades out for a
+# moment each time elixir ticks over, and then it scores lower.
+MIN_ELIXIR_SCORE = 0.85
 _TIME = re.compile(r"(\d):(\d\d)")
 
 
@@ -61,9 +64,21 @@ class Reading:
     total: float
 
 
+@dataclass(frozen=True)
+class Glyphs:
+    # Per glyph height, each digit's template.
+    digits: dict[str, dict[str, Template]]
+    # The timer's label as (fill, mask) templates, by whether it says
+    # "Overtime:" (True) or "Time left:" (False).
+    labels: dict[bool, list[tuple[np.ndarray, np.ndarray]]]
+    # The glyph heights tower HP, the timer and elixir are drawn at.
+    hp_heights: list[str]
+    timer_heights: list[str]
+    elixir_heights: list[str]
+
+
 @cache
-def _glyphs() -> tuple[dict, dict, dict]:
-    """(digit templates by height, label templates, metadata)."""
+def _glyphs() -> Glyphs:
     data = np.load(GLYPHS_PATH)
     meta = json.loads(str(data["meta"]))
     digits = {}
@@ -87,7 +102,13 @@ def _glyphs() -> tuple[dict, dict, dict]:
         ]
         for over, keys in meta["labels"].items()
     }
-    return digits, labels, meta
+    return Glyphs(
+        digits,
+        labels,
+        meta["hp_heights"],
+        meta["timer_heights"],
+        meta["elixir_heights"],
+    )
 
 
 def text_map(crop: np.ndarray) -> np.ndarray:
@@ -100,7 +121,9 @@ def text_map(crop: np.ndarray) -> np.ndarray:
     )
 
 
-def _match(image: np.ndarray, image_t: np.ndarray, mask: np.ndarray):
+def _match(
+    image: np.ndarray, image_t: np.ndarray, mask: np.ndarray
+) -> np.ndarray | None:
     if image_t.shape[0] > image.shape[0] or image_t.shape[1] > image.shape[1]:
         return None
     scores = cv2.matchTemplate(image, image_t, cv2.TM_CCOEFF_NORMED, mask=mask)
@@ -133,7 +156,14 @@ def _decode(
     return best
 
 
-def _chain(line, chars, temps, max_len, min_match, gap) -> Reading | None:
+def _chain(
+    line: np.ndarray,
+    chars: list[str],
+    temps: dict[str, Template],
+    max_len: int,
+    min_match: float,
+    gap: float,
+) -> Reading | None:
     """Each digit's peaks along the line, joined into the best chain.
 
     Candidates are visited left to right, and each keeps the best chain
@@ -184,27 +214,19 @@ def _chain(line, chars, temps, max_len, min_match, gap) -> Reading | None:
     return Reading(text, float(np.mean(scores)), float(total))
 
 
-def _best_over_heights(image, heights, **kw) -> Reading | None:
-    """The best reading over the digit sizes, compared per unit height."""
-    digits, _, _ = _glyphs()
-    best = None
-    for h in heights:
-        reading = _decode(image, digits[h], **kw)
-        if reading and (best is None or reading.total / float(h) > best[0]):
-            best = (reading.total / float(h), reading)
-    return best and best[1]
-
-
 def read_number(crop: np.ndarray) -> int | None:
     """The tower HP written in a crop, or None if there isn't one."""
-    _, _, meta = _glyphs()
-    reading = _best_over_heights(
-        text_map(crop),
-        meta["hp_heights"],
-        max_len=5,
-        min_match=MIN_MATCH,
-        gap=0.0,
-    )
+    glyphs = _glyphs()
+    image = text_map(crop)
+    # The best reading over the digit sizes, compared per unit height.
+    reading = None
+    best = 0.0
+    for h in glyphs.hp_heights:
+        r = _decode(
+            image, glyphs.digits[h], max_len=4, min_match=MIN_MATCH, gap=0
+        )
+        if r and (reading is None or r.total / float(h) > best):
+            reading, best = r, r.total / float(h)
     if reading is None or reading.score < MIN_HP_SCORE:
         return None
     if len(reading.text) == 1 and reading.score < MIN_LONE_DIGIT_SCORE:
@@ -212,13 +234,30 @@ def read_number(crop: np.ndarray) -> int | None:
     return int(reading.text)
 
 
+def read_elixir(crop: np.ndarray) -> int | None:
+    """The elixir written beside the elixir drop, or None if it can't be
+    read for sure."""
+    glyphs = _glyphs()
+    image = text_map(crop)
+    reading = None
+    for h in glyphs.elixir_heights:
+        r = _decode(
+            image, glyphs.digits[h], max_len=2, min_match=MIN_MATCH, gap=0
+        )
+        if r and (reading is None or r.score > reading.score):
+            reading = r
+    if reading is None or reading.score < MIN_ELIXIR_SCORE:
+        return None
+    elixir = int(reading.text)
+    return elixir if elixir <= 10 else None
+
+
 def read_overtime(crop: np.ndarray) -> bool:
     """Whether the timer's label says "Overtime:" rather than "Time
     left:"."""
-    _, labels, _ = _glyphs()
     image = text_map(crop)
     best = {}
-    for over, templates in labels.items():
+    for over, templates in _glyphs().labels.items():
         scores = [_match(image, fill, mask) for fill, mask in templates]
         best[over] = max(
             (s.max() for s in scores if s is not None), default=-1
@@ -228,15 +267,18 @@ def read_overtime(crop: np.ndarray) -> bool:
 
 def read_timer(crop: np.ndarray) -> tuple[int, bool] | None:
     """(seconds left, overtime) from the timer's crop, or None."""
-    _, _, meta = _glyphs()
+    glyphs = _glyphs()
     # The time is on the lower line, under the label.
     split = crop.shape[0] * 2 // 5
     image = text_map(crop[split:])
-    digits, _, _ = _glyphs()
     best = None
-    for h in meta["timer_heights"]:
+    for h in glyphs.timer_heights:
         reading = _decode(
-            image, digits[h], max_len=3, min_match=MIN_TIMER_MATCH, gap=0.8
+            image,
+            glyphs.digits[h],
+            max_len=3,
+            min_match=MIN_TIMER_MATCH,
+            gap=0.8,
         )
         if reading is None:
             continue

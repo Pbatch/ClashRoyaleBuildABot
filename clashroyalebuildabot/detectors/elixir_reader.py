@@ -4,11 +4,9 @@ from clashroyalebuildabot.constants.screenshot import ELIXIR_BOX
 from clashroyalebuildabot.utils.image import crop
 
 
-class NumberDetector:
-    """Reads elixir from the colours of the elixir bar.
-
-    Tower health is read by the TowerHPReader.
-    """
+class ElixirReader:
+    """Reads elixir from the colours of the elixir bar: the filled part
+    varies more in colour than the empty part."""
 
     @staticmethod
     def _calculate_elixir(

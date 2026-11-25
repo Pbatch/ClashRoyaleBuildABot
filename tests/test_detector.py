@@ -7,7 +7,6 @@ import clashroyalebuildabot.detectors.detector as detector_module
 from clashroyalebuildabot.game import ScreenName, State
 from clashroyalebuildabot.game.cards import Cards
 from clashroyalebuildabot.game.numbers import Timer, Tower, Towers
-from tests.conftest import default_config
 
 DECK = [
     Cards.ARCHERS,
@@ -86,31 +85,22 @@ def detector(monkeypatch):
     )
     monkeypatch.setattr(
         detector_module,
-        "NumberDetector",
+        "ElixirReader",
         lambda: FakeSubDetector(result=7),
     )
     monkeypatch.setattr(
-        detector_module, "BattleCheck", lambda: FakeSubDetector(result=False)
-    )
-    monkeypatch.setattr(detector_module, "make_client", lambda config: None)
-    monkeypatch.setattr(
-        detector_module.ScreenDetector,
-        "from_config",
-        classmethod(
-            lambda cls, config, client: FakeSubDetector(
-                result=ScreenName.LOBBY
-            )
-        ),
+        detector_module,
+        "ScreenDetector",
+        lambda: FakeSubDetector(result=ScreenName.LOBBY),
     )
     monkeypatch.setattr(detector_module, "TowerHPReader", FakeTowerHPReader)
     monkeypatch.setattr(detector_module, "TimerReader", FakeTimerReader)
-    return detector_module.Detector(DECK, default_config().screen_detector)
+    return detector_module.Detector(DECK)
 
 
-def in_battle(detector, screen=ScreenName.IN_GAME):
-    """The frame shows a battle, and the screen detector says ``screen``."""
-    detector.screen_detector.result = screen
-    detector.battle_check.result = True
+def in_battle(detector):
+    """The frame shows a battle."""
+    detector.screen_detector.result = ScreenName.IN_GAME
 
 
 def test_returns_state_in_game(detector):
@@ -122,31 +112,11 @@ def test_returns_state_in_game(detector):
     assert state.ready == [0, 1]
 
 
-@pytest.mark.parametrize(
-    "stale", [ScreenName.LOADING, ScreenName.VS, ScreenName.UNKNOWN]
-)
-def test_frame_with_a_battle_wins_over_a_stale_screen(detector, stale):
-    # The battle has just begun, and the screen detector hasn't caught up.
-    in_battle(detector, screen=stale)
-    state = detector.run(image=None)
-    assert state.screen == ScreenName.IN_GAME
-    assert state.ready == [0, 1]
-    assert detector.tower_hp_reader.calls == 1
-    assert detector.timer_reader.calls == 1
-
-
-def test_screen_detector_is_asked_in_a_battle(detector):
-    # Keeps its answer fresh for when the battle ends.
-    in_battle(detector)
-    detector.run(image=None)
-    assert detector.screen_detector.calls == 1
-
-
 def battle_detectors(detector):
     return (
         detector.card_detector,
         detector.unit_detector,
-        detector.number_detector,
+        detector.elixir_reader,
     )
 
 
@@ -159,11 +129,10 @@ def test_skips_battle_detectors_outside_a_battle(detector):
     assert state.numbers.elixir == 0
 
 
-def test_stale_in_game_answer_is_not_trusted(detector):
-    # The screen detector still says in game, but the frame has no elixir
-    # bar: the battle has just ended.
-    detector.screen_detector.result = ScreenName.IN_GAME
-    detector.battle_check.result = False
+def test_unknown_screen_keeps_the_readings(detector):
+    # No elixir bar and no known screen: a screen the bot waits through, or
+    # the elixir bar hidden for a moment mid-battle.
+    detector.screen_detector.result = ScreenName.UNKNOWN
     state = detector.run(image=None)
     assert state.screen == ScreenName.UNKNOWN
     assert state.ready == []
@@ -175,6 +144,22 @@ def test_stale_in_game_answer_is_not_trusted(detector):
     assert detector.tower_hp_reader.resets == 0
     assert detector.timer_reader.resets == 0
     assert detector.card_detector.resets == 0
+
+
+@pytest.mark.parametrize(
+    "screen",
+    [
+        ScreenName.LOBBY,
+        ScreenName.END_OF_GAME,
+        ScreenName.BYPASS_END_OF_GAME,
+    ],
+)
+def test_readings_reset_on_screens_between_battles(detector, screen):
+    detector.screen_detector.result = screen
+    assert detector.run(image=None).screen == screen
+    assert detector.tower_hp_reader.resets == 1
+    assert detector.timer_reader.resets == 1
+    assert detector.card_detector.resets == 1
 
 
 def test_forgets_the_hand_between_battles(detector):
@@ -239,4 +224,4 @@ def test_rejects_wrong_deck_size(monkeypatch):
     with pytest.raises(
         detector_module.WikifiedError, match="must have 8 cards, but 7"
     ):
-        detector_module.Detector(DECK[:7], default_config().screen_detector)
+        detector_module.Detector(DECK[:7])

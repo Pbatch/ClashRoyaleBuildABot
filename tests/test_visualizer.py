@@ -98,6 +98,6 @@ def test_labels_every_number_at_its_box():
     labels = dict(Visualizer._number_labels(numbers))
     assert labels[ELIXIR_BOX] == "7"
     assert labels[PRINCESS_TOWER_BOXES["left_enemy_princess"]] == "1918 L8"
-    assert labels[KING_TOWER_BOXES["ally_king"]] == "inf L0"
+    assert labels[KING_TOWER_BOXES["ally_king"]] == "inf"
     assert labels[TIMER_BOX] == "42s OT"
     assert len(labels) == 8  # elixir, six towers and the timer

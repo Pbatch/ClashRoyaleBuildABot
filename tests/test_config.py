@@ -31,7 +31,7 @@ def write(path, text):
 
 def test_shipped_defaults_load(defaults):
     assert isinstance(defaults, Config)
-    assert defaults.screen_detector.base_url == "http://localhost:8001"
+    assert defaults.ingame.play_action == 1
 
 
 def test_user_config_overrides_and_keeps_other_defaults(
@@ -88,7 +88,19 @@ def test_invalid_setting_raises_e002_naming_it(
 
 def test_gui_assignment_is_validated(defaults):
     with pytest.raises(ValueError, match="greater than 0"):
-        defaults.screen_detector.interval = -1
+        defaults.ingame.play_action = -1
+
+
+def test_old_screen_detector_settings_are_ignored(defaults_path, user_path):
+    # Written by a version of the bot that had a vision model.
+    write(
+        user_path,
+        "bot:\n  log_level: ERROR\n"
+        "screen_detector:\n  base_url: http://gpu-box:9000\n",
+    )
+    config = load_config(user_path, defaults_path)
+    assert config.bot.log_level == "ERROR"
+    assert "screen_detector" not in config.model_dump()
 
 
 def test_save_writes_only_changed_settings(defaults, defaults_path, user_path):

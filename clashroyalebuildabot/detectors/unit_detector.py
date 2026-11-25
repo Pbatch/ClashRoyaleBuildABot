@@ -14,7 +14,7 @@ from clashroyalebuildabot.constants.screenshot import (
     SCREENSHOT_HEIGHT,
     SCREENSHOT_WIDTH,
 )
-from clashroyalebuildabot.detectors.onnx_detector import OnnxDetector
+from clashroyalebuildabot.detectors.onnx_model import OnnxModel
 from clashroyalebuildabot.game.cards import Card
 from clashroyalebuildabot.game.units import Position, UnitDetection, Units
 
@@ -121,7 +121,7 @@ DETECTOR_UNITS = [
 ]
 
 
-class UnitDetector(OnnxDetector):
+class UnitDetector:
     """Finds the units on the battlefield, as the tiles they stand on.
 
     One model reads the arena as its 18 x 32 tile grid and gives, for each
@@ -147,7 +147,13 @@ class UnitDetector(OnnxDetector):
     ROWS, COLS = 32, 18
 
     def __init__(self, model_path: str, cards: Sequence[Card]) -> None:
-        super().__init__(model_path)
+        self.model = OnnxModel(model_path)
+        top, bottom = self.view_rows()
+        if self.model.input_size != (bottom - top, SCREENSHOT_WIDTH):
+            raise ValueError(
+                f"{model_path} takes {self.model.input_size} images, not "
+                f"the {(bottom - top, SCREENSHOT_WIDTH)} unit view"
+            )
         # The DETECTOR_UNITS indices our cards can put on the battlefield,
         # spawned units included (a witch's skeletons).
         deck = {unit.name for card in cards for unit in card.units}
@@ -170,7 +176,8 @@ class UnitDetector(OnnxDetector):
         sx = SCREENSHOT_WIDTH / DISPLAY_WIDTH
         sy = SCREENSHOT_HEIGHT / DISPLAY_HEIGHT
         left = (TILE_INIT_X + col * TILE_WIDTH) * sx
-        bottom = (DISPLAY_HEIGHT - TILE_INIT_Y - (31 - row) * TILE_HEIGHT) * sy
+        up = UnitDetector.ROWS - 1 - row  # tiles from the bottom
+        bottom = (DISPLAY_HEIGHT - TILE_INIT_Y - up * TILE_HEIGHT) * sy
         return (
             round(left),
             round(bottom - TILE_HEIGHT * sy),
@@ -249,5 +256,5 @@ class UnitDetector(OnnxDetector):
             )
         top, bottom = self.view_rows()
         view = np.ascontiguousarray(image[None, top:bottom])
-        probs = self._infer(view)[0]
+        probs = self.model(view)[0]
         return self.decode(probs)

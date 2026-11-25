@@ -23,21 +23,15 @@ from clashroyalebuildabot.constants.device_screen import (
     TILE_WIDTH,
 )
 from clashroyalebuildabot.detectors.detector import Detector
-from clashroyalebuildabot.emulator.emulator import Emulator
+from clashroyalebuildabot.emulator import Emulator
 from clashroyalebuildabot.game import ScreenName, Screens
 from clashroyalebuildabot.game.cards import Card
 from clashroyalebuildabot.game.state import State
 
 # Screens the bot just waits through.
-WAITING_SCREENS = {
-    ScreenName.UNKNOWN,
-    ScreenName.SEARCHING_FOR_OPPONENT,
-    ScreenName.LOADING,
-    ScreenName.VS,
-    ScreenName.MATCH_OVER,
-}
-# Seconds between looks at a screen outside a battle. The screen detector
-# answers about once a second, so looking more often gains nothing.
+WAITING_SCREENS = {ScreenName.UNKNOWN}
+# Seconds between looks at a screen outside a battle. Nothing there needs
+# an answer faster.
 SCREEN_POLL_DELAY = 0.5
 
 
@@ -86,9 +80,7 @@ class Bot:
         self.visualizer = Visualizer(
             **config.visuals.model_dump(), on_frame=on_frame
         )
-        self.detector = Detector(
-            cards=cards, screen_config=config.screen_detector
-        )
+        self.detector = Detector(cards=cards)
 
         # The emulator owns a screen-recording process and a frame thread,
         # so it is created last and closed again if anything after it fails.

@@ -12,6 +12,7 @@ import os
 from typing import Literal
 
 import yaml
+from loguru import logger
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -75,23 +76,16 @@ class IngameConfig(_Section):
     play_action: float = Field(gt=0)
 
 
-class ScreenDetectorConfig(_Section):
-    base_url: str
-    model: str
-    auto_start: bool
-    gpu_memory_utilization: float = Field(gt=0, le=1)
-    startup_timeout: float = Field(gt=0)
-    interval: float = Field(gt=0)
-    max_age: float = Field(gt=0)
-    timeout: float = Field(gt=0)
-
-
 class Config(_Section):
     bot: BotConfig
     adb: AdbConfig
     visuals: VisualsConfig
     ingame: IngameConfig
-    screen_detector: ScreenDetectorConfig
+
+
+# Sections older versions of the bot had. A user's config.yaml may still
+# have them; they're ignored rather than refused.
+_REMOVED_SECTIONS = ("screen_detector",)
 
 
 def _merge(defaults: dict, overrides: dict) -> dict:
@@ -150,7 +144,14 @@ def load_config(
     try:
         data = _read_yaml(default_config_path)
         if os.path.exists(user_config_path):
-            data = _merge(data, _read_yaml(user_config_path))
+            user = _read_yaml(user_config_path)
+            for section in _REMOVED_SECTIONS:
+                if user.pop(section, None) is not None:
+                    logger.warning(
+                        f"Ignoring the {section} settings in "
+                        f"{user_config_path}: the bot no longer uses them."
+                    )
+            data = _merge(data, user)
         return Config.model_validate(data)
     except ValidationError as e:
         raise WikifiedError(
@@ -175,3 +176,16 @@ def save_config(
                 yaml.safe_dump(changes, file, sort_keys=False)
     except Exception as e:
         raise WikifiedError("009", "Can't save config.") from e
+
+
+def apply_changes(config: Config, changes: dict) -> None:
+    """Apply some settings, e.g. ``{"bot": {"load_deck": True}}``, to
+    config in place, so everything holding it sees them. They're all checked
+    first, so a bad value changes nothing. Raises pydantic's
+    ValidationError."""
+    updated = Config.model_validate(_merge(config.model_dump(), changes))
+    for section in Config.model_fields:
+        target = getattr(config, section)
+        source = getattr(updated, section)
+        for name in type(target).model_fields:
+            setattr(target, name, getattr(source, name))

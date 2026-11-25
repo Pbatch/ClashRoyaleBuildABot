@@ -23,12 +23,12 @@ from clashroyalebuildabot.constants.screenshot import (
     SCREENSHOT_HEIGHT,
     SCREENSHOT_WIDTH,
 )
-from clashroyalebuildabot.detectors.number_detector import NumberDetector
+from clashroyalebuildabot.detectors.elixir_reader import ElixirReader
 from clashroyalebuildabot.detectors.unit_detector import (
     DETECTOR_UNITS,
     UnitDetector,
 )
-from clashroyalebuildabot.emulator.emulator import Emulator
+from clashroyalebuildabot.emulator import Emulator
 from clashroyalebuildabot.game.cards import Cards
 from clashroyalebuildabot.game.units import Units
 
@@ -61,16 +61,13 @@ def test_unit_detector_model_runs():
 def test_unit_detector_reads_the_tile_grid():
     detector = unit_detector()
     view = np.random.default_rng(0).integers(
-        0, 256, (1, *detector.sess.get_inputs()[0].shape[1:]), np.uint8
+        0, 256, (1, *detector.model.input_size, 3), np.uint8
     )
-    probs = detector._infer(view)
+    probs = detector.model(view)
     assert probs.shape == (1, 2 * len(DETECTOR_UNITS), 32, 18)
     assert ((probs >= 0) & (probs <= 1)).all()
     top, bottom = detector.view_rows()
-    assert (bottom - top, SCREENSHOT_WIDTH) == (
-        detector.model_height,
-        detector.model_width,
-    )
+    assert (bottom - top, SCREENSHOT_WIDTH) == detector.model.input_size
 
 
 def _probs():
@@ -159,8 +156,8 @@ def test_unit_detector_tile_bbox_is_its_tile(col, row):
     assert (tile_x, tile_y) == (col, 31 - row)
 
 
-def test_number_detector_runs():
-    elixir = NumberDetector().run(blank_screenshot())
+def test_elixir_reader_runs():
+    elixir = ElixirReader().run(blank_screenshot())
     assert 0 <= elixir <= 10
 
 

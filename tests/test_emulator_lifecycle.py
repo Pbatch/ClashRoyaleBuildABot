@@ -4,7 +4,7 @@ import threading
 
 import pytest
 
-from clashroyalebuildabot.emulator.emulator import Emulator
+from clashroyalebuildabot.emulator import Emulator
 from clashroyalebuildabot.utils.error_handling import WikifiedError
 
 # Stand-in for `adb shell screenrecord`: a process that never ends on its own.

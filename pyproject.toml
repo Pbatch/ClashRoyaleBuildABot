@@ -11,7 +11,7 @@ authors = [
 description = "A platform for creating bots to play Clash Royale"
 readme = "README.md"
 requires-python = "==3.12.*"
-# Linux only: vLLM, which serves the vision model, doesn't run elsewhere.
+# Linux only: the only platform the bot is tested on.
 classifiers = [
     "Operating System :: POSIX :: Linux",
 ]
@@ -23,17 +23,26 @@ dependencies = [
     "loguru==0.8.0",
     "PyYAML==6.0.3",
     "requests==2.34.2",
-    "openai==3.54.0",
     "pyqt6==6.12.1",
     "av==19.0.2",
     "tqdm==4.70.1",
-    "huggingface-hub==2.4.0",
     "pydantic==2.12.5",
+    # Runs on the CPU as it is. The gpu extra adds the NVIDIA libraries it
+    # needs to run on an NVIDIA GPU.
     "onnxruntime-gpu==1.32.0",
-    "vllm==0.34.0",
+    "fastapi==0.165.0",
+    "anyio==4.16.0",
+    "uvicorn==0.54.0",
+    "websockets==17.4",
 ]
 [project.optional-dependencies]
+# The CUDA and cuDNN libraries (about 2 GB), so the unit detector runs on an
+# NVIDIA GPU, several times faster than on the CPU.
+gpu = [
+    "onnxruntime-gpu[cuda,cudnn]==1.32.0",
+]
 dev = [
+    "httpx2==2.16.2",
     "pre-commit==4.7.0",
     "pytest==9.2.0",
     "ruff==0.17.5",
@@ -65,7 +74,8 @@ ignore = ["E501", "E231", "E222"]
 "tests/**" = ["ANN"]
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
-# vLLM still installs Pillow, so an import of it would work by accident.
+# Frames are numpy arrays; Pillow may still be installed by another package,
+# so an import of it would work by accident.
 "PIL".msg = "Frames are numpy arrays; use OpenCV (clashroyalebuildabot.utils.image)."
 
 [tool.ruff.format]

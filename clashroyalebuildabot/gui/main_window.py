@@ -1,10 +1,11 @@
-from collections.abc import Sequence
-from typing import TYPE_CHECKING, cast
+from collections.abc import Callable, Sequence
+from typing import TYPE_CHECKING
 
 import keyboard
 import numpy as np
 from loguru import logger
-from PyQt6.QtCore import QPropertyAnimation, Qt, pyqtSignal
+from pydantic import ValidationError
+from PyQt6.QtCore import QPropertyAnimation, QSignalBlocker, Qt, pyqtSignal
 from PyQt6.QtGui import QCloseEvent, QIcon, QPixmap
 from PyQt6.QtWidgets import (
     QCheckBox,
@@ -22,13 +23,13 @@ from PyQt6.QtWidgets import (
 
 from clashroyalebuildabot.actions.generic.action import Action
 from clashroyalebuildabot.bot.controller import BotController, BotStatus
-from clashroyalebuildabot.config import Config, LogLevel
+from clashroyalebuildabot.config import Config
 from clashroyalebuildabot.gui.animations import start_play_button_animation
 from clashroyalebuildabot.gui.gameplay_widget import ImageStreamWindow
 from clashroyalebuildabot.gui.layout_setup import setup_tabs, setup_top_bar
 from clashroyalebuildabot.gui.styles import set_styles
 from clashroyalebuildabot.utils.error_handling import WikifiedError
-from clashroyalebuildabot.utils.logger import colorize_log, setup_logger
+from clashroyalebuildabot.utils.logger import colorize_log
 
 if TYPE_CHECKING:
     from loguru import Message
@@ -51,6 +52,7 @@ class MainWindow(QMainWindow):
     # optional `arguments` parameter of pyqtSignal as required.)
     log_received = pyqtSignal(str)  # ty: ignore[missing-argument]
     status_changed = pyqtSignal()  # ty: ignore[missing-argument]
+    config_changed = pyqtSignal()  # ty: ignore[missing-argument]
     frame_received = pyqtSignal(np.ndarray)  # ty: ignore[missing-argument]
     pause_hotkey_pressed = pyqtSignal()  # ty: ignore[missing-argument]
 
@@ -84,6 +86,7 @@ class MainWindow(QMainWindow):
             self.config = config
             self.controller = BotController(config, actions)
             self._shown_status: BotStatus | None = None
+            self._shown_show_images = config.visuals.show_images
 
             self.setWindowTitle(" ")
             self.setGeometry(100, 100, 900, 600)
@@ -115,6 +118,11 @@ class MainWindow(QMainWindow):
                 lambda _status: self.status_changed.emit()
             )
             self.controller.add_frame_listener(self.frame_received.emit)
+            self.config_changed.connect(self._show_config)
+            self.controller.add_config_listener(
+                lambda _config: self.config_changed.emit()
+            )
+            self._bind_settings()
             self._show_status()
             self.pause_hotkey_pressed.connect(
                 self.toggle_pause_resume_and_display
@@ -159,7 +167,6 @@ class MainWindow(QMainWindow):
         # shut down, so two bots can never run at the same time.
         if self.is_running:
             return
-        self.update_config()
         self.controller.start()
 
     def stop_bot(self) -> None:
@@ -187,37 +194,67 @@ class MainWindow(QMainWindow):
         else:
             self.glow_animation.stop()
 
-    def update_config(self) -> Config:
-        self.config.visuals.save_labels = self.save_labels_checkbox.isChecked()
-        self.config.visuals.save_images = self.save_images_checkbox.isChecked()
-        self.config.visuals.show_images = self.show_images_checkbox.isChecked()
-        self.visualize_tab.update_active_state(self.config.visuals.show_images)
-        self.config.bot.load_deck = self.load_deck_checkbox.isChecked()
-        self.config.bot.auto_start_game = (
-            self.auto_start_game_checkbox.isChecked()
-        )
-        # The dropdown only offers valid levels.
-        log_level = cast("LogLevel", self.log_level_dropdown.currentText())
-        log_level_changed = self.config.bot.log_level != log_level
-        self.config.bot.log_level = log_level
-        if log_level_changed:
-            setup_logger(self, self.config)
-        self.config.ingame.play_action = round(
-            float(self.play_action_delay_input.value()), 2
-        )
-        self.config.adb.device_serial = self.device_serial_input.text()
+    def _checkboxes(self) -> list[tuple[QCheckBox, str, str]]:
+        """Each checkbox, and the section and setting it shows."""
+        return [
+            (self.save_labels_checkbox, "visuals", "save_labels"),
+            (self.save_images_checkbox, "visuals", "save_images"),
+            (self.show_images_checkbox, "visuals", "show_images"),
+            (self.load_deck_checkbox, "bot", "load_deck"),
+            (self.auto_start_game_checkbox, "bot", "auto_start_game"),
+        ]
 
-        screen = self.config.screen_detector
-        server_url = self.screen_server_url_input.text().strip()
-        if server_url:  # an empty box keeps the current address
-            screen.base_url = server_url
-        model = self.screen_model_input.text().strip()
-        if model:  # an empty box keeps the current model
-            screen.model = model
-        screen.interval = round(self.screen_interval_input.value(), 2)
-        screen.max_age = round(self.screen_max_age_input.value(), 2)
-        screen.timeout = round(self.screen_timeout_input.value(), 1)
-        return self.config
+    def _bind_settings(self) -> None:
+        """Send each edit to the controller as it's made, so the config is
+        always current and the API sees what the GUI does. Only edits the
+        user makes: _show_config blocks these signals."""
+
+        def push(section: str, name: str) -> Callable[[object], None]:
+            return lambda value: self._push_setting(section, name, value)
+
+        for box, section, name in self._checkboxes():
+            box.toggled.connect(push(section, name))
+        self.log_level_dropdown.currentTextChanged.connect(
+            push("bot", "log_level")
+        )
+        self.device_serial_input.textEdited.connect(
+            push("adb", "device_serial")
+        )
+        self.play_action_delay_input.valueChanged.connect(
+            lambda value: self._push_setting(
+                "ingame", "play_action", round(value, 2)
+            )
+        )
+
+    def _push_setting(self, section: str, name: str, value: object) -> None:
+        try:
+            self.controller.update_config({section: {name: value}})
+        except ValidationError as e:
+            logger.warning(
+                f"Can't set {section}.{name} to {value!r}: "
+                f"{e.errors()[0]['msg']}"
+            )
+            self._show_config()  # back to the value still in use
+
+    def _show_config(self) -> None:
+        """Make the settings widgets match the config, after a change from
+        here or from the API. Signals are blocked so nothing is sent back,
+        and unchanged text is left alone so the cursor doesn't jump."""
+        config = self.config
+        for box, section, name in self._checkboxes():
+            with QSignalBlocker(box):
+                box.setChecked(getattr(getattr(config, section), name))
+        with QSignalBlocker(self.log_level_dropdown):
+            self.log_level_dropdown.setCurrentText(config.bot.log_level)
+        if self.device_serial_input.text() != config.adb.device_serial:
+            with QSignalBlocker(self.device_serial_input):
+                self.device_serial_input.setText(config.adb.device_serial)
+        with QSignalBlocker(self.play_action_delay_input):
+            self.play_action_delay_input.setValue(config.ingame.play_action)
+
+        if config.visuals.show_images != self._shown_show_images:
+            self._shown_show_images = config.visuals.show_images
+            self.visualize_tab.update_active_state(config.visuals.show_images)
 
     def closeEvent(self, a0: QCloseEvent | None) -> None:
         self.controller.close()

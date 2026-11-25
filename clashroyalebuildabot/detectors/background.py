@@ -1,4 +1,4 @@
-"""Run a slow detector in the background and keep its latest result."""
+"""Run a slow reader in the background and keep its latest result."""
 
 import threading
 import time
@@ -15,6 +15,9 @@ class LatestResult[T]:
     """Compute a value from frames in the background, at most every
     ``interval`` seconds, and hand back the most recent one.
 
+    ``compute(image, previous)`` is given the last answer too, so a reading
+    can build on the one before (keep it when a frame is unreadable, say).
+
     ``run`` never blocks, so the bot keeps its frame rate while a slow model
     thinks. Each answer describes a frame from a moment ago, not the current
     one. After ``max_age`` seconds without a fresh answer, ``run`` returns
@@ -23,7 +26,7 @@ class LatestResult[T]:
 
     def __init__(
         self,
-        compute: Callable[[np.ndarray], T],
+        compute: Callable[[np.ndarray, T], T],
         default: T,
         interval: float = 1.0,
         max_age: float | None = 5.0,
@@ -46,11 +49,13 @@ class LatestResult[T]:
         # isn't stored afterwards.
         self._generation = 0
 
-    def _refresh(self, image: np.ndarray, generation: int) -> None:
+    def _refresh(
+        self, image: np.ndarray, previous: T, generation: int
+    ) -> None:
         # Runs on the worker thread and stores its own answer. A done
         # callback could instead run inline on the caller, which already
         # holds the lock, if the request finished before it was attached.
-        value = self.compute(image)
+        value = self.compute(image, previous)
         with self._lock:
             if generation == self._generation:
                 self._value = value
@@ -64,7 +69,7 @@ class LatestResult[T]:
             if idle and now - self._last_submit >= self.interval:
                 self._last_submit = now
                 self._pending = self._executor.submit(
-                    self._refresh, image.copy(), self._generation
+                    self._refresh, image.copy(), self._value, self._generation
                 )
             if self.max_age is not None and (
                 now - self._value_time > self.max_age
@@ -94,3 +99,49 @@ class LatestResult[T]:
 
     def close(self) -> None:
         self._executor.shutdown(wait=False, cancel_futures=True)
+
+
+class BackgroundReader[S, T]:
+    """A reader too slow for every frame, so it reads in the background.
+
+    A subclass gives ``read``, a blocking reading that builds on the
+    previous state, and ``output``, the part of a state the bot sees. The
+    state lasts until ``reset``, between battles; until the first reading
+    it's ``initial``.
+    """
+
+    def __init__(self, initial: S, interval: float, name: str) -> None:
+        self._latest = LatestResult(
+            self.read,
+            default=initial,
+            interval=interval,
+            max_age=None,
+            name=name,
+        )
+
+    def read(self, image: np.ndarray, previous: S) -> S:
+        """Read a frame, blocking."""
+        raise NotImplementedError
+
+    def output(self, state: S) -> T:
+        raise NotImplementedError
+
+    def run(self, image: np.ndarray) -> T:
+        """The latest reading, refreshing it in the background."""
+        return self.output(self._latest.run(image))
+
+    def latest(self) -> T:
+        """The latest reading, without asking for a new one."""
+        return self.output(self._latest.latest())
+
+    def reset(self) -> None:
+        """Forget the reading, and any still in flight, for the next
+        battle."""
+        self._latest.reset()
+
+    def wait(self, timeout: float | None = None) -> None:
+        """Block until any reading in flight is stored."""
+        self._latest.wait(timeout)
+
+    def close(self) -> None:
+        self._latest.close()

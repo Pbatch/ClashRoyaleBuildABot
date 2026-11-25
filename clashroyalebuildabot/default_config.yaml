@@ -35,24 +35,3 @@ ingame:
   # play the same card twice. This is the longest it waits, in seconds, if
   # the screen never shows it, e.g. when the tap missed.
   play_action: 1
-
-screen_detector:
-  # The bot reads screens, tower HP and the timer with a small vision model,
-  # served by vLLM (needs an NVIDIA GPU). If no server is running at
-  # base_url, the bot starts one when you press start, and stops it when the
-  # bot closes. To run it yourself instead:
-  #   uv run python -m clashroyalebuildabot.vlm_server
-  base_url: http://localhost:8001
-  model: Qwen/Qwen3.5-0.8B
-  # Start a server at base_url if none is running (localhost only).
-  auto_start: true
-  # The share of GPU memory the server reserves. A 6 GB card needs about
-  # 0.75; on a larger card you can lower it.
-  gpu_memory_utilization: 0.75
-  # Seconds to wait for the server to start. The first start compiles the
-  # model, which takes a few minutes.
-  startup_timeout: 900
-  # Seconds between checks, and how long an answer stays valid.
-  interval: 1.0
-  max_age: 5.0
-  timeout: 10.0

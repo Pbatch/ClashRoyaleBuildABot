@@ -4,12 +4,11 @@
 
 Downloads Google's ADB (Android platform-tools) into the project folder, so
 the bot talks to the device with a known copy rather than whichever ``adb``
-is on the PATH, and the vision model into the Hugging Face cache. Safe to
-run again: what's already there is kept, and an ADB other than the
-pinned version is replaced.
+is on the PATH. Safe to run again: an ADB that's already there is kept,
+and one other than the pinned version is replaced.
 
-The bot installs or updates ADB itself when it starts, and vLLM downloads the model
-when it first starts, so this only gets both out of the way up front.
+The bot installs or updates ADB itself when it starts, so this only gets it
+out of the way up front.
 """
 
 import hashlib
@@ -128,21 +127,8 @@ def install_adb() -> None:
     logger.info(f"Installed ADB {ADB_VERSION} in {ADB_DIR}")
 
 
-def download_model(model: str) -> None:
-    """Download the vision model into the Hugging Face cache, where vLLM
-    looks for it, so the bot's first start doesn't wait for it."""
-    from huggingface_hub import snapshot_download
-
-    logger.info(f"Downloading {model} (about 1.7 GB)")
-    path = snapshot_download(model)
-    logger.info(f"{model} is in {path}")
-
-
 def main() -> None:
-    from clashroyalebuildabot.config import load_config
-
     install_adb()
-    download_model(load_config().screen_detector.model)
 
 
 if __name__ == "__main__":

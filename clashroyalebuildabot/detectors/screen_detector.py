@@ -1,129 +1,84 @@
-"""Screen detection with a small vision-language model.
+"""Tell which screen a frame shows from a few fixed parts of it.
 
-The model (Qwen3.5-0.8B by default, served by vLLM) is asked which screen a
-screenshot shows. Its answer is constrained to the ``ScreenAnswer`` schema,
-so it can only name one of the known screens.
+A battle is recognised by the pink elixir drop at the left end of the
+elixir bar, which only a battle shows. Deciding from the frame itself means
+the bot plays as soon as a battle starts and stops as soon as it ends.
 
-Inference takes a few hundred milliseconds, so ``run`` never blocks: it
-hands the latest frame to a background worker at most once per ``interval``
-seconds and returns the most recent answer.
+Outside a battle, the bot only acts on three screens: the lobby, where it
+taps Battle, and the two layouts of the results screen, where it taps Play
+Again or OK. Each is recognised by its buttons, which look the same whatever
+the arena, event or background behind them. Anything else is UNKNOWN, which
+the bot waits through.
+
+Each check compares a small thumbnail of where something should be with its
+own thumbnail, in constants/screen_hashes.py. That costs next to nothing,
+so every frame is classified as it arrives.
 """
 
-from typing import Literal
-
 import numpy as np
-from loguru import logger
-from pydantic import BaseModel, Field, field_validator
 
-from clashroyalebuildabot.config import ScreenDetectorConfig
-from clashroyalebuildabot.detectors.background import LatestResult
-from clashroyalebuildabot.detectors.vlm_client import (
-    VisionClient,
-    VisionError,
-    make_client,
+from clashroyalebuildabot.constants.screen_hashes import (
+    BATTLE_DROP_HASH,
+    BUTTON_HASHES,
 )
-from clashroyalebuildabot.game import ScreenName, Screens
-
-# The screens the model chooses between: those with a description, in the
-# order screens.py lists them. BYPASS_END_OF_GAME has none: it's END_OF_GAME
-# with the OK button in the centre, so it comes from the ``ok_button`` answer.
-OFFERED_SCREENS = tuple(
-    screen for screen in Screens.all() if screen.description
+from clashroyalebuildabot.constants.screenshot import (
+    BATTLE_CHECK_BOX,
+    LOBBY_BATTLE_BOX,
+    RESULTS_CENTRE_OK_BOX,
+    RESULTS_OK_BOX,
+    RESULTS_PLAY_AGAIN_BOX,
 )
-OFFERED_NAMES = tuple(str(screen.name) for screen in OFFERED_SCREENS)
+from clashroyalebuildabot.game import ScreenName
+from clashroyalebuildabot.utils.image import Box, crop
+from clashroyalebuildabot.utils.thumbnail import from_hex, thumbnail
 
-# The results screen has two layouts, which need the OK button tapped in
-# different places. With no OK button yet, the results are still appearing,
-# so the bot waits rather than tap blind.
-OK_BUTTON_SCREENS = {
-    "right": ScreenName.END_OF_GAME,
-    "centre": ScreenName.BYPASS_END_OF_GAME,
-    "none": ScreenName.UNKNOWN,
-}
+THUMBNAIL_SIZE = (16, 6)
+DROP_THUMBNAIL_SIZE = (8, 8)
 
 
-class ScreenAnswer(BaseModel):
-    # The enum in the schema limits the model to these names.
-    screen: str = Field(
-        description="which screen of the game is shown",
-        json_schema_extra={"enum": list(OFFERED_NAMES)},
-    )
-    ok_button: Literal["right", "centre", "none"] = Field(
-        description="where the blue OK button is: on the right half next to "
-        "another button, on its own in the centre, or none if there isn't one"
-    )
-
-    @field_validator("screen")
-    @classmethod
-    def _known_screen(cls, name: str) -> str:
-        if name not in OFFERED_NAMES:
-            raise ValueError(f"unknown screen {name!r}")
-        return name
+def screen_thumbnail(
+    image: np.ndarray, box: Box, size: tuple[int, int] = THUMBNAIL_SIZE
+) -> np.ndarray:
+    """A box of the frame as colour pixels, 16x6 unless ``size`` is given."""
+    return thumbnail(crop(image, box), size)
 
 
-PROMPT = (
-    "This is a screenshot of the mobile game Clash Royale. Which screen is "
-    "it?\n"
-    + "\n".join(
-        f"- {screen.name}: {screen.description}" for screen in OFFERED_SCREENS
-    )
-    + "\nAlso say where the blue OK button is, if there is one. Answer in JSON."
-)
+def _differs(a: np.ndarray, reference: np.ndarray) -> float:
+    """Mean difference per colour channel, out of 255."""
+    return float(np.mean(np.abs(a.astype(np.float32) - reference)))
 
 
 class ScreenDetector:
     def __init__(
-        self,
-        client: VisionClient,
-        interval: float = 1.0,
-        max_age: float | None = 5.0,
+        self, threshold: float = 20, drop_threshold: float = 30
     ) -> None:
-        self.client = client
-        self._latest = LatestResult(
-            self.classify,
-            default=ScreenName.UNKNOWN,
-            interval=interval,
-            max_age=max_age,
-            name="screen-detector",
-        )
+        # On real frames a button matches its thumbnail within 5, and
+        # anything else differs by 38 or more.
+        self.threshold = threshold
+        self.drop_threshold = drop_threshold
+        self.references = {
+            name: from_hex(value, THUMBNAIL_SIZE)
+            for name, value in BUTTON_HASHES.items()
+        }
+        self.drop_reference = from_hex(BATTLE_DROP_HASH, DROP_THUMBNAIL_SIZE)
 
-    @classmethod
-    def from_config(
-        cls,
-        config: ScreenDetectorConfig,
-        client: VisionClient | None = None,
-    ) -> "ScreenDetector":
-        """Build from the ``screen_detector`` config.
+    def in_battle(self, image: np.ndarray) -> bool:
+        drop = screen_thumbnail(image, BATTLE_CHECK_BOX, DROP_THUMBNAIL_SIZE)
+        return _differs(drop, self.drop_reference) < self.drop_threshold
 
-        Without a ``client``, one is made from the config and the server is
-        checked.
-        """
-        if client is None:
-            client = make_client(config)
-        return cls(
-            client,
-            interval=config.interval,
-            max_age=config.max_age,
-        )
-
-    def classify(self, image: np.ndarray) -> ScreenName:
-        """Blocking classification of one frame."""
-        try:
-            answer = self.client.ask(image, PROMPT, ScreenAnswer)
-        except VisionError as e:
-            logger.warning(f"Screen detection failed: {e}")
-            return ScreenName.UNKNOWN
-        screen = ScreenName(answer.screen)
-        if screen == ScreenName.END_OF_GAME:
-            screen = OK_BUTTON_SCREENS[answer.ok_button]
-        return screen
+    def _shows(self, image: np.ndarray, button: str, box: Box) -> bool:
+        diff = _differs(screen_thumbnail(image, box), self.references[button])
+        return diff < self.threshold
 
     def run(self, image: np.ndarray) -> ScreenName:
-        """Return the latest answer, refreshing it in the background."""
-        return self._latest.run(image)
-
-    def wait(self, timeout: float | None = None) -> None:
-        self._latest.wait(timeout)
-
-    def close(self) -> None:
-        self._latest.close()
+        if self.in_battle(image):
+            return ScreenName.IN_GAME
+        if self._shows(image, "battle", LOBBY_BATTLE_BOX):
+            return ScreenName.LOBBY
+        if self._shows(image, "ok", RESULTS_OK_BOX) and self._shows(
+            image, "play_again", RESULTS_PLAY_AGAIN_BOX
+        ):
+            return ScreenName.END_OF_GAME
+        if self._shows(image, "ok", RESULTS_CENTRE_OK_BOX):
+            return ScreenName.BYPASS_END_OF_GAME
+        return ScreenName.UNKNOWN

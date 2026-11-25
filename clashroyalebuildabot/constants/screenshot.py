@@ -31,22 +31,33 @@ CARD_BOXES = [
 
 ELIXIR_BOX = (100, 628, 350, 643)
 # The elixir drop at the left end of the elixir bar, which only a battle
-# shows. BattleCheck compares it with images/screen/in_game.jpg.
+# shows. The ScreenDetector compares it with BATTLE_DROP_HASH in screen_hashes.py.
 BATTLE_CHECK_BOX = (80, 624, 99, 649)
 
+# Buttons the ScreenDetector recognises screens by, inside their edges: the
+# word "Battle" on the lobby's Battle button, and the results screen's Play
+# Again and OK buttons. The results screen has a second layout with only an
+# OK button, in the centre.
+LOBBY_BATTLE_BOX = (140, 490, 240, 518)
+RESULTS_PLAY_AGAIN_BOX = (88, 578, 172, 615)
+RESULTS_OK_BOX = (196, 578, 280, 615)
+RESULTS_CENTRE_OK_BOX = (142, 578, 226, 615)
+
 # Each tower's health bar, with the HP written on it and the level badge to
-# its left. Named as in Towers.
+# its left. Named as in Towers. The bars sit a little higher in some arenas
+# than others, so each box reaches 4 pixels above the bar, where the HP's
+# digits would otherwise be cut off.
 PRINCESS_TOWER_BOXES = {
-    "left_enemy_princess": (65, 108, 130, 132),
-    "right_enemy_princess": (245, 108, 310, 132),
-    "left_ally_princess": (65, 404, 130, 430),
-    "right_ally_princess": (245, 404, 310, 430),
+    "left_enemy_princess": (65, 104, 130, 132),
+    "right_enemy_princess": (245, 104, 310, 132),
+    "left_ally_princess": (65, 400, 130, 430),
+    "right_ally_princess": (245, 400, 310, 430),
 }
 # Until it's first hit, a king tower shows only its badge, in the middle of
 # its box.
 KING_TOWER_BOXES = {
-    "enemy_king": (147, 41, 221, 64),
-    "ally_king": (147, 492, 221, 515),
+    "enemy_king": (147, 37, 221, 64),
+    "ally_king": (147, 488, 221, 515),
 }
 
 # The battle timer in the top-right corner: "Time left:" (or "Overtime:")

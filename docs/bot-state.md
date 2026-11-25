@@ -22,15 +22,13 @@ If the game's card art changes, the card positions are `CARD_BOXES` in [constant
 
 ## Screen detector
 
-To move between the lobby, the game and the end-of-game screens, we use the [screen_detector](../clashroyalebuildabot/detectors/screen_detector.py).
+To move between the lobby, the game and the end-of-game screens, we use the [screen_detector](../clashroyalebuildabot/detectors/screen_detector.py). It compares small thumbnails of fixed parts of the screen with references, so it costs next to nothing and runs on every frame.
 
-It asks [Qwen3.5-0.8B](https://huggingface.co/Qwen/Qwen3.5-0.8B), a small vision-language model, which screen the screenshot shows. The model runs in a separate [vLLM](https://github.com/vllm-project/vllm) server, and the bot talks to it through [vlm_client.py](../clashroyalebuildabot/detectors/vlm_client.py).
+- **Battle:** first, it looks for the elixir drop at the left end of the elixir bar, which only a battle shows, by comparing an 8x8 thumbnail of it with one stored in [screen_hashes.py](../clashroyalebuildabot/constants/screen_hashes.py). If it's there, the screen is in game, so the bot plays as soon as a battle starts and stops as soon as it ends.
+- **Lobby and results:** otherwise, it looks for the buttons the bot taps: Battle in the lobby, and Play Again and OK on the results screen, or OK alone in the centre in its other layout. Buttons look the same whatever the arena or event behind them. Each button's thumbnail is in [screen_hashes.py](../clashroyalebuildabot/constants/screen_hashes.py), and where each one is, `LOBBY_BATTLE_BOX` and the `RESULTS_*_BOX`es, in [constants/screenshot.py](../clashroyalebuildabot/constants/screenshot.py).
+- **Anything else** (searching for an opponent, loading, the VS screen, popups) is unknown, and the bot waits. The elixir bar can also be hidden for a moment mid-battle, so an unknown screen keeps the tower, timer and hand readings; only the lobby or the results screen clears them for the next battle.
 
-The answer is shaped by a Pydantic model, `ScreenAnswer`: vLLM only lets the model produce JSON that fits its schema, so it can only name a known screen. The choices come straight from [screens.py](../clashroyalebuildabot/game/screens.py): lobby, in game and end of game, plus the screens in between (searching for an opponent, loading, the VS screen and the Match Over! banner), which the bot waits through without tapping or playing cards. Naming the in-between screens matters: given only lobby, in game and end of game to choose from, a model confidently picks the closest wrong one. Names matter too: with `matchmaking` and `match_over` as choices, the model wrote `match` and then picked the wrong ending, so the first is called `searching_for_opponent`. The same answer says where the OK button is, to tell the two end-of-game layouts apart.
-
-The model takes a few hundred milliseconds, so it runs in the background about once a second and the bot uses its latest answer. That answer is a second or more old, so it says "in game" a moment after a battle starts, and keeps saying it while the results screen is up. So whether the frame shows a battle is decided by the [battle_check](../clashroyalebuildabot/detectors/battle_check.py) instead: it looks for the elixir drop at the left end of the elixir bar, which only a battle shows, by comparing a few pixels with [in_game.jpg](../clashroyalebuildabot/images/screen/in_game.jpg). If the drop is there, the screen is in game, whatever the model last said, so the bot plays as soon as a battle starts. If the model says "in game" but the drop isn't there, the battle has just ended (or the bar is briefly hidden), so the screen counts as unknown and the bot waits. The card, unit, elixir, tower HP and timer detectors only run in a battle. On other screens the state has no units or cards and 0 elixir.
-
-The settings are under `screen_detector` in [default_config.yaml](../clashroyalebuildabot/default_config.yaml), and where to tap on each screen is in [screens.py](../clashroyalebuildabot/game/screens.py).
+The card, unit, elixir, tower HP and timer detectors only run in a battle. On other screens the state has no units or cards and 0 elixir. Where to tap on each screen is in [screens.py](../clashroyalebuildabot/game/screens.py).
 
 ## Unit detector
 
@@ -47,26 +45,27 @@ The model is trained on synthetic frames: sprites of every unit pasted onto empt
 
 ## Tower HP reader
 
-To read every tower's health and level, we use the [tower_hp_reader](../clashroyalebuildabot/detectors/tower_hp_reader.py). Each tower's health bar has its exact HP written on it, with the tower's level on a badge to its left, so we crop each bar, enlarge it, and ask the same vision model the screen detector uses to read both numbers. Its answer is shaped by a Pydantic model, `TowerReading`: a level and an HP, with 0 HP for a destroyed tower. The level is asked for first; asked the other way round, the model read rubble as 100 HP.
+To read every tower's health, we use the [tower_hp_reader](../clashroyalebuildabot/detectors/tower_hp_reader.py). Each tower's health bar has its exact HP written on it in the game's own font, so we match that font's digits across each bar's crop with the [digit_reader](../clashroyalebuildabot/detectors/digit_reader.py). It works on each pixel's darkest colour channel, which keeps the digits' light fill and turns the coloured bars, grass and badges dark. The digit templates were rendered from the font in the game's APK and are stored in `models/digit_glyphs.npz`. No GPU is needed.
 
-- King towers are asked differently. Until it's first hit, a king tower shows only its level badge, with no health bar, so for a king tower "no bar" means untouched, not destroyed: its HP stays `inf` (standing) and its level is still read. If a king tower falls, the battle is over anyway.
+- A number that can't be read isn't taken to mean much on its own, since "Elixir!" and other pop-ups often cover it. A princess tower without a number keeps its last HP while its bar's pink or blue is still there; only with neither number nor bar for 3 readings in a row is it rubble (0 HP), and it stays rubble for the rest of the battle.
+- Until it's first hit, a king tower shows only its level badge, with no health bar, so a king tower without a number keeps its last HP: `inf` (standing) until it's hit. If a king tower falls, the battle is over anyway.
 - The six towers are read in parallel, in the background, about once a second, and only during a battle. Between battles the readings are cleared.
-- Until the first reading of a battle, each tower's HP is `inf`: treated as standing, never as destroyed, and its level is 0. If one tower's reading fails, it keeps its previous values. A destroyed tower keeps its last level, since its badge is gone and levels don't change during a battle.
-- The readings are in `State.numbers.towers`, one `Tower` (with `hp` and `level`) for each of `left_enemy_princess`, `right_enemy_princess`, `left_ally_princess`, `right_ally_princess`, `enemy_king` and `ally_king`. For example, `state.numbers.towers.left_enemy_princess.hp`. No action uses the levels or the king towers yet.
+- Until the first reading of a battle, each tower's HP is `inf`: treated as standing, never as destroyed. Tower levels aren't read, so `level` is always 0.
+- The readings are in `State.numbers.towers`, one `Tower` (with `hp` and `level`) for each of `left_enemy_princess`, `right_enemy_princess`, `left_ally_princess`, `right_ally_princess`, `enemy_king` and `ally_king`. For example, `state.numbers.towers.left_enemy_princess.hp`. No action uses the king towers yet.
 - The values are real HP, not fractions. The actions only check whether a tower is destroyed (`0`) and which enemy tower is weaker, and both enemy towers have the same maximum.
 
 The bar positions are `PRINCESS_TOWER_BOXES` and `KING_TOWER_BOXES` in [constants/screenshot.py](../clashroyalebuildabot/constants/screenshot.py).
 
 ## Timer reader
 
-To read the time left in a battle, we use the [timer_reader](../clashroyalebuildabot/detectors/timer_reader.py). The top-right corner shows "Time left:" above the minutes and seconds, or "Overtime:" once regulation time ends with the towers level. We crop it, enlarge it, and ask the same vision model to read it. Its answer is shaped by a Pydantic model, `TimerReading`: whether the label says overtime, then the minutes and seconds.
+To read the time left in a battle, we use the [timer_reader](../clashroyalebuildabot/detectors/timer_reader.py). The top-right corner shows "Time left:" above the minutes and seconds, or "Overtime:" once regulation time ends with the towers level. We crop it and read the time with the same [digit_reader](../clashroyalebuildabot/detectors/digit_reader.py) as the tower HP, and whether it's overtime by matching both labels, rendered in the game's font, against the line above.
 
 - The reading is in `State.numbers.timer`: `time_left` in seconds, and `overtime`. In overtime, `time_left` counts down the overtime left.
 - Like the tower HP, it's read in the background about once a second, and only during a battle, so a reading is about a second old. Between battles it's cleared.
-- Until the first reading of a battle, `time_left` is `inf`. If a reading fails, the previous one is kept. No action uses the timer yet.
+- Until the first reading of a battle, `time_left` is `inf`. If the timer can't be read, the previous reading is kept. No action uses the timer yet.
 
 The timer's position is `TIMER_BOX` in [constants/screenshot.py](../clashroyalebuildabot/constants/screenshot.py).
 
 ## Number detector
 
-To read elixir, we use the [number_detector](../clashroyalebuildabot/detectors/number_detector.py). It doesn't use a model: the filled part of the elixir bar is more varied in colour than the empty part, so the point where it becomes uniform gives the elixir, from 0 to 10, in `State.numbers.elixir`. The bar position is `ELIXIR_BOX` in [constants/screenshot.py](../clashroyalebuildabot/constants/screenshot.py).
+To read elixir, we use the [elixir_reader](../clashroyalebuildabot/detectors/elixir_reader.py). It doesn't use a model: the filled part of the elixir bar is more varied in colour than the empty part, so the point where it becomes uniform gives the elixir, from 0 to 10, in `State.numbers.elixir`. The bar position is `ELIXIR_BOX` in [constants/screenshot.py](../clashroyalebuildabot/constants/screenshot.py).

@@ -7,8 +7,8 @@ import pytest
 from clashroyalebuildabot.constants.screenshot import CARD_BOXES
 from clashroyalebuildabot.detectors.card_detector import (
     CardDetector,
-    card_thumbnails,
-    thumbnail,
+    art_thumbnails,
+    card_thumbnail,
 )
 from clashroyalebuildabot.game.cards import Card, Cards
 from clashroyalebuildabot.utils.image import load, resize
@@ -47,7 +47,7 @@ def test_accepts_a_tuple():
 
 def test_every_card_has_a_hash():
     cards = [c for c in vars(Cards).values() if isinstance(c, Card)]
-    missing = [c.name for c in cards if c.name not in card_thumbnails()]
+    missing = [c.name for c in cards if c.name not in art_thumbnails()]
     assert not missing
 
 
@@ -57,7 +57,7 @@ def test_every_card_has_a_hash():
 def test_hashes_match_the_art(path):
     """The test art is the art the shipped hashes were made from."""
     assert np.array_equal(
-        thumbnail(load(str(path))), card_thumbnails()[path.stem]
+        card_thumbnail(load(str(path))), art_thumbnails()[path.stem]
     )
 
 

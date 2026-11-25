@@ -21,7 +21,9 @@ All six towers are read in parallel, in the background, at most once per
 """
 
 import dataclasses
+from collections.abc import Mapping
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -29,7 +31,7 @@ from clashroyalebuildabot.constants.screenshot import (
     KING_TOWER_BOXES,
     PRINCESS_TOWER_BOXES,
 )
-from clashroyalebuildabot.detectors.background import LatestResult
+from clashroyalebuildabot.detectors.background import BackgroundReader
 from clashroyalebuildabot.detectors.digit_reader import read_number
 from clashroyalebuildabot.game.numbers import Tower, Towers
 from clashroyalebuildabot.utils.image import crop
@@ -39,8 +41,10 @@ TOWER_BOXES = {**PRINCESS_TOWER_BOXES, **KING_TOWER_BOXES}
 # counts as destroyed. Pop-ups that hide a bar are gone within this many.
 RUBBLE_READINGS = 3
 # The share of a princess tower's box in its bar's colour above which the
-# bar is still there. Bars, even nearly empty ones, are well above it; rubble
-# is at 0.
+# bar is still there. Rubble is at or near 0; a bar is at 0.04 to 0.1, and
+# the bars pop-ups cover are too. A bar under about 200 HP is barely
+# coloured and falls below it, but then it only counts as rubble if its
+# number is unreadable for RUBBLE_READINGS readings, and it's about to fall.
 BAR_SHARE = 0.03
 
 
@@ -55,67 +59,60 @@ def bar_share(image: np.ndarray, enemy: bool) -> float:
     return float(bar.mean())
 
 
-class TowerHPReader:
+def _no_misses() -> dict[str, int]:
+    return dict.fromkeys(PRINCESS_TOWER_BOXES, 0)
+
+
+@dataclass(frozen=True)
+class TowerReadings:
+    towers: Towers = field(default_factory=Towers)
+    # Per princess tower, readings in a row with no number and no bar.
+    missing: Mapping[str, int] = field(default_factory=_no_misses)
+
+
+def _read_one(image: np.ndarray, name: str) -> tuple[int | None, bool]:
+    """(HP or None, whether the bar's colour shows)."""
+    box = crop(image, TOWER_BOXES[name])
+    hp = read_number(box)
+    return hp, bar_share(box, "enemy" in name) >= BAR_SHARE
+
+
+class TowerHPReader(BackgroundReader[TowerReadings, Towers]):
     def __init__(self, interval: float = 1.0) -> None:
         self._pool = ThreadPoolExecutor(
             max_workers=len(TOWER_BOXES), thread_name_prefix="tower-hp"
         )
-        # Per princess tower, readings in a row with no number and no bar.
-        self._missing = dict.fromkeys(PRINCESS_TOWER_BOXES, 0)
-        # HP only changes during a battle, so the last reading stays valid
-        # until reset() at the end of it.
-        self._latest = LatestResult(
-            self.read,
-            default=Towers(),
-            interval=interval,
-            max_age=None,
-            name="tower-hp-reader",
-        )
+        super().__init__(TowerReadings(), interval, name="tower-hp-reader")
 
-    def _read_one(self, image: np.ndarray, name: str):
-        """(HP or None, whether the bar's colour shows)."""
-        box = crop(image, TOWER_BOXES[name])
-        hp = read_number(box)
-        return hp, bar_share(box, "enemy" in name) >= BAR_SHARE
-
-    def read(self, image: np.ndarray) -> Towers:
-        """Blocking reading of all six towers."""
-        previous = self._latest.latest()
+    def read(
+        self, image: np.ndarray, previous: TowerReadings
+    ) -> TowerReadings:
+        """All six towers, read in parallel."""
         names = list(TOWER_BOXES)
-        readings = self._pool.map(lambda n: self._read_one(image, n), names)
+        readings = self._pool.map(lambda n: _read_one(image, n), names)
         changes = {}
+        missing = dict(previous.missing)
         for name, (hp, bar) in zip(names, readings, strict=True):
-            last = getattr(previous, name)
-            if name in self._missing and last.hp == 0:
+            last = getattr(previous.towers, name)
+            princess = name in missing
+            if princess and last.hp == 0:
                 continue  # rubble doesn't come back
             if hp is not None:
                 changes[name] = Tower(hp=hp, level=last.level)
-                if name in self._missing:
-                    self._missing[name] = 0
-            elif name in self._missing and not bar:
-                self._missing[name] += 1
-                if self._missing[name] >= RUBBLE_READINGS:
+                if princess:
+                    missing[name] = 0
+            elif princess and not bar:
+                missing[name] += 1
+                if missing[name] >= RUBBLE_READINGS:
                     changes[name] = Tower(hp=0, level=last.level)
-            elif name in self._missing:
-                self._missing[name] = 0
-        return dataclasses.replace(previous, **changes)
+            elif princess:
+                missing[name] = 0
+        towers = dataclasses.replace(previous.towers, **changes)
+        return TowerReadings(towers, missing)
 
-    def run(self, image: np.ndarray) -> Towers:
-        """Return the latest readings, refreshing them in the background."""
-        return self._latest.run(image)
-
-    def latest(self) -> Towers:
-        """The latest readings, without asking for new ones."""
-        return self._latest.latest()
-
-    def reset(self) -> None:
-        """Forget the readings, ready for the next battle."""
-        self._latest.reset()
-        self._missing = dict.fromkeys(PRINCESS_TOWER_BOXES, 0)
-
-    def wait(self, timeout: float | None = None) -> None:
-        self._latest.wait(timeout)
+    def output(self, state: TowerReadings) -> Towers:
+        return state.towers
 
     def close(self) -> None:
-        self._latest.close()
+        super().close()
         self._pool.shutdown(wait=False, cancel_futures=True)

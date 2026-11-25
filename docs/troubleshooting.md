@@ -46,8 +46,7 @@ Couldn't save your settings to `config.yaml` in the project folder. Check that t
 
 
 ### Error E010
-The bot couldn't reach the vision model server it uses to read the screen. The bot only starts a server itself when **Server URL** under Screen Detector in the Settings tab (`screen_detector.base_url` in `config.yaml`) is on this computer (`http://localhost:8001` by default) and `auto_start` is on. Otherwise, start the server before the bot, and check that the URL matches its address.
-
+No longer used. Older versions of the bot raised it when they couldn't reach the vision model server they read the screen with; the bot no longer has one.
 
 ### Error E011
 The bot's copy of ADB isn't installed, and the bot couldn't install it itself; the error says why (usually no internet). Run `uv run python -m clashroyalebuildabot.install` in the project folder (see [Bot Installation](bot-installation.md#step-7-run-setup)). It downloads ADB into `platform-tools/`.
@@ -56,7 +55,4 @@ If you also have another `adb` installed, for example from your package manager 
 
 
 ### Error E012
-The vision model server the bot started didn't come up. Its log, `debug/vlm_server.log` in the project folder, says why. Common causes:
-- **Out of GPU memory:** close other programs using the GPU, or lower `gpu_memory_utilization` under `screen_detector` in `config.yaml`.
-- **The model isn't downloaded and there's no internet:** run setup (see [Bot Installation](bot-installation.md#step-7-run-setup)).
-- **The first start is slow:** vLLM compiles the model the first time, which can take several minutes on a slower GPU. Raise `startup_timeout` under `screen_detector`.
+No longer used. Older versions of the bot raised it when the vision model server they started didn't come up; the bot no longer has one.

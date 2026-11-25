@@ -1,186 +1,148 @@
 import math
+import os
 import threading
 
 import numpy as np
 
-from clashroyalebuildabot.constants.screenshot import (
-    KING_TOWER_BOXES,
-    PRINCESS_TOWER_BOXES,
-)
 from clashroyalebuildabot.detectors.background import LatestResult
 from clashroyalebuildabot.detectors.tower_hp_reader import (
-    CROP_SCALE,
-    TOWERS,
-    KingReading,
+    RUBBLE_READINGS,
+    TOWER_BOXES,
     TowerHPReader,
-    TowerReading,
 )
-from clashroyalebuildabot.detectors.vlm_client import VisionError
 from clashroyalebuildabot.game.numbers import (
     UNKNOWN_HP,
     UNKNOWN_LEVEL,
     Towers,
 )
+from clashroyalebuildabot.utils.image import load
 
-ALL_BOXES = {**PRINCESS_TOWER_BOXES, **KING_TOWER_BOXES}
-HPS = {
-    "left_enemy_princess": 1918,
-    "right_enemy_princess": 931,
-    "left_ally_princess": 2432,
-    "right_ally_princess": 2534,
-    "enemy_king": 1302,
-    "ally_king": 4392,
+DATA = os.path.join(os.path.dirname(__file__), "data", "numbers")
+# Real crops of each tower from one battle frame, and what they show.
+BATTLE = {
+    "left_enemy_princess": 2030,
+    "right_enemy_princess": 1145,
+    "left_ally_princess": 0,  # rubble
+    "right_ally_princess": 1459,
+    "enemy_king": UNKNOWN_HP,  # untouched: only its badge
+    "ally_king": 3803,
 }
-LEVELS = {
-    "left_enemy_princess": 8,
-    "right_enemy_princess": 8,
-    "left_ally_princess": 9,
-    "right_ally_princess": 9,
-    "enemy_king": 8,
-    "ally_king": 10,
-}
-SHADE = 40  # each tower's box is painted a different shade of grey
 
 
-class FakeClient:
-    """Answers for each tower, told apart by the shade of grey the test
-    frame paints its box."""
-
-    def __init__(self, hps=HPS, levels=LEVELS, fail=()):
-        self.hps = dict(hps)
-        self.levels = dict(levels)
-        self.fail: set[str] = set(fail)
-        self.crops = []
-
-    def ask(self, image, prompt, schema):
-        self.crops.append(image.shape[1::-1])
-        name = TOWERS[image[0, 0, 0] // SHADE][0]
-        expected = KingReading if "king" in name else TowerReading
-        assert schema is expected
-        if name in self.fail:
-            raise VisionError("down")
-        return schema(level=self.levels[name], hp=self.hps[name])
-
-
-def frame():
+def frame(**crops: str) -> np.ndarray:
+    """A black frame, with real crops pasted into towers' boxes. Each
+    keyword names a tower, its value the crop to paste there."""
     image = np.zeros((652, 368, 3), np.uint8)
-    for i, (_, (left, top, right, bottom), _) in enumerate(TOWERS):
-        image[top:bottom, left:right] = i * SHADE
+    for tower, name in crops.items():
+        left, top, right, bottom = TOWER_BOXES[tower]
+        crop = load(os.path.join(DATA, f"{name}.png"))
+        image[top:bottom, left:right] = crop
     return image
 
 
-def hps(towers):
-    return {name: tower.hp for name, tower in towers.items()}
+def battle_frame(**overrides: str) -> np.ndarray:
+    crops = {name: f"tower_{name}" for name in TOWER_BOXES}
+    return frame(**{**crops, **overrides})
 
 
-def levels(towers):
-    return {name: tower.level for name, tower in towers.items()}
-
-
-def read_in_background(reader):
-    reader.run(frame())
+def read_in_background(reader, image):
+    reader.run(image)
     reader.wait(5)
     return reader.latest()
 
 
-def test_reads_hp_and_level_from_enlarged_crops():
-    client = FakeClient()
-    reader = TowerHPReader(client)
-    readings = reader.read(frame())
-    assert hps(readings) == HPS
-    assert levels(readings) == LEVELS
-    expected = [
-        ((r - left) * CROP_SCALE, (b - t) * CROP_SCALE)
-        for left, t, r, b in ALL_BOXES.values()
-    ]
-    assert sorted(client.crops) == sorted(expected)
+def hps(towers: Towers) -> dict[str, float]:
+    return {name: tower.hp for name, tower in towers.items()}
+
+
+def test_reads_every_towers_hp():
+    reader = TowerHPReader(interval=0)
+    for _ in range(RUBBLE_READINGS):
+        towers = read_in_background(reader, battle_frame())
+    assert hps(towers) == BATTLE
     reader.close()
 
 
-def test_readings_are_named_towers():
-    reader = TowerHPReader(FakeClient())
-    towers = reader.read(frame())
-    assert isinstance(towers, Towers)
-    assert towers.right_enemy_princess.hp == 931
-    assert towers.right_ally_princess.level == 9
-    assert towers.enemy_king.hp == 1302
-    assert towers.ally_king.level == 10
+def test_levels_stay_unknown():
+    reader = TowerHPReader(interval=0)
+    towers = read_in_background(reader, battle_frame())
+    assert all(t.level == UNKNOWN_LEVEL for _, t in towers.items())
     reader.close()
 
 
 def test_unknown_until_first_reading():
-    reader = TowerHPReader(FakeClient())
-    readings = reader.latest()
-    assert all(math.isinf(n) for n in hps(readings).values())
-    assert all(n == UNKNOWN_LEVEL for n in levels(readings).values())
+    reader = TowerHPReader()
+    assert all(math.isinf(hp) for hp in hps(reader.latest()).values())
     reader.close()
 
 
-def test_destroyed_tower_keeps_its_last_level():
-    client = FakeClient()
-    reader = TowerHPReader(client, interval=0)
-    read_in_background(reader)
-
-    # Rubble has no badge; the model answers level 1 there in practice.
-    client.hps["left_ally_princess"] = 0
-    client.levels["left_ally_princess"] = 1
-    readings = read_in_background(reader)
-
-    assert readings.left_ally_princess.hp == 0
-    assert readings.left_ally_princess.level == 9
+def test_rubble_counts_only_after_several_readings():
+    # A missing bar might be a moment's glitch; rubble stays missing.
+    reader = TowerHPReader(interval=0)
+    for _ in range(RUBBLE_READINGS - 1):
+        towers = read_in_background(reader, battle_frame())
+        assert towers.left_ally_princess.hp == UNKNOWN_HP
+    towers = read_in_background(reader, battle_frame())
+    assert towers.left_ally_princess.hp == 0
     reader.close()
 
 
-def test_untouched_king_tower_counts_as_standing_with_its_level():
-    client = FakeClient()
-    client.hps["enemy_king"] = 0  # only the badge is showing
-    readings = TowerHPReader(client).read(frame())
-    assert readings.enemy_king.hp == UNKNOWN_HP
-    assert readings.enemy_king.level == 8
+def test_destroyed_tower_stays_destroyed():
+    reader = TowerHPReader(interval=0)
+    for _ in range(RUBBLE_READINGS):
+        read_in_background(reader, battle_frame())
+    # A number seen over its rubble later (a spell, a damage number) doesn't
+    # bring it back.
+    image = battle_frame(left_ally_princess="tower_right_ally_princess")
+    towers = read_in_background(reader, image)
+    assert towers.left_ally_princess.hp == 0
+    reader.close()
+
+
+def test_covered_number_keeps_the_previous_reading():
+    # "Not enough elixir" covers the number, but the bar's still there.
+    reader = TowerHPReader(interval=0)
+    read_in_background(reader, battle_frame())
+    image = battle_frame(right_ally_princess="tower_covered_bar")
+    for _ in range(RUBBLE_READINGS + 1):
+        towers = read_in_background(reader, image)
+    assert towers.right_ally_princess.hp == 1459
+    reader.close()
 
 
 def test_untouched_king_tower_never_reads_as_destroyed():
-    client = FakeClient()
-    client.hps["ally_king"] = 0
-    towers = TowerHPReader(client).read(frame())
-    assert towers.ally_king.hp > 0
-
-
-def test_failed_tower_keeps_its_previous_reading():
-    client = FakeClient()
-    reader = TowerHPReader(client, interval=0)
-    read_in_background(reader)
-
-    client.fail = {"right_enemy_princess"}
-    client.hps["left_enemy_princess"] = 1582
-    readings = read_in_background(reader)
-
-    assert readings.left_enemy_princess.hp == 1582
-    assert readings.right_enemy_princess.hp == 931
-    assert readings.right_enemy_princess.level == 8
+    reader = TowerHPReader(interval=0)
+    for _ in range(RUBBLE_READINGS + 1):
+        towers = read_in_background(reader, frame())
+    assert towers.enemy_king.hp == UNKNOWN_HP
+    assert towers.ally_king.hp == UNKNOWN_HP
     reader.close()
 
 
-def test_failed_first_reading_stays_unknown():
-    reader = TowerHPReader(FakeClient(fail=set(HPS)))
-    readings = reader.read(frame())
-    assert all(n == UNKNOWN_HP for n in hps(readings).values())
-    assert all(n == UNKNOWN_LEVEL for n in levels(readings).values())
+def test_king_tower_keeps_its_last_reading():
+    reader = TowerHPReader(interval=0)
+    read_in_background(reader, battle_frame())
+    towers = read_in_background(reader, frame())
+    assert towers.ally_king.hp == 3803
     reader.close()
 
 
 def test_reset_forgets_readings():
-    reader = TowerHPReader(FakeClient(), interval=0)
-    assert hps(read_in_background(reader)) == HPS
+    reader = TowerHPReader(interval=0)
+    for _ in range(RUBBLE_READINGS):
+        read_in_background(reader, battle_frame())
     reader.reset()
-    assert all(math.isinf(n) for n in hps(reader.latest()).values())
+    assert all(math.isinf(hp) for hp in hps(reader.latest()).values())
+    # And the rubble count starts again.
+    towers = read_in_background(reader, battle_frame())
+    assert towers.left_ally_princess.hp == UNKNOWN_HP
     reader.close()
 
 
 def test_reset_discards_an_answer_still_in_flight():
     release = threading.Event()
 
-    def slow(image):
+    def slow(image, previous):
         release.wait(5)
         return "old"
 
@@ -194,4 +156,4 @@ def test_reset_discards_an_answer_still_in_flight():
 
 
 def test_every_tower_has_a_box():
-    assert set(ALL_BOXES) == {name for name, _ in Towers().items()}
+    assert set(TOWER_BOXES) == {name for name, _ in Towers().items()}

@@ -1,4 +1,3 @@
-import os
 from typing import TYPE_CHECKING, get_args
 
 from PyQt6.QtCore import Qt
@@ -23,7 +22,7 @@ from PyQt6.QtWidgets import (
 )
 
 from clashroyalebuildabot.config import LogLevel, save_config
-from clashroyalebuildabot.constants.paths import IMAGES_DIR
+from clashroyalebuildabot.constants.paths import LOGO_PATH
 from clashroyalebuildabot.gui.gameplay_widget import ImageStreamWindow
 
 if TYPE_CHECKING:
@@ -39,7 +38,7 @@ def setup_top_bar(main_window: "MainWindow") -> QFrame:
 
     logo_label = QLabel()
 
-    logo_pixmap = QPixmap(os.path.join(IMAGES_DIR, "logo.png")).scaled(
+    logo_pixmap = QPixmap(LOGO_PATH).scaled(
         120,
         120,
         Qt.AspectRatioMode.KeepAspectRatio,
@@ -214,9 +213,7 @@ def setup_tabs(main_window: "MainWindow") -> QTabWidget:
     save_config_group = QGroupBox()
     save_config_layout = QHBoxLayout()
     save_config_button = QPushButton("Save config to file")
-    save_config_button.clicked.connect(
-        lambda: save_config(main_window.update_config())
-    )
+    save_config_button.clicked.connect(lambda: save_config(main_window.config))
     save_config_layout.addWidget(save_config_button)
     save_config_group.setLayout(save_config_layout)
     # Natural height: a fixed cap clipped the button text.
@@ -249,92 +246,11 @@ def setup_tabs(main_window: "MainWindow") -> QTabWidget:
 
     ingame_group.setLayout(ingame_layout)
 
-    screen_group = _setup_screen_detector_group(main_window)
-
     settings_layout.addWidget(bot_group, 0, 0)
     settings_layout.addWidget(visuals_group, 1, 0)
     settings_layout.addWidget(save_config_group, 2, 0)
     settings_layout.addWidget(ingame_group, 0, 1)
-    settings_layout.addWidget(screen_group, 1, 1, 2, 1)
 
     tab_widget.addTab(settings_tab, "Settings")
 
     return tab_widget
-
-
-def _spin_box(
-    value: float,
-    minimum: float,
-    maximum: float,
-    step: float,
-    tooltip: str,
-    decimals: int = 2,
-) -> QDoubleSpinBox:
-    box = QDoubleSpinBox()
-    box.setRange(minimum, maximum)
-    box.setSingleStep(step)
-    box.setDecimals(decimals)
-    box.setValue(value)
-    box.setToolTip(tooltip)
-    return box
-
-
-def _setup_screen_detector_group(main_window: "MainWindow") -> QGroupBox:
-
-    config = main_window.config.screen_detector
-    group = QGroupBox("Screen Detector")
-    layout = QFormLayout()
-
-    main_window.screen_server_url_input = QLineEdit()
-    main_window.screen_server_url_input.setText(config.base_url)
-    main_window.screen_server_url_input.setPlaceholderText(
-        "http://localhost:8001"
-    )
-    main_window.screen_server_url_input.setToolTip(
-        "Address of the vLLM server running the vision model.\n"
-        "If none is running on this computer, the bot starts one."
-    )
-    layout.addRow("Server URL:", main_window.screen_server_url_input)
-
-    main_window.screen_model_input = QLineEdit()
-    main_window.screen_model_input.setText(config.model)
-    main_window.screen_model_input.setPlaceholderText("Qwen/Qwen3.5-0.8B")
-    main_window.screen_model_input.setToolTip(
-        "The model the vLLM server is serving."
-    )
-    layout.addRow("Model:", main_window.screen_model_input)
-
-    main_window.screen_interval_input = _spin_box(
-        config.interval,
-        0.1,
-        10.0,
-        0.1,
-        "Seconds between screen checks.",
-    )
-    layout.addRow("Check Interval (sec):", main_window.screen_interval_input)
-
-    main_window.screen_max_age_input = _spin_box(
-        config.max_age,
-        0.5,
-        60.0,
-        0.5,
-        "How long an answer stays valid. Older answers count as unknown.",
-    )
-    layout.addRow("Answer Max Age (sec):", main_window.screen_max_age_input)
-
-    main_window.screen_timeout_input = _spin_box(
-        config.timeout,
-        1.0,
-        60.0,
-        1.0,
-        "How long to wait for the server before giving up on a request.",
-        decimals=1,
-    )
-    layout.addRow("Request Timeout (sec):", main_window.screen_timeout_input)
-
-    note = QLabel("Applied when the bot starts.")
-    note.setStyleSheet("color: #999;")
-    layout.addRow(note)
-
-    group.setLayout(layout)
-    return group

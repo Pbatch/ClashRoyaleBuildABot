@@ -101,7 +101,7 @@ def test_install_adb_rejects_wrong_checksum(monkeypatch, tmp_path):
 
 
 def test_emulator_installs_missing_adb(monkeypatch):
-    from clashroyalebuildabot.emulator import emulator
+    from clashroyalebuildabot import emulator
     from clashroyalebuildabot.utils.error_handling import WikifiedError
 
     calls = []
@@ -152,7 +152,7 @@ def test_install_adb_keeps_current_version(monkeypatch, tmp_path):
 
 
 def test_emulator_keeps_old_adb_if_update_fails(monkeypatch):
-    from clashroyalebuildabot.emulator import emulator
+    from clashroyalebuildabot import emulator
 
     def fail():
         raise OSError("no internet")

@@ -1,5 +1,3 @@
-import pytest
-
 import clashroyalebuildabot.bot.bot as bot_module
 from clashroyalebuildabot.game import ScreenName, Screens
 from tests.conftest import make_state
@@ -68,22 +66,13 @@ def test_plays_cards_in_battle(monkeypatch):
     assert record.played == 1
 
 
-@pytest.mark.parametrize(
-    "screen",
-    [
-        ScreenName.UNKNOWN,
-        ScreenName.SEARCHING_FOR_OPPONENT,
-        ScreenName.LOADING,
-        ScreenName.VS,
-        ScreenName.MATCH_OVER,
-    ],
-)
-def test_waits_on_screens_between_battles(monkeypatch, screen):
+def test_waits_on_unknown_screens(monkeypatch):
+    # Searching for an opponent, loading, popups and the like.
     bot, record = make_bot(monkeypatch)
-    show(bot, monkeypatch, screen)
+    show(bot, monkeypatch, ScreenName.UNKNOWN)
     assert record.played == 0
     assert record.taps == []
-    assert record.waits == [f"Waiting on the {screen} screen"]
+    assert record.waits == ["Waiting on the unknown screen"]
 
 
 def test_never_plays_cards_in_the_lobby(monkeypatch):
@@ -104,7 +93,7 @@ def test_taps_ok_once_even_if_the_screen_flickers(monkeypatch):
     bot, record = make_bot(monkeypatch)
     for screen in (
         ScreenName.END_OF_GAME,
-        ScreenName.MATCH_OVER,
+        ScreenName.UNKNOWN,
         ScreenName.END_OF_GAME,
     ):
         show(bot, monkeypatch, screen)

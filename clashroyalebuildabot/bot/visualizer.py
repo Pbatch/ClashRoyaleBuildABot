@@ -12,7 +12,7 @@ from clashroyalebuildabot.constants.screenshot import (
     PRINCESS_TOWER_BOXES,
     TIMER_BOX,
 )
-from clashroyalebuildabot.game.numbers import Numbers
+from clashroyalebuildabot.game.numbers import UNKNOWN_LEVEL, Numbers
 from clashroyalebuildabot.game.state import State
 from clashroyalebuildabot.game.units import UnitDetection, Units
 from clashroyalebuildabot.utils.image import Box, save
@@ -176,7 +176,8 @@ class Visualizer:
         yield ELIXIR_BOX, f"{numbers.elixir}"
         boxes = {**PRINCESS_TOWER_BOXES, **KING_TOWER_BOXES}
         for name, tower in numbers.towers.items():
-            yield boxes[name], f"{tower.hp:g} L{tower.level}"
+            level = f" L{tower.level}" if tower.level != UNKNOWN_LEVEL else ""
+            yield boxes[name], f"{tower.hp:g}{level}"
         timer = numbers.timer
         overtime = " OT" if timer.overtime else ""
         yield TIMER_BOX, f"{timer.time_left:g}s{overtime}"

@@ -1,145 +1,119 @@
-import threading
+import os
 
 import numpy as np
 import pytest
-from pydantic import ValidationError
 
+from clashroyalebuildabot.constants.screen_hashes import (
+    BATTLE_DROP_HASH,
+    BUTTON_HASHES,
+)
+from clashroyalebuildabot.constants.screenshot import (
+    BATTLE_CHECK_BOX,
+    LOBBY_BATTLE_BOX,
+    RESULTS_CENTRE_OK_BOX,
+    RESULTS_OK_BOX,
+    RESULTS_PLAY_AGAIN_BOX,
+)
 from clashroyalebuildabot.detectors.screen_detector import (
-    OFFERED_SCREENS,
-    ScreenAnswer,
+    DROP_THUMBNAIL_SIZE,
+    THUMBNAIL_SIZE,
     ScreenDetector,
 )
-from clashroyalebuildabot.detectors.vlm_client import VisionError, VLMClient
-from clashroyalebuildabot.game import ScreenName, Screens
-from clashroyalebuildabot.utils.error_handling import WikifiedError
-from tests.conftest import default_config
+from clashroyalebuildabot.game import ScreenName
+from clashroyalebuildabot.utils.image import load, resize
+
+DATA = os.path.join(os.path.dirname(__file__), "data", "screens")
 
 
-class FakeClient:
-    def __init__(self, screen="lobby", ok_button="none", error=None):
-        self.answer = ScreenAnswer(screen=screen, ok_button=ok_button)
-        self.error = error
-        self.calls = 0
-        self.release = threading.Event()
-        self.release.set()
-
-    def ask(self, image, prompt, schema):
-        self.calls += 1
-        self.release.wait(5)
-        if self.error:
-            raise self.error
-        assert schema is ScreenAnswer
-        return self.answer
+def frame(*crops: tuple[str, tuple[int, int, int, int]]) -> np.ndarray:
+    """A dark frame, with real crops of buttons pasted into boxes."""
+    image = np.full((652, 368, 3), 30, np.uint8)
+    for name, (left, top, right, bottom) in crops:
+        image[top:bottom, left:right] = load(os.path.join(DATA, f"{name}.png"))
+    return image
 
 
-def frame():
-    return np.full((652, 368, 3), 40, np.uint8)
+def with_elixir_drop(image: np.ndarray) -> np.ndarray:
+    """The frame with the reference elixir drop, blown back up to the size
+    of its box, pasted in."""
+    width, height = DROP_THUMBNAIL_SIZE
+    drop = np.frombuffer(bytes.fromhex(BATTLE_DROP_HASH), np.uint8)
+    left, top, right, bottom = BATTLE_CHECK_BOX
+    image[top:bottom, left:right] = resize(
+        drop.reshape(height, width, 3), (right - left, bottom - top)
+    )
+    return image
 
 
-def test_schema_offers_every_described_screen():
-    schema = ScreenAnswer.model_json_schema()
-    names = [screen.name for screen in OFFERED_SCREENS]
-    assert schema["properties"]["screen"]["enum"] == names
-    # The two results layouts are told apart by the OK button instead.
-    assert ScreenName.BYPASS_END_OF_GAME not in names
+@pytest.fixture
+def detector():
+    return ScreenDetector()
 
 
-def test_schema_rejects_an_unknown_screen():
-    with pytest.raises(ValidationError):
-        ScreenAnswer(screen="shop", ok_button="none")
+def test_battle(detector):
+    assert detector.run(with_elixir_drop(frame())) == ScreenName.IN_GAME
 
 
-@pytest.mark.parametrize(
-    "screen",
-    [
-        ScreenName.IN_GAME,
-        ScreenName.LOBBY,
-        ScreenName.SEARCHING_FOR_OPPONENT,
-        ScreenName.LOADING,
-        ScreenName.VS,
-        ScreenName.MATCH_OVER,
-        ScreenName.UNKNOWN,
-    ],
-)
-def test_answer_is_the_named_screen(screen):
-    detector = ScreenDetector(FakeClient(screen))
-    assert detector.classify(frame()) == screen
+def test_the_elixir_drop_wins_over_buttons(detector):
+    # A battle is a battle, whatever else the frame looks like.
+    image = with_elixir_drop(frame(("battle_button", LOBBY_BATTLE_BOX)))
+    assert detector.run(image) == ScreenName.IN_GAME
 
 
-@pytest.mark.parametrize(
-    ("ok_button", "expected"),
-    [
-        ("right", ScreenName.END_OF_GAME),
-        ("centre", ScreenName.BYPASS_END_OF_GAME),
-        # Results still appearing: wait rather than tap blind.
-        ("none", ScreenName.UNKNOWN),
-    ],
-)
-def test_ok_button_position_picks_end_of_game_layout(ok_button, expected):
-    detector = ScreenDetector(FakeClient("end_of_game", ok_button))
-    assert detector.classify(frame()) == expected
+@pytest.mark.parametrize("fill", [(0, 0, 0), (255, 255, 255), (60, 140, 230)])
+def test_plain_frames_arent_a_battle(detector, fill):
+    # The last is the blue of the results screen's OK button.
+    image = np.full((652, 368, 3), fill, np.uint8)
+    assert not detector.in_battle(image)
 
 
-def test_failed_request_is_unknown():
-    detector = ScreenDetector(FakeClient(error=VisionError("refused")))
-    assert detector.classify(frame()) == ScreenName.UNKNOWN
+def test_noise_isnt_a_battle(detector):
+    rng = np.random.default_rng(0)
+    image = rng.integers(0, 256, (652, 368, 3), dtype=np.uint8)
+    assert not detector.in_battle(image)
 
 
-def test_run_does_not_block_and_reports_result_later():
-    client = FakeClient()
-    client.release.clear()
-    detector = ScreenDetector(client, interval=0)
+def test_lobby(detector):
+    image = frame(("battle_button", LOBBY_BATTLE_BOX))
+    assert detector.run(image) == ScreenName.LOBBY
 
-    # The model is still thinking, so there is no answer yet.
+
+def test_results_with_play_again_and_ok(detector):
+    image = frame(
+        ("play_again_button", RESULTS_PLAY_AGAIN_BOX),
+        ("ok_button", RESULTS_OK_BOX),
+    )
+    assert detector.run(image) == ScreenName.END_OF_GAME
+
+
+def test_results_with_only_an_ok_button_in_the_centre(detector):
+    image = frame(("ok_button", RESULTS_CENTRE_OK_BOX))
+    assert detector.run(image) == ScreenName.BYPASS_END_OF_GAME
+
+
+def test_results_need_both_buttons(detector):
+    # While the results appear, the buttons come in one at a time; tapping
+    # before both are there would miss.
+    image = frame(("ok_button", RESULTS_OK_BOX))
+    assert detector.run(image) == ScreenName.UNKNOWN
+
+
+def test_anything_else_is_unknown(detector):
     assert detector.run(frame()) == ScreenName.UNKNOWN
-    # A frame arriving while a request is in flight doesn't queue another.
-    detector.run(frame())
-    assert client.calls == 1
-
-    client.release.set()
-    detector.wait(5)
-    assert detector.run(frame()) == ScreenName.LOBBY
-    detector.close()
 
 
-def test_run_respects_interval():
-    client = FakeClient()
-    detector = ScreenDetector(client, interval=60)
-    detector.run(frame())
-    detector.wait(5)
-    detector.run(frame())
-    assert client.calls == 1
-    detector.close()
+def test_a_blue_background_isnt_an_ok_button(detector):
+    # The searching screen is blue where the OK button would be.
+    image = frame(
+        ("searching_ok_area", RESULTS_OK_BOX),
+        ("play_again_button", RESULTS_PLAY_AGAIN_BOX),
+    )
+    assert detector.run(image) == ScreenName.UNKNOWN
 
 
-def test_stale_answer_becomes_unknown():
-    detector = ScreenDetector(FakeClient(), interval=60, max_age=0)
-    detector.run(frame())
-    detector.wait(5)
-    assert detector.run(frame()) == ScreenName.UNKNOWN
-    detector.close()
-
-
-def test_from_config_checks_server(monkeypatch):
-    def down(self):
-        raise WikifiedError("010", "down")
-
-    monkeypatch.setattr(VLMClient, "check", down)
-    with pytest.raises(WikifiedError):
-        ScreenDetector.from_config(
-            default_config().screen_detector.model_copy(
-                update={"base_url": "http://nowhere:1"}
-            )
-        )
-
-
-def test_prompt_lists_each_screen_by_name():
-    from clashroyalebuildabot.detectors.screen_detector import PROMPT
-
-    for screen in OFFERED_SCREENS:
-        assert f"- {screen.name}: " in PROMPT
-    assert "Screen(" not in PROMPT
-
-
-def test_every_screen_name_has_details():
-    assert {screen.name for screen in Screens.all()} == set(ScreenName)
+def test_every_hash_is_a_whole_thumbnail():
+    width, height = THUMBNAIL_SIZE
+    for value in BUTTON_HASHES.values():
+        assert len(bytes.fromhex(value)) == width * height * 3
+    width, height = DROP_THUMBNAIL_SIZE
+    assert len(bytes.fromhex(BATTLE_DROP_HASH)) == width * height * 3

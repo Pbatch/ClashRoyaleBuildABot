@@ -1,8 +1,8 @@
 ### Wiki: Bot Installation Setup Guide
 ---
 ### Prerequisites
-- Linux on x86-64. The bot doesn't support Windows or macOS: vLLM, which serves its vision model, only runs on Linux.
-- An NVIDIA GPU, with its driver installed.
+- Linux on x86-64. The bot is only tested on Linux.
+- Optionally, an NVIDIA GPU with its driver installed. The unit detector runs several times faster on it, but the CPU works too.
 - [uv](https://docs.astral.sh/uv/).
 
 #### Step 1: Open a Shell
@@ -33,10 +33,15 @@
   ```
 
 #### Step 6: Install Dependencies
-- Install the necessary project dependencies. They include vLLM and the GPU build of ONNX Runtime, which are large downloads:
+- Install the necessary project dependencies:
   ```bash
   uv sync
   ```
+- With an NVIDIA GPU, add the `gpu` extra instead. It also installs the CUDA and cuDNN libraries the GPU needs, about 2 GB more:
+  ```bash
+  uv sync --extra gpu
+  ```
+  Add `--extra gpu` to every `uv sync` you run later too (for example `uv sync --extra gpu --extra dev`): a `uv sync` without it removes the libraries again, and the bot quietly falls back to the CPU.
 - For development purposes, install the dev dependencies and the pre-commit hooks:
   ```bash
   uv sync --extra dev
@@ -52,7 +57,7 @@
   ```bash
   uv run python -m clashroyalebuildabot.install
   ```
-- This downloads the bot's own copy of [ADB](https://developer.android.com/tools/adb), which it uses to talk to your device, into `platform-tools/`. It also downloads [Qwen3.5-0.8B](https://huggingface.co/Qwen/Qwen3.5-0.8B), the small vision model the bot reads the screen with (about 1.7 GB), into the Hugging Face cache. Running it again keeps what's already there. If you skip this step, the bot downloads ADB when it starts (and updates it when a new version of the bot needs a newer one), and vLLM downloads the model when the vision model's server first starts.
+- This downloads the bot's own copy of [ADB](https://developer.android.com/tools/adb), which it uses to talk to your device, into `platform-tools/`. Running it again keeps what's already there. If you skip this step, the bot downloads ADB when it starts (and updates it when a new version of the bot needs a newer one).
 
 ### Testing the Bot
 Now, let’s verify that the bot operates correctly:
@@ -64,12 +69,6 @@ Now, let’s verify that the bot operates correctly:
   ```
 - In the window that opens, check the **Device Serial** in the Settings tab (run `adb devices` to find it). If the configured device isn't found, the bot uses the first connected device.
 - Press start (▶) to start the bot. Press it again (■) to stop.
-- The first press also starts the vision model's server, with [vLLM](https://github.com/vllm-project/vllm). That takes about a minute, or a few minutes the first time, while vLLM compiles the model. The server keeps running until you close the bot, so stopping and starting again is quick. Its log is in `debug/vlm_server.log`.
-- The server reserves about 75% of your GPU's memory, which a 6 GB card needs, so close other programs using the GPU first. On a larger card you can lower `gpu_memory_utilization` under `screen_detector` in your [configuration](#configuration).
-- To run the server yourself instead, for example to keep it running between sessions, start it in another terminal before the bot. The bot then uses that server and leaves it running:
-  ```bash
-  uv run python -m clashroyalebuildabot.vlm_server
-  ```
 
 ### Configuration
 The default settings are in [`clashroyalebuildabot/default_config.yaml`](../clashroyalebuildabot/default_config.yaml). Don't edit that file: updates replace it.

@@ -1,7 +1,6 @@
 from collections.abc import Sequence
 from functools import cache
 
-import cv2
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
@@ -9,27 +8,26 @@ from clashroyalebuildabot.constants.card_hashes import CARD_HASHES
 from clashroyalebuildabot.constants.screenshot import CARD_BOXES
 from clashroyalebuildabot.game.cards import Card, Cards
 from clashroyalebuildabot.utils.error_handling import WikifiedError
-from clashroyalebuildabot.utils.image import crop, resize
+from clashroyalebuildabot.utils.image import crop
+from clashroyalebuildabot.utils.thumbnail import from_hex, thumbnail
 
 # Card thumbnails are this many pixels across and down.
 THUMBNAIL_SIZE = (8, 10)
 
 
-def thumbnail(image: np.ndarray) -> np.ndarray:
-    """An RGB image shrunk to a (height, width) greyscale uint8 thumbnail:
-    what a card position, or a card's art, is matched by."""
-    small = resize(image, THUMBNAIL_SIZE, cv2.INTER_LINEAR)
-    return cv2.cvtColor(small, cv2.COLOR_RGB2GRAY)
+def card_thumbnail(image: np.ndarray) -> np.ndarray:
+    """A card, or a card's art, as the greyscale thumbnail it's matched
+    by."""
+    return thumbnail(image, THUMBNAIL_SIZE, grey=True)
 
 
 @cache
-def card_thumbnails() -> dict[str, np.ndarray]:
+def art_thumbnails() -> dict[str, np.ndarray]:
     """Every card art's thumbnail, by art name (``<card>`` and, for an
     evolution, ``<card>_ev1``). They're made from the art by maintainers,
     so the art itself doesn't ship with the bot."""
-    width, height = THUMBNAIL_SIZE
     return {
-        name: np.frombuffer(bytes.fromhex(h), np.uint8).reshape(height, width)
+        name: from_hex(h, THUMBNAIL_SIZE, grey=True)
         for name, h in CARD_HASHES.items()
     }
 
@@ -53,7 +51,7 @@ class CardDetector:
     # The next card plus the four in hand.
     HAND_SIZE = 5
     # The bottom rows hold the cost badge, which the card art doesn't have.
-    HASH_ROWS = 8
+    MATCH_ROWS = 8
     # How a greyed card's brightness relates to the art's, as (scale,
     # offset), outside the wedge and inside it. Measured on battle frames.
     WASHED_OUT = (0.355, 163.0)
@@ -73,23 +71,21 @@ class CardDetector:
         self.cards = [*cards, *([Cards.BLANK] * self.HAND_SIZE)]
         self.grey_std_threshold = grey_std_threshold
 
-        self.card_hashes, self.hash_owners = self._calculate_card_hashes()
+        self.art_variants, self.art_owners = self._deck_art()
         self._last: list[Card] | None = None
 
     def reset(self) -> None:
         """Forget the last hand, for the start of a new battle."""
         self._last = None
 
-    def _hash(self, thumb: np.ndarray) -> np.ndarray:
-        return thumb.astype(np.float32)[: self.HASH_ROWS].ravel()
+    def _pixels(self, thumb: np.ndarray) -> np.ndarray:
+        """The thumbnail pixels a card is matched on, as floats."""
+        return thumb.astype(np.float32)[: self.MATCH_ROWS].ravel()
 
-    def _calculate_hash(self, image: np.ndarray) -> np.ndarray:
-        return self._hash(thumbnail(image))
-
-    def _calculate_multi_hash(self, thumb: np.ndarray) -> np.ndarray:
-        """The art's hash as drawn normally (first), washed out and in the
+    def _variants(self, thumb: np.ndarray) -> np.ndarray:
+        """An art's pixels as drawn normally (first), washed out and in the
         wedge."""
-        gray = self._hash(thumb)
+        gray = self._pixels(thumb)
         variants = [gray]
         for scale, offset in (self.WASHED_OUT, self.WEDGE):
             variants.append(scale * gray + offset)
@@ -99,30 +95,30 @@ class CardDetector:
     def _art_thumbnails(card: Card) -> list[np.ndarray]:
         """The card's art, plus its evolution's art if it has one: an
         evolved card is drawn with that instead."""
-        thumbs = card_thumbnails()
+        thumbs = art_thumbnails()
         if card.name not in thumbs:
             raise WikifiedError("005", f"No card hash for {card.name}.")
         names = [card.name, f"{card.name}_ev1"]
         return [thumbs[n] for n in names if n in thumbs]
 
-    def _calculate_card_hashes(self) -> tuple[np.ndarray, np.ndarray]:
-        """Every art's multi-hash, and the index in self.cards it belongs
+    def _deck_art(self) -> tuple[np.ndarray, np.ndarray]:
+        """Every art's variants, and the index in self.cards it belongs
         to."""
-        hashes, owners = [], []
+        variants, owners = [], []
         for i, card in enumerate(self.cards):
             for thumb in self._art_thumbnails(card):
-                hashes.append(self._calculate_multi_hash(thumb))
+                variants.append(self._variants(thumb))
                 owners.append(i)
-        return np.stack(hashes), np.array(owners)
+        return np.stack(variants), np.array(owners)
 
     def _match_costs(
         self, crops: list[np.ndarray], coloured: list[bool]
     ) -> np.ndarray:
         """(positions, cards): how unlike each card each position looks."""
-        crop_hashes = np.stack([self._calculate_hash(c) for c in crops])
+        seen = np.stack([self._pixels(card_thumbnail(c)) for c in crops])
         # (positions, arts, variants, pixels).
         diffs = np.abs(
-            crop_hashes[:, None, None, :] - self.card_hashes[None, :, :, :]
+            seen[:, None, None, :] - self.art_variants[None, :, :, :]
         )
         # A coloured card is drawn as the art is. A greyed one may have any
         # variant at each pixel.
@@ -133,7 +129,7 @@ class CardDetector:
         )
         # A card matches as well as its closest art.
         costs = np.full((len(crops), len(self.cards)), np.inf)
-        for art, owner in enumerate(self.hash_owners):
+        for art, owner in enumerate(self.art_owners):
             costs[:, owner] = np.minimum(costs[:, owner], art_costs[:, art])
         return costs
 
@@ -189,7 +185,6 @@ class CardDetector:
         ]
 
     def run(self, image: np.ndarray) -> tuple[list[Card], list[int]]:
-
         crops = [crop(image, position) for position in CARD_BOXES]
         coloured = [self._is_coloured(card) for card in crops]
         cards = self._detect_cards(crops, coloured)

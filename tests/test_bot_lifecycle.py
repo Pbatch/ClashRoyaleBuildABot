@@ -50,7 +50,7 @@ class FakeEmulator:
 
 
 class FakeDetector:
-    def __init__(self, cards, screen_config):
+    def __init__(self, cards):
         pass
 
     def close(self):

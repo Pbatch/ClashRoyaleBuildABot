@@ -1,6 +1,6 @@
 import pytest
 
-from clashroyalebuildabot.emulator.emulator import parse_wm_size
+from clashroyalebuildabot.emulator import parse_wm_size
 
 
 def test_physical_size():

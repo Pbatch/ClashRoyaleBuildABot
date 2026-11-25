@@ -5,7 +5,7 @@ import sys
 import pytest
 
 from clashroyalebuildabot.constants.screenshot import SCREENSHOT_WIDTH
-from clashroyalebuildabot.emulator.emulator import (
+from clashroyalebuildabot.emulator import (
     recording_script,
     recording_size,
 )

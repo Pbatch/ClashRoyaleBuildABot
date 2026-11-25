@@ -15,7 +15,7 @@ WRITTEN_AT_RUNTIME = [
     "ADB_PATH",
 ]
 # Files that ship with the bot and are only read.
-SHIPPED = ["DEFAULT_CONFIG_PATH", "MODELS_DIR", "IMAGES_DIR"]
+SHIPPED = ["DEFAULT_CONFIG_PATH", "MODELS_DIR"]
 
 
 def _inside(path, directory):
@@ -33,3 +33,8 @@ def test_runtime_files_are_outside_the_package(name):
 @pytest.mark.parametrize("name", SHIPPED)
 def test_shipped_files_are_inside_the_package(name):
     assert _inside(getattr(constants, name), constants.SRC_DIR)
+
+
+def test_logo_is_in_the_project_folder():
+    assert os.path.isfile(constants.LOGO_PATH)
+    assert not _inside(constants.LOGO_PATH, constants.SRC_DIR)

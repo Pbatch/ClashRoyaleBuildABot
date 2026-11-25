@@ -10,9 +10,8 @@ from loguru import logger
 
 from clashroyalebuildabot.actions.generic.action import Action
 from clashroyalebuildabot.bot.bot import Bot
-from clashroyalebuildabot.config import Config
+from clashroyalebuildabot.config import Config, apply_changes
 from clashroyalebuildabot.utils.error_handling import WikifiedError
-from clashroyalebuildabot.vlm_server import VLMServer
 
 
 class BotStatus(StrEnum):
@@ -36,21 +35,42 @@ class BotController:
     ) -> None:
         self.config = config
         self.actions = actions
-        self.vlm_server = VLMServer()
         self._bot: Bot | None = None
         self._thread: threading.Thread | None = None
         self._stop_requested = False
         # Guards _bot, _thread and _stop_requested, which the bot's thread
         # and the caller's thread both change.
         self._lock = threading.Lock()
+        # Serialises status emissions. Each reads the status while holding
+        # it, so the last one listeners get always matches the current
+        # status, even when the bot's thread and the caller's race.
+        self._emit_lock = threading.RLock()
         self._frame_listeners: list[Callable[[np.ndarray], None]] = []
         self._status_listeners: list[Callable[[BotStatus], None]] = []
+        self._config_listeners: list[Callable[[Config], None]] = []
+        # Serialises config changes, which may come from the GUI and the
+        # API at once, and the snapshot each new bot takes.
+        self._config_lock = threading.RLock()
 
     def add_frame_listener(
         self, listener: Callable[[np.ndarray], None]
     ) -> None:
         """Called with each annotated frame while show_images is on."""
         self._frame_listeners.append(listener)
+
+    def add_config_listener(self, listener: Callable[[Config], None]) -> None:
+        """Called with the config after every update_config(), on the
+        thread that made the change."""
+        self._config_listeners.append(listener)
+
+    def update_config(self, changes: dict) -> None:
+        """Apply some settings, e.g. ``{"bot": {"load_deck": True}}``. A
+        running bot keeps the settings it started with. Raises pydantic's
+        ValidationError, changing nothing, if any setting is invalid."""
+        with self._config_lock:
+            apply_changes(self.config, changes)
+            for listener in self._config_listeners:
+                listener(self.config)
 
     def add_status_listener(
         self, listener: Callable[[BotStatus], None]
@@ -86,7 +106,12 @@ class BotController:
             if self._thread is not None:
                 return False
             self._stop_requested = False
-            self._thread = threading.Thread(target=self._run, daemon=True)
+            # A copy, so changes made while it runs can't reach it halfway.
+            with self._config_lock:
+                config = self.config.model_copy(deep=True)
+            self._thread = threading.Thread(
+                target=self._run, args=(config,), daemon=True
+            )
             self._thread.start()
         logger.info("Starting bot")
         self._emit_status()
@@ -107,44 +132,54 @@ class BotController:
         self._emit_status()
         return True
 
+    def pause(self) -> bool:
+        """False if there's no running bot to pause, or it's paused."""
+        bot = self._bot
+        if bot is None or self._stop_requested or bot.is_paused:
+            return False
+        bot.pause()
+        self._emit_status()
+        return True
+
+    def resume(self) -> bool:
+        """False if there's no paused bot to resume."""
+        bot = self._bot
+        if bot is None or self._stop_requested or not bot.is_paused:
+            return False
+        bot.resume()
+        self._emit_status()
+        return True
+
     def toggle_pause(self) -> bool:
         """Pause or resume. Returns whether the bot is now paused."""
-        bot = self._bot
-        if bot is None or self._stop_requested:
-            return False
-        bot.toggle_pause()
-        self._emit_status()
-        return bot.is_paused
+        if not self.pause():
+            self.resume()
+        return self.is_paused
 
     def close(self, timeout: float = 10) -> None:
-        """Stop the bot, wait for it, and stop the vision model server.
-        For app shutdown, so the screen recording doesn't outlive the app."""
+        """Stop the bot and wait for it. For app shutdown, so the screen
+        recording doesn't outlive the app."""
         thread = self._thread
         self.stop()
         if thread is not None:
             thread.join(timeout=timeout)
-        self.vlm_server.stop()
 
     def _emit_status(self) -> None:
-        status = self.status
-        for listener in self._status_listeners:
-            listener(status)
+        with self._emit_lock:
+            status = self.status
+            for listener in self._status_listeners:
+                listener(status)
 
     def _emit_frame(self, frame: np.ndarray) -> None:
         for listener in self._frame_listeners:
             listener(frame)
 
-    def _run(self) -> None:
-        """Runs on the bot's thread."""
+    def _run(self, config: Config) -> None:
+        """Runs on the bot's thread, with the config it started with."""
         try:
-            if not self.vlm_server.ensure_running(
-                self.config.screen_detector,
-                cancelled=lambda: self._stop_requested,
-            ):
-                return  # stopped while the server was starting
             bot = Bot(
                 actions=self.actions,
-                config=self.config,
+                config=config,
                 on_frame=self._emit_frame,
             )
             with self._lock:

@@ -1,6 +1,6 @@
 import pytest
 
-from clashroyalebuildabot.emulator.emulator import Emulator
+from clashroyalebuildabot.emulator import Emulator
 
 
 @pytest.mark.parametrize(

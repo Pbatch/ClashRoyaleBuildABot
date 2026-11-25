@@ -4,7 +4,7 @@ the GPU first. Taps are tested in test_input_shell.py."""
 import pytest
 
 import clashroyalebuildabot.bot.bot as bot_module
-import clashroyalebuildabot.detectors.onnx_detector as onnx_detector
+import clashroyalebuildabot.detectors.onnx_model as onnx_model
 from clashroyalebuildabot.game.cards import Cards
 from tests.conftest import make_state
 from tests.test_bot_lifecycle import (
@@ -147,14 +147,14 @@ def test_stops_waiting_after_the_delay(playing):
 def test_providers_put_cuda_first(monkeypatch, available, expected):
     preloads = []
     monkeypatch.setattr(
-        onnx_detector.ort, "get_available_providers", lambda: available
+        onnx_model.ort, "get_available_providers", lambda: available
     )
     monkeypatch.setattr(
-        onnx_detector.ort, "preload_dlls", lambda: preloads.append(True)
+        onnx_model.ort, "preload_dlls", lambda: preloads.append(True)
     )
-    onnx_detector._providers.cache_clear()
+    onnx_model._providers.cache_clear()
     try:
-        assert onnx_detector._providers() == expected
+        assert onnx_model._providers() == expected
         assert bool(preloads) == ("CUDAExecutionProvider" in expected)
     finally:
-        onnx_detector._providers.cache_clear()
+        onnx_model._providers.cache_clear()

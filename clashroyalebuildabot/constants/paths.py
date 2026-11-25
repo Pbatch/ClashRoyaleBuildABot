@@ -9,7 +9,10 @@ APP_DIR = os.path.dirname(SRC_DIR)
 # Shipped with the bot, inside the package, and only read.
 DEFAULT_CONFIG_PATH = os.path.join(SRC_DIR, "default_config.yaml")
 MODELS_DIR = os.path.join(SRC_DIR, "models")
-IMAGES_DIR = os.path.join(SRC_DIR, "images")
+
+# Shipped in git, in the project folder: only the GUI uses it, so it stays
+# out of the installed package.
+LOGO_PATH = os.path.join(APP_DIR, "media", "logo.png")
 
 # Written at runtime, in the project folder, so they don't conflict with git
 # updates.
