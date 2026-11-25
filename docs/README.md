@@ -12,7 +12,7 @@ The bot doesn't update itself: to get a newer version, see [Updating](bot-instal
 
 ## Running the Bot
 
-- **[Running Without the GUI, and the HTTP API](headless-and-api.md)**: run the bot with no window, control it from scripts and other programs, or let your own program play the game.
+- **[The Web UI and the HTTP API](headless-and-api.md)**: run the bot without a browser, control it from scripts and other programs, or let your own program play the game.
 - **[Connecting Claude to the Bot](connect-claude.md)**: let Claude Code set up, run and watch the bot, or play the game itself.
 
 ## Developing the Bot

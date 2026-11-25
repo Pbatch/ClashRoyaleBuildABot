@@ -71,14 +71,14 @@ Now, let’s verify that the bot operates correctly:
   ```bash
   uv run python main.py
   ```
-- In the window that opens, check the **Device Serial** in the Settings tab (run `adb devices` to find it). If the configured device isn't found, the bot uses the first connected device.
+- In the web UI that opens in your browser, check the device serial in the settings (run `adb devices` to find it). If the configured device isn't found, the bot uses the first connected device.
 - Press start (▶) to start the bot. Press it again (■) to stop.
-- To run the bot without the window, or to control it from scripts, see [Running Without the GUI, and the HTTP API](headless-and-api.md).
+- To run the bot without opening a browser, or to control it from scripts, see [The Web UI and the HTTP API](headless-and-api.md).
 
 ### Configuration
 The default settings are in [`clashroyalebuildabot/default_config.yaml`](https://github.com/Pbatch/ClashRoyaleBuildABot/blob/main/clashroyalebuildabot/default_config.yaml). Don't edit that file: updates replace it.
 
-To change a setting, either change it in the GUI's Settings tab and press **Save config to file**, or create `config.yaml` in the project folder yourself. It only needs the settings you want to change, in the same sections as the defaults:
+To change a setting, either change it in the web UI's settings and press **Save to config.yaml**, or create `config.yaml` in the project folder yourself. It only needs the settings you want to change, in the same sections as the defaults:
 ```yaml
 ingame:
   play_action: 1.5

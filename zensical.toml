@@ -20,7 +20,7 @@ nav = [
     { "Install and configure the bot" = "bot-installation.md" },
   ] },
   { "Run the bot" = [
-    { "Without the GUI, and the HTTP API" = "headless-and-api.md" },
+    { "The web UI and the HTTP API" = "headless-and-api.md" },
     { "Connect Claude to the bot" = "connect-claude.md" },
   ] },
   { "Develop the bot" = [

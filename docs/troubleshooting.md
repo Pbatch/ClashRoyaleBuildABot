@@ -16,7 +16,7 @@ Bot crashed during its runtime with an unknown error. Please create an issue.
 
 
 ### Error E004
-GUI couldn't initialize. If you see this error despite not having modified files in the `/gui` folder, please create an issue.
+No longer used: it was raised by the desktop window, which has been replaced by the web UI. Update the bot with `git pull` and `uv sync`.
 
 
 ### Error E005

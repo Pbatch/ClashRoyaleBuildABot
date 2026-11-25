@@ -145,6 +145,8 @@ def test_providers_put_cuda_first(monkeypatch, available, expected):
     monkeypatch.setattr(
         onnx_model.ort, "preload_dlls", lambda: preloads.append(True)
     )
+    # Whether the gpu extra is installed shouldn't matter: CI has no GPU.
+    monkeypatch.setattr(onnx_model, "_cuda_libraries_installed", lambda: True)
     onnx_model._providers.cache_clear()
     try:
         assert onnx_model._providers() == expected

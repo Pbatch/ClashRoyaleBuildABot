@@ -86,7 +86,7 @@ def main() -> None:
         WitchAction,
     ]
 ```
-Then start the bot with `uv run python main.py` and press start (▶) in the window.
+Then start the bot with `uv run python main.py` and press start in the web UI that opens in your browser.
 
 Join the Discord (https://discord.com/invite/K4UfbsfcMa) to discuss and improve the current action classes, and to share your ClashRoyaleBuildABot story :)
 

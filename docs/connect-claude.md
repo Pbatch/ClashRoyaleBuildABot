@@ -12,8 +12,8 @@
 #### Step 1: Start the bot with its API
 The MCP server runs whenever the API does. In the bot's folder, run one of:
 ```bash
-uv run python main.py --api        # with the window
-uv run python main.py --headless   # without the window
+uv run python main.py              # opens the web UI too
+uv run python main.py --headless   # without opening a browser
 ```
 The bot prints where it's listening:
 ```
@@ -78,7 +78,7 @@ To give the bot back its own actions, ask Claude to set the policy to builtin an
 
 | What you see | What to do |
 |---|---|
-| `✘ Failed to connect` | The bot isn't running, or it's on a different port. Start it with `--api` or `--headless` (Step 1). |
+| `✘ Failed to connect` | The bot isn't running, or it's on a different port. Start it with `uv run python main.py` (Step 1). |
 | `not_running: The bot isn't running.` | The server is up, but the bot hasn't been started. Ask Claude to start it, or press **Start**. |
 | `builtin_policy: ...` | Claude tried to play while the bot uses its own actions. See [Letting Claude play](#letting-claude-play). |
 | `stale: ...` | The play was decided on an old frame. Ask Claude to use a larger `max_age`. |

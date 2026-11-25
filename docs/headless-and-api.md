@@ -1,16 +1,15 @@
-# Running Without the GUI, and the HTTP API
+# The Web UI and the HTTP API
 
-The bot can be controlled over HTTP as well as from its window. You can run it on a machine with no screen, script it, or watch it from another program.
+The bot is controlled over HTTP, from its web UI or from your own scripts and programs. You can run it on a machine with no screen, script it, or watch it from another program.
 
 There are two ways to run it:
 
 | Command | What you get |
 |---|---|
-| `uv run python main.py --web` | No window: the bot's controls, live view, battle state, settings and logs open in your browser instead. |
-| `uv run python main.py --headless` | No window. The bot is controlled only through the API. |
-| `uv run python main.py --api` | The usual window, with the API running alongside it. Both control the same bot. |
+| `uv run python main.py` | The bot's controls, live view, battle state, settings and logs open in your browser. |
+| `uv run python main.py --headless` | The same, but no browser is opened. Use it on a machine with no screen, or when only scripts control the bot. |
 
-All three start the API at `http://127.0.0.1:8000/api`, and serve the browser UI at `http://127.0.0.1:8000/`. Open `http://127.0.0.1:8000/docs` in a browser for an interactive page that lists every endpoint and lets you try them.
+Both start the API at `http://127.0.0.1:8000/api`, and serve the browser UI at `http://127.0.0.1:8000/`. Open `http://127.0.0.1:8000/docs` in a browser for an interactive page that lists every endpoint and lets you try them.
 
 They also serve the same API to AI agents, as an MCP server at `http://127.0.0.1:8000/mcp`. See [Letting an AI agent play](#letting-an-ai-agent-play-mcp).
 
@@ -18,9 +17,7 @@ They also serve the same API to AI agents, as an MCP server at `http://127.0.0.1
 
 | Option | Default | Meaning |
 |---|---|---|
-| `--web` | | Run without the window, and open the browser UI. |
-| `--headless` | | Run without the window. |
-| `--api` | | Serve the API alongside the window. |
+| `--headless` | | Don't open the web UI in a browser. |
 | `--host` | `127.0.0.1` | Address the API listens on. |
 | `--port` | `8000` | Port the API listens on. |
 
@@ -39,15 +36,9 @@ They also serve the same API to AI agents, as an MCP server at `http://127.0.0.1
    ```
 4. Press **Ctrl+C** to quit. The bot stops cleanly first and closes its connection to the device.
 
-Logs still go to the terminal and to `debug/bot.log`, as with the window.
+Logs go to the terminal and to `debug/bot.log`.
 
-### Running the API with the window
-
-```bash
-uv run python main.py --api
-```
-
-The window and the API share one bot and one set of settings. If you start, pause or stop the bot through the API, the window's buttons and status update to match. A setting changed through the API shows up in the Settings tab straight away, and a change made in the tab is visible to the API. Closing the window stops the bot and the API.
+The web UI and the API share one bot and one set of settings, so you can use both at once. If you start, pause or stop the bot through the API, the web UI updates to match.
 
 ### Controlling the bot
 
@@ -84,7 +75,7 @@ It returns all the settings with your changes applied. Keep in mind:
 
 - **A running bot keeps the settings it started with.** Changes apply from the next start, so stop and start the bot to use them. The log level is the exception: it changes straight away.
 - **Settings are checked before any are changed.** If one is invalid, for example a misspelt name or a negative `play_action`, you get a `422` error that names it, and none of the settings change.
-- **Changes aren't saved to `config.yaml`.** They last until the bot quits. To keep them, press **Save config to file** in the window (with `--api`), or add them to `config.yaml` yourself.
+- **Changes aren't saved to `config.yaml`.** They last until the bot quits. To keep them, press **Save to config.yaml** in the web UI's settings, call `POST /api/config/save`, or add them to `config.yaml` yourself.
 
 ### Live events and frames
 
@@ -95,7 +86,7 @@ Two [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)
   {"type": "status", "status": "running"}
   {"type": "log", "time": "2026-11-25T00:41:05.234+00:00", "level": "INFO", "source": "bot:step:186", "message": "New screen state: IN_GAME"}
   ```
-- **`/api/frames`** sends each annotated screenshot, the picture the window's Visualize tab shows, as a JPEG image. It only sends frames while `visuals.show_images` is on. A slow connection skips frames instead of slowing the bot down.
+- **`/api/frames`** sends each annotated screenshot, the picture the web UI's live view shows, as a JPEG image. It only sends frames while `visuals.show_images` is on. A slow connection skips frames instead of slowing the bot down.
 
 For example, this prints every event. It uses the `websockets` library, which is installed with the bot:
 ```bash

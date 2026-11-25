@@ -3,7 +3,6 @@ from clashroyalebuildabot.utils.error_handling import WikifiedError
 try:
     import argparse
     import contextlib
-    import signal
     import sys
     import threading
     import time
@@ -12,7 +11,6 @@ try:
 
     import uvicorn
     from loguru import logger
-    from PyQt6.QtWidgets import QApplication
 
     from clashroyalebuildabot.actions import (
         ArchersAction,
@@ -30,7 +28,6 @@ try:
     from clashroyalebuildabot.bot.controller import BotController
     from clashroyalebuildabot.bot.policy import Policy
     from clashroyalebuildabot.config import Config, load_config
-    from clashroyalebuildabot.gui.main_window import MainWindow
     from clashroyalebuildabot.utils.logger import follow_log_level
 except Exception as e:
     raise WikifiedError("001", "Missing imports.") from e
@@ -57,17 +54,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--headless",
         action="store_true",
-        help="run without the GUI, controlled through the HTTP API",
-    )
-    parser.add_argument(
-        "--web",
-        action="store_true",
-        help="run without the window and open the browser UI instead",
-    )
-    parser.add_argument(
-        "--api",
-        action="store_true",
-        help="serve the HTTP API alongside the GUI",
+        help="don't open the web UI in a browser",
     )
     parser.add_argument(
         "--host",
@@ -106,34 +93,6 @@ def _api_server(
     )
 
 
-def run_gui(config: Config, api: bool, host: str, port: int) -> None:
-    # Qt's event loop never lets Python's Ctrl+C handler run, so Ctrl+C
-    # just ends the process.
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
-    app = QApplication([])
-    window = MainWindow(config, ACTIONS, POLICY)
-    hub = EventHub()
-    sinks = [window.log_handler_function]
-    if api:
-        sinks.append(hub.log_sink)
-    follow_log_level(window.controller, sinks)
-
-    server_thread = None
-    if api:
-        # The window and the API share one controller, and so one bot and
-        # one config. uvicorn skips its signal handlers off the main thread.
-        server = _api_server(window.controller, hub, host, port)
-        server_thread = threading.Thread(target=server.run, daemon=True)
-        server_thread.start()
-
-    window.show()
-    code = app.exec()
-    if server_thread is not None:
-        server.should_exit = True
-        server_thread.join(timeout=10)
-    sys.exit(code)
-
-
 def _open_when_started(server: uvicorn.Server, url: str) -> None:
     """Open url in a browser once server is accepting connections."""
 
@@ -148,9 +107,7 @@ def _open_when_started(server: uvicorn.Server, url: str) -> None:
     threading.Thread(target=wait_then_open, daemon=True).start()
 
 
-def run_headless(
-    config: Config, host: str, port: int, open_browser: bool = False
-) -> None:
+def run(config: Config, host: str, port: int, open_browser: bool) -> None:
     hub = EventHub()
     controller = BotController(config, ACTIONS, POLICY)
     follow_log_level(controller, [hub.log_sink])
@@ -171,10 +128,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     args = parse_args(argv)
     try:
         config = load_config()
-        if args.headless or args.web:
-            run_headless(config, args.host, args.port, open_browser=args.web)
-        else:
-            run_gui(config, args.api, args.host, args.port)
+        run(config, args.host, args.port, open_browser=not args.headless)
     except WikifiedError:
         raise
     except Exception as e:

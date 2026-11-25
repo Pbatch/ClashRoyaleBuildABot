@@ -173,7 +173,9 @@ class BattleOut(BaseModel):
 
 # The screens a client sees. The bot tells two results screens apart, by
 # which button leaves them, but to a client both are the end of a battle.
-_SCREENS: dict[ScreenName, str] = {
+ScreenOut = Literal["in_game", "lobby", "end_of_game", "unknown"]
+
+_SCREENS: dict[ScreenName, ScreenOut] = {
     ScreenName.IN_GAME: "in_game",
     ScreenName.LOBBY: "lobby",
     ScreenName.END_OF_GAME: "end_of_game",
@@ -188,7 +190,7 @@ class StateOut(BaseModel):
     frame: int
     # Unix time it was read.
     time: float
-    screen: Literal["in_game", "lobby", "end_of_game", "unknown"]
+    screen: ScreenOut
     # What's read from a battle. Null on any other screen, where there's
     # nothing to read.
     battle: BattleOut | None

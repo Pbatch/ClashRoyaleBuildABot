@@ -35,11 +35,11 @@ def call(app, tool, arguments=None):
 
 
 def test_every_route_is_a_tool_with_the_same_name(client):
-    async def tools():
+    async def list_tools():
         async with Client(client.app.state.mcp) as mcp:
             return await mcp.list_tools()
 
-    tools = {tool.name: tool for tool in asyncio.run(tools())}
+    tools = {tool.name: tool for tool in asyncio.run(list_tools())}
     routes = {
         operation["operationId"]
         for methods in client.get("/openapi.json").json()["paths"].values()
@@ -97,6 +97,7 @@ def test_screenshot_is_an_image(client, controller):
     decoded = cv2.imdecode(
         np.frombuffer(response.content, np.uint8), cv2.IMREAD_COLOR
     )
+    assert decoded is not None
     assert decoded.shape == frame.shape
 
 
