@@ -16,20 +16,26 @@ repos:
       - id: mixed-line-ending
       - id: trailing-whitespace
         files: \.(py|sh|rst|yml|yaml)$
-- repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.17.5
+# Ruff and ty run the versions locked in uv.lock, so hooks and CI's lint
+# job can't disagree. Install with: uv run pre-commit install
+- repo: local
   hooks:
     - id: ruff-check
-      args: [--fix]
+      name: ruff check
+      entry: uv run --locked ruff check --force-exclude --fix
+      language: system
+      types_or: [python, pyi]
     - id: ruff-format
--   repo: local
-    hooks:
-    -   id: ty
-        name: ty
-        entry: uv run ty check
-        language: system
-        pass_filenames: false
-        always_run: true
+      name: ruff format
+      entry: uv run --locked ruff format --force-exclude
+      language: system
+      types_or: [python, pyi]
+    - id: ty
+      name: ty check
+      entry: uv run --locked ty check
+      language: system
+      types_or: [python, pyi]
+      pass_filenames: false
 
 ci:
     autofix_prs: true

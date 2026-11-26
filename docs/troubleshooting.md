@@ -15,10 +15,6 @@ Parsing of config file failed. Your settings are in `config.yaml` in the project
 Bot crashed during its runtime with an unknown error. Please create an issue.
 
 
-### Error E004
-No longer used: it was raised by the desktop window, which has been replaced by the web UI. Update the bot with `git pull` and `uv sync`.
-
-
 ### Error E005
 Strategy definition error: some part of the bot's strategy has been misconfigured (actions, cards, etc.). Check that you've listed exactly 8 actions in `main.py`, one for each card in your deck, and that each card has an embedding in `clashroyalebuildabot/models/card_embeddings.npz` (a card the game added recently may not have one yet). See [the bot development tutorial](bot-development.md) for more details.
 
