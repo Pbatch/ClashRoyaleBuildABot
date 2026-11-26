@@ -153,9 +153,11 @@ class TowerHPReader:
                 game_data.tower_level(self._first_hp.get(name, UNKNOWN_HP))
                 for name in princesses
             }
-            if len(levels) != 1 or None in levels:
+            if len(levels) != 1:
                 continue
             (level,) = levels
+            if level is None:
+                continue
             for name in (*princesses, king):
                 changes[name] = Tower(hp=getattr(towers, name).hp, level=level)
             full = game_data.king_hitpoints(level)

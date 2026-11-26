@@ -111,6 +111,7 @@ def test_frames_decode_to_rgb(serve):
     frame = JpegScreenClient(serve([(2_500_000_000, jpeg(RED))])).frame()
     assert frame.status > 0
     assert frame.captured == 2.5
+    assert frame.image is not None
     assert frame.image.shape == (8, 16, 3)
     # Red stays in the first channel: RGB, as the detectors expect.
     assert frame.image[..., 0].mean() > 200
