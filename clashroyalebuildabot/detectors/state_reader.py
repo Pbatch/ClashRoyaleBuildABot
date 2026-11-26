@@ -1,3 +1,4 @@
+import time
 from collections.abc import Sequence
 
 import numpy as np
@@ -9,6 +10,7 @@ from clashroyalebuildabot.detectors.screen_detector import ScreenDetector
 from clashroyalebuildabot.detectors.timer_reader import TimerReader
 from clashroyalebuildabot.detectors.tower_hp_reader import TowerHPReader
 from clashroyalebuildabot.detectors.unit_detector import UnitDetector
+from clashroyalebuildabot.detectors.unit_tracker import UnitTracker
 from clashroyalebuildabot.game import ScreenName, State
 from clashroyalebuildabot.game.cards import DECK_SIZE, Card
 from clashroyalebuildabot.utils.error_handling import WikifiedError
@@ -35,6 +37,7 @@ class StateReader:
         self.card_detector = CardDetector(self.cards)
         self.elixir_reader = ElixirReader()
         self.unit_detector = UnitDetector(self.cards)
+        self.unit_tracker = UnitTracker()
         self.screen_detector = ScreenDetector()
         self.tower_hp_reader = TowerHPReader()
         self.timer_reader = TimerReader()
@@ -45,6 +48,7 @@ class StateReader:
             self.tower_hp_reader,
             self.timer_reader,
             self.card_detector,
+            self.unit_tracker,
         ]
 
     def run(self, image: np.ndarray) -> State | None:
@@ -75,7 +79,9 @@ class StateReader:
                 return self._state_outside_battle(screen)
 
             cards, ready = self.card_detector.run(image)
-            allies, enemies = self.unit_detector.run(image)
+            allies, enemies = self.unit_tracker.update(
+                *self.unit_detector.run(image), now=time.monotonic()
+            )
             elixir = self.elixir_reader.run(image)
             towers = self.tower_hp_reader.run(image)
             timer = self.timer_reader.run(image)
