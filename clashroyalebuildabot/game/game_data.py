@@ -154,7 +154,13 @@ def tower_level(princess_hp: float) -> int | None:
 
 def king_hitpoints(level: int) -> int | None:
     """A king tower's full HP at a level. None if it isn't known."""
-    table = TOWER_HITPOINTS["king"]
+    return tower_hitpoints("king", level)
+
+
+def tower_hitpoints(kind: str, level: int) -> int | None:
+    """A ``"princess"`` or ``"king"`` tower's full HP at a level. None if
+    it isn't known."""
+    table = TOWER_HITPOINTS[kind]
     return table[level - 1] if 1 <= level <= len(table) else None
 
 

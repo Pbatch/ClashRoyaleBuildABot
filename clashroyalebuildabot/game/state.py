@@ -1,3 +1,5 @@
+from dataclasses import field
+
 from pydantic.dataclasses import dataclass
 
 from clashroyalebuildabot.game.cards import Card
@@ -21,3 +23,6 @@ class State:
     # Playable hand positions (0-3). Hand position i is cards[i + 1].
     ready: list[int]
     screen: ScreenName
+    # The opponent's cards seen this battle, from the units they put down,
+    # in the order they were first seen. Spells are never seen.
+    opponent_cards: list[Card] = field(default_factory=list)

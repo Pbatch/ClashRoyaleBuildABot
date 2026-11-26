@@ -27,7 +27,7 @@ class FakePart:
         self.calls = 0
         self.error = None
 
-    def run(self, image):
+    def run(self, image, *args):
         self.calls += 1
         if self.error is not None:
             raise self.error

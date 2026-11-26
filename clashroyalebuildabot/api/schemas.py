@@ -139,6 +139,9 @@ class BattleOut(BaseModel):
     hand: list[HandCardOut]
     allies: list[DetectionOut]
     enemies: list[DetectionOut]
+    # The opponent's cards seen this battle, from the units they put down
+    # (spells are never seen), in the order they were first seen.
+    opponent_cards: list[str]
 
     @classmethod
     def of(cls, state: State) -> "BattleOut":
@@ -171,6 +174,7 @@ class BattleOut(BaseModel):
             hand=hand,
             allies=[DetectionOut.of(d) for d in state.allies],
             enemies=[DetectionOut.of(d) for d in state.enemies],
+            opponent_cards=[card.name for card in state.opponent_cards],
         )
 
 

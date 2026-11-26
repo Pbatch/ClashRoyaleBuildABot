@@ -1,16 +1,22 @@
 """Follow the units the detector finds from one frame to the next.
 
 The detector reads each frame on its own, so a unit it misses for a frame
-leaves the state, and one it names wrongly for a frame changes name. The
-tracker matches each frame's detections to the units it already follows,
-and reports those instead: a unit stays through a short dropout (moved on
-at its speed), keeps the name it has been seen as most, and is reported
-once it's been seen twice, or at once if the detector is sure of it.
+leaves the state, one it names wrongly for a frame changes name, and one it
+puts on the wrong side for a frame changes sides. The tracker matches each
+frame's detections, ours and the opponent's together, to the units it
+already follows, and reports those instead: a unit stays through a short
+dropout (moved on at its speed), and is reported once it's been seen twice,
+or at once if the detector is sure of it.
+
+Each track sums the model's scores for every unit, on both sides, on its
+tile over the frames it was detected. Its side and name come from those
+sums (Track.best_side and Track.best_unit), not from what one frame said.
 """
 
 import math
-from collections.abc import Sequence
-from dataclasses import dataclass, field
+from collections.abc import Collection, Iterable, Sequence
+from dataclasses import InitVar, dataclass, field
+from typing import TYPE_CHECKING
 
 import numpy as np
 from scipy.optimize import linear_sum_assignment
@@ -22,7 +28,21 @@ from clashroyalebuildabot.game.units import (
     UnitDetection,
 )
 
+if TYPE_CHECKING:
+    from clashroyalebuildabot.detectors.opponent_deck import OpponentDeck
+
 COLS, ROWS = 18, 32
+ALLY, ENEMY = 0, 1  # the rows of ScoredDetection.scores
+
+
+@dataclass(frozen=True, eq=False)
+class ScoredDetection(UnitDetection):
+    """A detection with the model's scores for every unit, on both sides, on
+    its tile, before it was named (UnitDetector.decode), so a track can
+    weigh every unit it might be, not only the one each frame named."""
+
+    scores: np.ndarray  # [2, len(units)]: ALLY and ENEMY rows, each 0 to 1
+    units: Sequence[Unit]  # the unit each score is for
 
 
 @dataclass
@@ -35,29 +55,99 @@ class Track:
     y: float
     seen: float  # when it was last detected
     conf: float  # the detector's confidence, averaged over frames
-    # The confidence summed per name it was detected as, fading so a name
-    # it keeps being seen as takes over.
-    votes: dict[Unit, float] = field(default_factory=dict)
+    det: InitVar[ScoredDetection]  # its first detection
+    # How sure the model was of each side, [ALLY, ENEMY], summed over every
+    # frame without fading: a unit never changes sides.
+    side_votes: list[float] = field(default_factory=lambda: [0.0, 0.0])
     vx: float = 0.0  # tiles per second
     vy: float = 0.0
     hits: int = 1
-    confirmed: bool = False
+    born: float = 0.0  # when it was first detected
+    # The model's [2, units] scores for every unit on both sides on the
+    # track's tile (ScoredDetection), summed over the frames it was
+    # detected: with each older frame counting SCORE_FADE times the one
+    # after it, and in full.
+    scores: np.ndarray = field(init=False)
+    total_scores: np.ndarray = field(init=False)
+    units: Sequence[Unit] = field(init=False)  # the unit each score is for
+
+    # How much each older frame's scores count against the frame after it,
+    # when newer frames count more.
+    SCORE_FADE = 0.9
+
+    def __post_init__(self, det: ScoredDetection) -> None:
+        self.units = det.units
+        self.scores = det.scores.astype(np.float64)
+        self.total_scores = det.scores.astype(np.float64)
+        self._count_sides(det.scores)
 
     @property
     def unit(self) -> Unit:
-        return max(self.votes, key=self.votes.__getitem__)
+        """The unit it most likely is, lately, with no unit favoured."""
+        return self.best_unit()
 
-    def detection(self) -> UnitDetection:
+    @property
+    def ally(self) -> bool:
+        """Whether it's ours, as best_side says."""
+        return self.best_side() == ALLY
+
+    def record(self, det: ScoredDetection) -> None:
+        """Count one more frame's detection in its scores."""
+        self.scores = self.SCORE_FADE * self.scores + det.scores
+        self.total_scores += det.scores
+        self._count_sides(det.scores)
+
+    def _count_sides(self, scores: np.ndarray) -> None:
+        # Both sides' evidence, not only the side this frame chose.
+        self.side_votes[ALLY] += float(scores[ALLY].max())
+        self.side_votes[ENEMY] += float(scores[ENEMY].max())
+
+    def best_side(self) -> int:
+        """ALLY or ENEMY: the side the model has rated it on most, over
+        every frame, counting how sure it was of each side in each."""
+        if self.side_votes[ALLY] >= self.side_votes[ENEMY]:
+            return ALLY
+        return ENEMY
+
+    def best_unit(
+        self,
+        side: int | None = None,
+        favoured: Collection[Unit] = (),
+        others: float = 1.0,
+        recent: bool = True,
+    ) -> Unit:
+        """The unit it most likely is, from the model's scores for side
+        (best_side if None) over every frame it was detected: newer frames
+        counting more if recent, else all alike.
+
+        favoured units count in full, and the rest at others times their
+        score (0: never chosen), as UnitDetector does for one frame.
+        Without favoured units, or when nothing it could be has any
+        score, every unit counts in full."""
+        summed = self.scores if recent else self.total_scores
+        if side is None:
+            side = self.best_side()
+        rated = summed[side]
+        if favoured:
+            weight = np.array(
+                [1.0 if u in favoured else others for u in self.units]
+            )
+            if (weight * rated).any():
+                rated = rated * weight
+        return self.units[int(np.argmax(rated))]
+
+    def detection(self, unit: Unit) -> UnitDetection:
+        """It as a detection, as unit."""
         position = Position(
             self.conf,
             min(max(round(self.x), 0), COLS - 1),
             min(max(round(self.y), 0), ROWS - 1),
         )
-        return UnitDetection(self.unit, position)
+        return UnitDetection(unit, position)
 
 
-class SideTracker:
-    """Tracks the units of one side (ours or the opponent's)."""
+class Tracker:
+    """Tracks units across frames, ours and the opponent's together."""
 
     # Furthest a detection can be from where a unit is expected, in tiles.
     # The fastest units walk about 2 tiles a second.
@@ -65,10 +155,10 @@ class SideTracker:
     # The extra cost, in tiles, of matching a detection to a unit seen as
     # another one: a wrong name for a frame stays the same unit.
     RENAME_COST = 1.0
-    # Reported at once if detected this sure (the detector's MIN_CONF), and
-    # otherwise after this many detections.
-    INSTANT_CONF = 0.7
-    CONFIRM_HITS = 2
+    # The extra cost of matching a detection to a unit seen on the other
+    # side: a wrong side for a frame stays the same unit, but only when
+    # it's close, so two units fighting each other aren't swapped.
+    SIDE_COST = 2.0
     # How long a unit is kept, moved on at its speed, once it's no longer
     # detected, in seconds. Short, as a unit that died must not stay.
     MAX_COAST = 0.6
@@ -79,8 +169,6 @@ class SideTracker:
     CONF_WEIGHT = 0.5
     # No unit is faster than this, in tiles per second.
     MAX_SPEED = 3.0
-    # How much of each name's votes is kept at each detection.
-    VOTE_FADE = 0.8
 
     def __init__(self) -> None:
         self.tracks: list[Track] = []
@@ -91,13 +179,20 @@ class SideTracker:
         self.tracks = []
         self._last = None
 
-    def update(
-        self, detections: Sequence[UnitDetection], now: float
-    ) -> list[UnitDetection]:
-        """The units followed after this frame's detections, at time now
-        (seconds)."""
+    def step(
+        self,
+        detections: Sequence[ScoredDetection],
+        sides: Sequence[int],
+        now: float,
+    ) -> None:
+        """Follow this frame's detections, each on the side (ALLY or
+        ENEMY) at its index in sides, at time now (seconds)."""
         dt = 0.0 if self._last is None else max(now - self._last, 0.0)
         self._last = now
+        if dt > self.MAX_COAST:
+            # No frames for longer than a unit is kept for (a pause): what
+            # comes up where a unit was is a new one.
+            self.tracks = []
         for track in self.tracks:
             track.x += track.vx * dt
             track.y += track.vy * dt
@@ -105,10 +200,10 @@ class SideTracker:
         matched_tracks: set[int] = set()
         matched_dets: set[int] = set()
         if self.tracks and detections:
-            cost = self._costs(detections)
+            cost = self._costs(detections, sides)
             for t, d in zip(*linear_sum_assignment(cost), strict=True):
                 if cost[t, d] < self.GATE + self.RENAME_COST:
-                    self._match(self.tracks[t], detections[d], now, dt)
+                    self._match(self.tracks[t], detections[d], now)
                     matched_tracks.add(t)
                     matched_dets.add(d)
 
@@ -120,15 +215,17 @@ class SideTracker:
         for i, det in enumerate(detections):
             if i not in matched_dets:
                 self.tracks.append(self._new_track(det, now))
-        return [track.detection() for track in self.tracks if track.confirmed]
 
-    def _costs(self, detections: Sequence[UnitDetection]) -> np.ndarray:
+    def _costs(
+        self, detections: Sequence[ScoredDetection], sides: Sequence[int]
+    ) -> np.ndarray:
         """Each unit's cost of each detection: how far it is from where the
-        unit is expected, more if named another unit; an impossible match
-        (out of reach) costs a lot."""
+        unit is expected, more if named another unit or on the other side;
+        an impossible match (out of reach) costs a lot."""
         impossible = 1e6
         cost = np.full((len(self.tracks), len(detections)), impossible)
         for t, track in enumerate(self.tracks):
+            unit, side = track.unit, track.best_side()
             for d, det in enumerate(detections):
                 distance = math.hypot(
                     det.position.tile_x - track.x,
@@ -136,14 +233,14 @@ class SideTracker:
                 )
                 if distance > self.GATE:
                     continue
-                cost[t, d] = distance + (
-                    self.RENAME_COST * (det.unit != track.unit)
+                cost[t, d] = (
+                    distance
+                    + self.RENAME_COST * (det.unit != unit)
+                    + self.SIDE_COST * (sides[d] != side)
                 )
         return cost
 
-    def _match(
-        self, track: Track, det: UnitDetection, now: float, dt: float
-    ) -> None:
+    def _match(self, track: Track, det: ScoredDetection, now: float) -> None:
         x, y = det.position.tile_x, det.position.tile_y
         old_x, old_y = track.x, track.y
         track.x += self.POSITION_WEIGHT * (x - track.x)
@@ -158,56 +255,85 @@ class SideTracker:
             track.vy = self._clamp(
                 track.vy + self.SPEED_WEIGHT * (y - old_y) / since_seen
             )
-        for unit in track.votes:
-            track.votes[unit] *= self.VOTE_FADE
-        conf = det.position.conf
-        track.votes[det.unit] = track.votes.get(det.unit, 0.0) + conf
+        track.record(det)
         if track.unit.category == UnitCategory.BUILDING:
             track.vx = track.vy = 0.0
-        track.conf += self.CONF_WEIGHT * (conf - track.conf)
+        track.conf += self.CONF_WEIGHT * (det.position.conf - track.conf)
         track.seen = now
         track.hits += 1
-        track.confirmed |= (
-            track.hits >= self.CONFIRM_HITS or conf >= self.INSTANT_CONF
-        )
 
     def _clamp(self, speed: float) -> float:
         return min(max(speed, -self.MAX_SPEED), self.MAX_SPEED)
 
-    def _new_track(self, det: UnitDetection, now: float) -> Track:
+    def _new_track(self, det: ScoredDetection, now: float) -> Track:
         self._next_id += 1
-        conf = det.position.conf
         return Track(
             id=self._next_id,
             x=det.position.tile_x,
             y=det.position.tile_y,
             seen=now,
-            conf=conf,
-            votes={det.unit: conf},
-            confirmed=conf >= self.INSTANT_CONF,
+            born=now,
+            conf=det.position.conf,
+            det=det,
         )
 
 
 class UnitTracker:
-    """Tracks our units and the opponent's, each side on its own. Call
-    ``reset`` between battles."""
+    """Tracks our units and the opponent's, and names them. Call ``reset``
+    between battles.
 
-    def __init__(self) -> None:
-        self.allies = SideTracker()
-        self.enemies = SideTracker()
+    A unit is reported on the side it's been rated on most, and
+    named from its scores over its frames (Track.best_unit): ours only from
+    our deck's units, the opponent's in favour of their known cards'
+    units (OpponentDeck.favour)."""
+
+    # A unit is reported once it's been detected this many times, or at
+    # once if detected this sure (the detector's MIN_CONF).
+    CONFIRM_HITS = 2
+    INSTANT_CONF = 0.7
+
+    def __init__(self, ally_units: Iterable[Unit]) -> None:
+        self.ally_units = frozenset(ally_units)
+        self.tracker = Tracker()
+
+    @property
+    def tracks(self) -> list[Track]:
+        return self.tracker.tracks
 
     def reset(self) -> None:
-        self.allies.reset()
-        self.enemies.reset()
+        self.tracker.reset()
 
     def update(
         self,
-        allies: Sequence[UnitDetection],
-        enemies: Sequence[UnitDetection],
+        allies: Sequence[ScoredDetection],
+        enemies: Sequence[ScoredDetection],
         now: float,
+        opponent: "OpponentDeck",
     ) -> tuple[list[UnitDetection], list[UnitDetection]]:
-        """(allies, enemies) followed after this frame's detections."""
+        """(allies, enemies) followed after this frame's detections at time
+        now (seconds), the opponent's named in favour of their cards seen
+        so far."""
+        self.tracker.step(
+            [*allies, *enemies],
+            [ALLY] * len(allies) + [ENEMY] * len(enemies),
+            now,
+        )
+        favoured, others = opponent.favour()
+        out_allies: list[UnitDetection] = []
+        out_enemies: list[UnitDetection] = []
+        for track in self.tracks:
+            if not self._reported(track):
+                continue
+            if track.ally:
+                unit = track.best_unit(ALLY, self.ally_units, 0.0)
+                out_allies.append(track.detection(unit))
+            else:
+                unit = track.best_unit(ENEMY, favoured, others)
+                out_enemies.append(track.detection(unit))
+        return out_allies, out_enemies
+
+    def _reported(self, track: Track) -> bool:
+        # Until it's matched, a track's conf is its first detection's.
         return (
-            self.allies.update(allies, now),
-            self.enemies.update(enemies, now),
+            track.hits >= self.CONFIRM_HITS or track.conf >= self.INSTANT_CONF
         )

@@ -6,6 +6,7 @@ from loguru import logger
 
 from clashroyalebuildabot.detectors.card_detector import CardDetector
 from clashroyalebuildabot.detectors.elixir_reader import ElixirReader
+from clashroyalebuildabot.detectors.opponent_deck import OpponentDeck
 from clashroyalebuildabot.detectors.screen_detector import ScreenDetector
 from clashroyalebuildabot.detectors.timer_reader import TimerReader
 from clashroyalebuildabot.detectors.tower_hp_reader import TowerHPReader
@@ -37,7 +38,10 @@ class StateReader:
         self.card_detector = CardDetector(self.cards)
         self.elixir_reader = ElixirReader()
         self.unit_detector = UnitDetector(self.cards)
-        self.unit_tracker = UnitTracker()
+        self.unit_tracker = UnitTracker(
+            unit for card in self.cards for unit in card.units
+        )
+        self.opponent_deck = OpponentDeck()
         self.screen_detector = ScreenDetector()
         self.tower_hp_reader = TowerHPReader()
         self.timer_reader = TimerReader()
@@ -49,6 +53,7 @@ class StateReader:
             self.timer_reader,
             self.card_detector,
             self.unit_tracker,
+            self.opponent_deck,
         ]
 
     def run(self, image: np.ndarray) -> State | None:
@@ -79,11 +84,17 @@ class StateReader:
                 return self._state_outside_battle(screen)
 
             cards, ready = self.card_detector.run(image)
-            allies, enemies = self.unit_tracker.update(
-                *self.unit_detector.run(image), now=time.monotonic()
-            )
-            elixir = self.elixir_reader.run(image)
+            # Before the units: a standing tower keeps them off its tiles.
             towers = self.tower_hp_reader.run(image)
+            allies, enemies = self.unit_tracker.update(
+                *self.unit_detector.run(image, self.opponent_deck, towers),
+                now=time.monotonic(),
+                opponent=self.opponent_deck,
+            )
+            # What this frame shows of their deck names their units from
+            # the next frame on.
+            self.opponent_deck.update(self.unit_tracker.tracks)
+            elixir = self.elixir_reader.run(image)
             timer = self.timer_reader.run(image)
         except Exception:
             logger.exception("Detection failed, skipping this screenshot.")
@@ -97,6 +108,7 @@ class StateReader:
             cards=cards,
             ready=ready,
             screen=screen,
+            opponent_cards=list(self.opponent_deck.cards),
         )
 
     def _state_outside_battle(self, screen: ScreenName) -> State:
