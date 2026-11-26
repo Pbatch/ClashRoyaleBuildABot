@@ -4,7 +4,7 @@ import threading
 
 import pytest
 
-from clashroyalebuildabot.emulator.emulator import Emulator
+from clashroyalebuildabot.emulator import Emulator
 from clashroyalebuildabot.utils.error_handling import WikifiedError
 
 # Stand-in for `adb shell screenrecord`: a process that never ends on its own.
@@ -20,7 +20,7 @@ def emulator(monkeypatch):
             stdin=subprocess.DEVNULL,
         )
 
-    monkeypatch.setattr(Emulator, "_install_adb", lambda self: None)
+    monkeypatch.setattr(Emulator, "_check_adb", lambda self: None)
     monkeypatch.setattr(Emulator, "_restart_server", lambda self: None)
     monkeypatch.setattr(
         Emulator, "_get_valid_device_serial", lambda self: self.device_serial

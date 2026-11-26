@@ -1,190 +1,136 @@
-import threading
+import os
 
+import numpy as np
 import pytest
-import requests
-from PIL import Image
 
+from clashroyalebuildabot.constants.screen_hashes import BUTTON_HASHES
+from clashroyalebuildabot.constants.screenshot import (
+    LOBBY_BATTLE_BOX,
+    RESULTS_CENTRE_OK_BOX,
+    RESULTS_OK_BOX,
+    RESULTS_PLAY_AGAIN_BOX,
+    TIMER_BOX,
+)
 from clashroyalebuildabot.detectors.screen_detector import (
-    OK_CRITERIA,
-    SCREEN_CRITERIA,
-    OneJevClient,
+    THUMBNAIL_SIZE,
     ScreenDetector,
 )
-from clashroyalebuildabot.namespaces import Screens
-from clashroyalebuildabot.utils.error_handling import WikifiedError
+from clashroyalebuildabot.game import ScreenName
+from clashroyalebuildabot.utils.image import load
+
+TESTS = os.path.dirname(__file__)
+DATA = os.path.join(TESTS, "data", "screens")
+TIMER = os.path.join(TESTS, "data", "numbers", "timer_2_29.png")
+# A real crop of the elixir number and bar, and where it goes.
+ELIXIR = os.path.join(TESTS, "data", "elixir", "elixir_7.png")
+ELIXIR_CROP_BOX = (100, 618, 360, 646)
 
 
-def answers(screen, ok=None):
-    return {"screen": screen, "ok_button": ok or {"right": 0.5, "centre": 0.5}}
+def frame(*crops: tuple[str, tuple[int, int, int, int]]) -> np.ndarray:
+    """A dark frame, with real crops of buttons pasted into boxes."""
+    image = np.full((652, 368, 3), 30, np.uint8)
+    for name, (left, top, right, bottom) in crops:
+        image[top:bottom, left:right] = load(os.path.join(DATA, f"{name}.png"))
+    return image
 
 
-class FakeClient:
-    def __init__(self, reply=None, error=None):
-        self.reply = reply or answers({"lobby": 0.9, "unknown": 0.1})
-        self.error = error
-        self.calls = 0
-        self.release = threading.Event()
-        self.release.set()
-
-    def ask(self, image):
-        self.calls += 1
-        self.release.wait(5)
-        if self.error:
-            raise self.error
-        return self.reply
+def paste(image: np.ndarray, path: str, box) -> np.ndarray:
+    left, top, right, bottom = box
+    image[top:bottom, left:right] = load(path)
+    return image
 
 
-class FakeResponse:
-    def __init__(self, body):
-        self.body = body
-
-    def raise_for_status(self):
-        pass
-
-    def json(self):
-        return self.body
+def with_timer(image: np.ndarray) -> np.ndarray:
+    return paste(image, TIMER, TIMER_BOX)
 
 
-class FakeSession:
-    def __init__(self, body=None, error=None):
-        self.body = body
-        self.error = error
-        self.posts = []
-
-    def get(self, url, timeout):
-        if self.error:
-            raise self.error
-        return FakeResponse({})
-
-    def post(self, url, json, timeout):
-        self.posts.append((url, json))
-        return FakeResponse(self.body)
+def with_elixir_bar(image: np.ndarray) -> np.ndarray:
+    return paste(image, ELIXIR, ELIXIR_CROP_BOX)
 
 
-def onejev(body=None, error=None):
-    client = OneJevClient("http://flide:8000/")
-    session = FakeSession(body, error)
-    client.session = session  # ty: ignore[invalid-assignment]
-    return client, session
+def battle(image: np.ndarray) -> np.ndarray:
+    """The frame with a battle's HUD: a timer and the elixir bar."""
+    return with_elixir_bar(with_timer(image))
 
 
-def frame():
-    return Image.new("RGB", (368, 652), (40, 40, 40))
+@pytest.fixture
+def detector():
+    return ScreenDetector()
 
 
-def test_request_asks_both_questions():
-    body = {
-        "answers": {
-            "screen": {"probabilities": {"lobby": 0.9, "in_game": 0.1}},
-            "ok_button": {"probabilities": {"right": 0.3, "centre": 0.7}},
-        }
-    }
-    client, session = onejev(body)
-    assert client.ask(frame()) == {
-        "screen": {"lobby": 0.9, "in_game": 0.1},
-        "ok_button": {"right": 0.3, "centre": 0.7},
-    }
-
-    url, payload = session.posts[0]
-    assert url == "http://flide:8000/v1/systemone"
-    assert payload["state"]["screen"] == "<image:1>"
-    assert payload["media"][0]["data"].startswith("data:image/png;base64,")
-    questions = payload["questions"]
-    assert questions["screen"]["criteria"] == SCREEN_CRITERIA
-    assert questions["ok_button"]["criteria"] == OK_CRITERIA
+def test_battle(detector):
+    assert detector.run(battle(frame())) == ScreenName.IN_GAME
 
 
-def test_unreachable_server_raises_at_startup():
-    client, _ = onejev(error=requests.ConnectionError("refused"))
-    with pytest.raises(WikifiedError) as e:
-        client.check()
-    assert e.value.error_code == "010"
+def test_a_battle_wins_over_buttons(detector):
+    # A battle is a battle, whatever else the frame looks like.
+    image = battle(frame(("battle_button", LOBBY_BATTLE_BOX)))
+    assert detector.run(image) == ScreenName.IN_GAME
 
 
-@pytest.mark.parametrize(
-    "screen, expected",
-    [
-        ({"in_game": 0.8, "lobby": 0.1, "unknown": 0.1}, Screens.IN_GAME),
-        ({"lobby": 0.92, "unknown": 0.08}, Screens.LOBBY),
-        ({"unknown": 0.6, "lobby": 0.4}, Screens.UNKNOWN),
-        ({"matchmaking": 0.8, "lobby": 0.2}, Screens.UNKNOWN),
-        ({"loading": 0.7, "lobby": 0.3}, Screens.UNKNOWN),
-        ({"vs": 0.9, "end_of_game": 0.1}, Screens.UNKNOWN),
-        ({"match_over": 0.9, "end_of_game": 0.1}, Screens.UNKNOWN),
-    ],
-)
-def test_most_likely_screen_wins(screen, expected):
-    detector = ScreenDetector(FakeClient(answers(screen)))
-    assert detector.classify(frame()) == expected
+def test_a_frozen_timer_alone_isnt_a_battle(detector):
+    # When a battle ends, the timer stays on screen through the crowns and
+    # onto the results, but the card and elixir bars are gone.
+    assert not detector.in_battle(with_timer(frame()))
 
 
-@pytest.mark.parametrize(
-    "ok, expected",
-    [
-        ({"right": 0.8, "centre": 0.2}, Screens.END_OF_GAME),
-        ({"right": 0.1, "centre": 0.9}, Screens.BYPASS_END_OF_GAME),
-    ],
-)
-def test_ok_button_position_picks_end_of_game_layout(ok, expected):
-    reply = answers({"end_of_game": 0.9, "unknown": 0.1}, ok)
-    detector = ScreenDetector(FakeClient(reply))
-    assert detector.classify(frame()) == expected
+def test_an_elixir_bar_alone_isnt_a_battle(detector):
+    # Menus have pink of their own.
+    assert not detector.in_battle(with_elixir_bar(frame()))
 
 
-def test_low_confidence_is_unknown():
-    reply = answers({"in_game": 0.4, "lobby": 0.35, "unknown": 0.25})
-    detector = ScreenDetector(FakeClient(reply), min_confidence=0.5)
-    assert detector.classify(frame()) == Screens.UNKNOWN
+@pytest.mark.parametrize("fill", [(0, 0, 0), (255, 255, 255), (60, 140, 230)])
+def test_plain_frames_arent_a_battle(detector, fill):
+    # The last is the blue of the results screen's OK button.
+    image = np.full((652, 368, 3), fill, np.uint8)
+    assert not detector.in_battle(image)
 
 
-@pytest.mark.parametrize(
-    "error", [requests.ConnectionError("refused"), KeyError("answers")]
-)
-def test_failed_request_is_unknown(error):
-    detector = ScreenDetector(FakeClient(error=error))
-    assert detector.classify(frame()) == Screens.UNKNOWN
+def test_noise_isnt_a_battle(detector):
+    rng = np.random.default_rng(0)
+    image = rng.integers(0, 256, (652, 368, 3), dtype=np.uint8)
+    assert not detector.in_battle(image)
 
 
-def test_run_does_not_block_and_reports_result_later():
-    client = FakeClient()
-    client.release.clear()
-    detector = ScreenDetector(client, interval=0)
-
-    # The model is still thinking, so there is no answer yet.
-    assert detector.run(frame()) == Screens.UNKNOWN
-    # A frame arriving while a request is in flight doesn't queue another.
-    detector.run(frame())
-    assert client.calls == 1
-
-    client.release.set()
-    detector.wait(5)
-    assert detector.run(frame()) == Screens.LOBBY
-    detector.close()
+def test_lobby(detector):
+    image = frame(("battle_button", LOBBY_BATTLE_BOX))
+    assert detector.run(image) == ScreenName.LOBBY
 
 
-def test_run_respects_interval():
-    client = FakeClient()
-    detector = ScreenDetector(client, interval=60)
-    detector.run(frame())
-    detector.wait(5)
-    detector.run(frame())
-    assert client.calls == 1
-    detector.close()
-
-
-def test_stale_answer_becomes_unknown():
-    detector = ScreenDetector(FakeClient(), interval=60, max_age=0)
-    detector.run(frame())
-    detector.wait(5)
-    assert detector.run(frame()) == Screens.UNKNOWN
-    detector.close()
-
-
-def test_from_config_checks_server(monkeypatch):
-    monkeypatch.setattr(
-        OneJevClient,
-        "check",
-        lambda self: (_ for _ in ()).throw(WikifiedError("010", "down")),
+def test_results_with_play_again_and_ok(detector):
+    image = frame(
+        ("play_again_button", RESULTS_PLAY_AGAIN_BOX),
+        ("ok_button", RESULTS_OK_BOX),
     )
-    with pytest.raises(WikifiedError):
-        ScreenDetector.from_config({"base_url": "http://nowhere:1"})
+    assert detector.run(image) == ScreenName.END_OF_GAME
+
+
+def test_results_with_only_an_ok_button_in_the_centre(detector):
+    image = frame(("ok_button", RESULTS_CENTRE_OK_BOX))
+    assert detector.run(image) == ScreenName.BYPASS_END_OF_GAME
+
+
+def test_results_need_both_buttons(detector):
+    # While the results appear, the buttons come in one at a time; tapping
+    # before both are there would miss.
+    image = frame(("ok_button", RESULTS_OK_BOX))
+    assert detector.run(image) == ScreenName.UNKNOWN
+
+
+def test_anything_else_is_unknown(detector):
+    assert detector.run(frame()) == ScreenName.UNKNOWN
+
+
+def test_a_blue_background_isnt_an_ok_button(detector):
+    # The searching screen is blue where the OK button would be.
+    image = frame(
+        ("searching_ok_area", RESULTS_OK_BOX),
+        ("play_again_button", RESULTS_PLAY_AGAIN_BOX),
+    )
+    assert detector.run(image) == ScreenName.UNKNOWN
+
+
+def test_every_hash_is_a_whole_thumbnail():
+    width, height = THUMBNAIL_SIZE
+    for value in BUTTON_HASHES.values():
+        assert len(bytes.fromhex(value)) == width * height * 3

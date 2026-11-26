@@ -1,15 +1,27 @@
 import os
 import sys
+from collections.abc import Callable, Sequence
+from typing import TYPE_CHECKING
 
 from loguru import logger
 
-from clashroyalebuildabot.constants import DEBUG_DIR
+from clashroyalebuildabot.config import Config
+from clashroyalebuildabot.constants.paths import DEBUG_DIR
 
-COLORS = dict(context_info="#118aa2", time="#459028")
+if TYPE_CHECKING:
+    from loguru import Message
+
+    from clashroyalebuildabot.bot.controller import BotController
+
+COLORS = {"context_info": "#118aa2", "time": "#459028"}
 
 
-def setup_logger(main_window, config: dict):
-    log_level = config.get("bot", {}).get("log_level", "INFO").upper()
+def setup_logger(
+    config: Config, sinks: Sequence[Callable[["Message"], None]] = ()
+) -> None:
+    """Log to the console and debug/bot.log, and to each of ``sinks``, such
+    as the GUI's log panel or the API's event stream."""
+    log_level = config.bot.log_level
     logger.remove()
     logger.add(sys.stdout, level=log_level)
     logger.add(
@@ -17,14 +29,34 @@ def setup_logger(main_window, config: dict):
         rotation="500 MB",
         level=log_level,
     )
-    logger.add(
-        main_window.log_handler_function,
-        format="{time} {level} {module}:{function}:{line} - {message}",
-        level=log_level,
-    )
+    for sink in sinks:
+        logger.add(
+            sink,
+            format="{time} {level} {module}:{function}:{line} - {message}",
+            level=log_level,
+        )
 
 
-def colorize_log(message):
+def follow_log_level(
+    controller: "BotController",
+    sinks: Sequence[Callable[["Message"], None]] = (),
+) -> None:
+    """Set the logger up now, and again whenever the controller's log level
+    changes, whether from the GUI or the API."""
+    setup_logger(controller.config, sinks)
+    level = controller.config.bot.log_level
+
+    def on_config(config: Config) -> None:
+        nonlocal level
+        if config.bot.log_level != level:
+            level = config.bot.log_level
+            setup_logger(config, sinks)
+
+    controller.add_config_listener(on_config)
+
+
+def colorize_log(message: "Message") -> str:
+
     log_record = message.record
     level = log_record["level"].name
     time = log_record["time"].strftime("%Y-%m-%d %H:%M:%S")

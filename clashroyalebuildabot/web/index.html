@@ -1,0 +1,722 @@
+<!doctype html>
+<!--
+  The bot's browser UI, served by the API at /. One file, no build step:
+  it only talks to the API (REST and WebSockets under /api), so it does
+  nothing the API can't. See clashroyalebuildabot/api/app.py.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build-A-Bot</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0d1117;
+    --panel: #161b22;
+    --panel-2: #1e272e;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #57a6ff;
+    --accent-2: #4b6eaf;
+    --ok: #3fb950;
+    --warn: #d29922;
+    --bad: #f85149;
+    --elixir: #c45bdb;
+    --ally: #57a6ff;
+    --enemy: #f85149;
+    --grass: #18221a;
+    --river: #1f3550;
+    --bridge: #5a4a36;
+    --radius: 8px;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      color-scheme: light;
+      --bg: #f6f8fa;
+      --panel: #ffffff;
+      --panel-2: #eef1f4;
+      --border: #d0d7de;
+      --text: #1f2328;
+      --muted: #59636e;
+      --accent: #0969da;
+      --accent-2: #0969da;
+      --ok: #1a7f37;
+      --warn: #9a6700;
+      --bad: #cf222e;
+      --elixir: #8e3aa8;
+      --ally: #0969da;
+      --enemy: #cf222e;
+      --grass: #eef3e8;
+      --river: #cfe3f7;
+      --bridge: #c9b08a;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  button, input, select { font: inherit; color: inherit; }
+  a { color: var(--accent); }
+
+  header {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 12px 16px;
+    background: var(--panel-2);
+    border-bottom: 1px solid var(--border);
+  }
+  header img { width: 44px; height: 44px; object-fit: contain; }
+  header h1 { font-size: 17px; margin: 0; }
+  header .sub { color: var(--muted); font-size: 12px; }
+  header .spacer { flex: 1; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 10px; border-radius: 999px;
+    background: var(--panel); border: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .pill[data-status="running"] .dot { background: var(--ok); }
+  .pill[data-status="paused"] .dot { background: var(--warn); }
+  .pill[data-status="stopping"] .dot { background: var(--warn); }
+  .pill[data-status="offline"] .dot { background: var(--bad); }
+
+  .btn {
+    border: 1px solid var(--border); background: var(--panel);
+    padding: 7px 14px; border-radius: 6px; cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn:hover:not(:disabled) { border-color: var(--accent); }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn.primary { background: var(--accent-2); border-color: var(--accent-2); color: #fff; }
+  .btn.primary:hover:not(:disabled) { filter: brightness(1.12); }
+  .btn.danger { background: var(--bad); border-color: var(--bad); color: #fff; }
+  .btn.small { padding: 3px 10px; font-size: 12px; }
+  kbd {
+    font-family: var(--mono); font-size: 11px;
+    border: 1px solid var(--border); border-radius: 3px; padding: 0 4px;
+    opacity: .8;
+  }
+
+  #banner {
+    display: none; padding: 8px 16px;
+    background: var(--bad); color: #fff; font-size: 13px;
+  }
+  #banner.show { display: block; }
+
+  main {
+    display: grid; gap: 16px; padding: 16px;
+    grid-template-columns: minmax(260px, 380px) 1fr;
+    grid-template-areas: "view logs" "settings settings";
+    max-width: 1280px; margin: 0 auto;
+  }
+  @media (max-width: 760px) {
+    main { grid-template-columns: 1fr; grid-template-areas: "view" "logs" "settings"; }
+  }
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: var(--radius); min-width: 0;
+  }
+  .card > h2 {
+    margin: 0; padding: 10px 14px; font-size: 13px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .04em; color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card > h2 .right { margin-left: auto; text-transform: none; letter-spacing: 0; font-weight: 400; }
+  .card .body { padding: 14px; }
+  #view { grid-area: view; align-self: start; }
+  #logs { grid-area: logs; display: flex; flex-direction: column; }
+  /* The log fills the card, which the arena beside it sets the height of. */
+  .log-wrap { position: relative; flex: 1; min-height: 300px; }
+  #settings-card { grid-area: settings; }
+
+  /* Arena: the 18 x 32 tile grid, drawn from each frame's state */
+  .arena { position: relative; padding: 10px; }
+  .arena svg { display: block; width: 100%; height: auto; max-width: 360px; margin: 0 auto; }
+  .arena svg text { font-family: var(--mono); fill: var(--muted); font-size: 7px; }
+  .arena svg .lbl { fill: var(--text); font-size: 6.5px; font-weight: 500; }
+  .arena svg .hp { fill: var(--text); font-size: 8px; font-weight: 600; }
+  .arena svg .card-name { fill: var(--text); font-size: 6.5px; font-weight: 600; }
+  .arena svg .card-cost { fill: var(--elixir); font-size: 6.5px; }
+  .arena svg .bridge { fill: var(--bridge); stroke: var(--muted); stroke-width: 0.5; }
+  .arena svg .elixir-num { fill: var(--elixir); font-size: 10px; font-weight: 600; }
+  .arena svg .time { fill: var(--text); font-size: 10px; font-weight: 600; }
+  .arena svg .time.overtime { fill: var(--warn); }
+  .arena svg .unit-lbl { fill: var(--text); font-size: 6px; paint-order: stroke; stroke: var(--bg); stroke-width: 2px; }
+  .arena .empty {
+    position: absolute; inset: 10px; display: grid; place-items: center;
+    color: var(--muted); text-align: center; padding: 24px;
+    background: color-mix(in srgb, var(--panel) 70%, transparent);
+  }
+  .arena.live .empty { display: none; }
+  .arena-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; justify-content: center; font-size: 12px; color: var(--muted); padding: 0 10px 10px; }
+  .arena-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+
+
+  /* Settings */
+  .settings { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 4px 24px; }
+  fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 8px; align-content: start; }
+  legend { font-weight: 600; margin-bottom: 6px; padding: 0; }
+  .field { display: grid; gap: 3px; }
+  .field > span { color: var(--muted); font-size: 12px; }
+  .field input[type=text], .field input[type=number], .field select {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px;
+    padding: 6px 8px; width: 100%;
+  }
+  .field input:focus, .field select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .check { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .check input { width: 16px; height: 16px; accent-color: var(--accent); }
+  .settings-foot {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border);
+  }
+  .note { color: var(--muted); font-size: 12px; }
+  .note.warn { color: var(--warn); }
+
+  /* Logs */
+  .log-tools { display: flex; gap: 8px; align-items: center; }
+  .log-tools input {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px;
+    padding: 2px 8px; font-size: 12px; width: 160px;
+  }
+  #log {
+    position: absolute; inset: 0; overflow: auto; margin: 0; padding: 8px 14px;
+    font: 12px/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere;
+  }
+  #log .t { color: var(--ok); }
+  #log .s { color: var(--muted); }
+  #log .DEBUG .l { color: var(--accent); }
+  #log .WARNING .l, #log .WARNING .m { color: var(--warn); }
+  #log .ERROR .l, #log .ERROR .m, #log .CRITICAL .l, #log .CRITICAL .m { color: var(--bad); }
+  #log .hidden { display: none; }
+
+  #toast {
+    position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px 14px; max-width: calc(100vw - 32px);
+    box-shadow: 0 4px 16px rgba(0,0,0,.3);
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  #toast.show { opacity: 1; }
+  #toast.error { border-color: var(--bad); }
+</style>
+</head>
+<body>
+
+<header>
+  <img src="/logo.png" alt="" onerror="this.remove()">
+  <div>
+    <h1>Clash Royale Build-A-Bot</h1>
+    <div class="sub"><a href="https://github.com/Pbatch/ClashRoyaleBuildABot" target="_blank" rel="noopener">GitHub</a> · <a href="/docs" target="_blank">API docs</a></div>
+  </div>
+  <div class="spacer"></div>
+  <span class="pill" id="status" data-status="offline"><span class="dot"></span><span id="status-text">Connecting…</span></span>
+  <button class="btn" id="pause" hidden title="Pause or resume (P)">Pause <kbd>P</kbd></button>
+  <button class="btn primary" id="startstop" disabled>Start</button>
+</header>
+<div id="banner">Lost connection to the bot. Retrying…</div>
+
+<main>
+  <section class="card" id="view">
+    <h2>Arena <span class="right note"><span id="frame-no"></span> <span id="fps"></span></span></h2>
+    <div class="arena" id="arena">
+      <svg viewBox="0 0 236 466" role="img" aria-label="The arena as an 18 by 32 tile grid, with the towers and the units the bot sees, and the hand, elixir and time left below it">
+        <defs>
+          <pattern id="grid" width="12" height="12" patternUnits="userSpaceOnUse">
+            <path d="M12 0H0V12" fill="none" stroke="var(--border)" stroke-width="0.5"/>
+          </pattern>
+          <pattern id="hatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <rect width="4" height="4" fill="var(--panel)"/>
+            <line x1="0" y1="0" x2="0" y2="4" stroke="var(--muted)" stroke-width="1.2"/>
+          </pattern>
+        </defs>
+        <g transform="translate(14,4)">
+          <rect width="216" height="384" fill="var(--grass)"/>
+          <rect width="216" height="384" fill="url(#grid)"/>
+          <rect y="180" width="216" height="24" fill="var(--river)"/>
+          <!-- Bridges: x 3 and 14, rows 15-16, as the API's grid has them -->
+          <rect class="bridge" x="36" y="180" width="12" height="24"/>
+          <rect class="bridge" x="168" y="180" width="12" height="24"/>
+          <g id="arena-towers"></g>
+          <g id="arena-units"></g>
+          <g id="arena-hand" transform="translate(0,402)"></g>
+          <g id="arena-elixir" transform="translate(0,448)"></g>
+          <text x="6" y="393" text-anchor="middle">0</text>
+          <text x="210" y="393" text-anchor="middle">17</text>
+          <text x="-3" y="381" text-anchor="end">0</text>
+          <text x="-3" y="9" text-anchor="end">31</text>
+        </g>
+      </svg>
+      <div class="empty" id="arena-msg">Start the bot to see what it sees.</div>
+    </div>
+    <div class="arena-legend">
+      <span><i style="background:var(--ally)"></i>ally</span>
+      <span><i style="background:var(--enemy)"></i>enemy</span>
+      <span><i style="background:url(#hatch);border:1px solid var(--muted)"></i>destroyed</span>
+    </div>
+  </section>
+
+  <section class="card" id="logs">
+    <h2>Logs
+      <span class="right log-tools">
+        <input type="search" id="log-filter" placeholder="Filter" aria-label="Filter logs">
+        <button class="btn small" id="log-clear">Clear</button>
+      </span>
+    </h2>
+    <div class="log-wrap"><div id="log" role="log" aria-live="off"></div></div>
+  </section>
+
+  <section class="card" id="settings-card">
+    <h2>Settings</h2>
+    <div class="body">
+      <form class="settings" id="settings" onsubmit="return false">
+        <fieldset>
+          <legend>Bot</legend>
+          <label class="field"><span>Device serial (from <code>adb devices</code>)</span>
+            <input type="text" data-key="adb.device_serial" spellcheck="false" autocomplete="off"></label>
+          <label class="field"><span>Who plays the cards</span>
+            <select data-key="bot.policy">
+              <option value="builtin">Built-in policy</option>
+              <option value="external">External client (POST /api/play)</option>
+            </select></label>
+          <label class="field"><span>Log level</span>
+            <select data-key="bot.log_level">
+              <option>DEBUG</option><option>INFO</option><option>WARNING</option><option>ERROR</option><option>CRITICAL</option>
+            </select></label>
+        </fieldset>
+        <fieldset>
+          <legend>In game</legend>
+          <label class="field"><span>Longest wait after a play (seconds)</span>
+            <input type="number" data-key="ingame.play_action" min="0.1" max="5" step="0.1"></label>
+          <label class="check"><input type="checkbox" data-key="bot.load_deck"> Load deck on startup</label>
+          <label class="check"><input type="checkbox" data-key="bot.auto_start_game"> Auto start games</label>
+        </fieldset>
+        <fieldset>
+          <legend>Visuals</legend>
+          <label class="check"><input type="checkbox" data-key="visuals.show_images"> Annotate frames (for /api/frames and screenshots)</label>
+          <label class="check"><input type="checkbox" data-key="visuals.save_images"> Save labelled images to debug/</label>
+          <label class="check"><input type="checkbox" data-key="visuals.save_labels"> Save labels to debug/</label>
+        </fieldset>
+      </form>
+      <div class="settings-foot">
+        <button class="btn" id="save">Save to config.yaml</button>
+        <span class="note" id="settings-note">Changes apply straight away, and last until the bot is closed unless saved.</span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toast" role="status"></div>
+
+<script>
+"use strict";
+
+const $ = (id) => document.getElementById(id);
+const WS_BASE = `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/api`;
+const MAX_LOG_LINES = 2000;
+const STATUS_TEXT = {
+  stopped: "Stopped", running: "Running", paused: "Paused",
+  stopping: "Stopping…", offline: "Disconnected",
+};
+
+let status = "offline";
+let config = null;
+
+// ---- Helpers ----------------------------------------------------------
+
+function pretty(name) {
+  return name ? name.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "?";
+}
+
+let toastTimer;
+function toast(message, isError = false) {
+  const el = $("toast");
+  el.textContent = message;
+  el.classList.toggle("error", isError);
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), isError ? 5000 : 2500);
+}
+
+async function api(method, path, body) {
+  const response = await fetch(`/api${path}`, {
+    method,
+    headers: body === undefined ? {} : { "Content-Type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    let message = data?.message ?? data?.detail ?? response.statusText;
+    if (typeof message !== "string") message = JSON.stringify(message);
+    throw new Error(message);
+  }
+  return data;
+}
+
+/** A WebSocket that reconnects, with backoff, until the page closes. */
+function stream(path, { binary = false, onMessage, onOpen, onClose }) {
+  let delay = 500;
+  const connect = () => {
+    const ws = new WebSocket(WS_BASE + path);
+    if (binary) ws.binaryType = "blob";
+    ws.onopen = () => { delay = 500; onOpen?.(); };
+    ws.onmessage = (event) => onMessage(binary ? event.data : JSON.parse(event.data));
+    ws.onclose = () => {
+      onClose?.();
+      setTimeout(connect, delay);
+      delay = Math.min(delay * 2, 5000);
+    };
+  };
+  connect();
+}
+
+// ---- Status and controls ------------------------------------------------
+
+function showStatus(next) {
+  status = next;
+  const pill = $("status");
+  pill.dataset.status = next;
+  $("status-text").textContent = STATUS_TEXT[next] ?? next;
+
+  const active = next === "running" || next === "paused";
+  const startStop = $("startstop");
+  startStop.disabled = next === "stopping" || next === "offline";
+  startStop.textContent = next === "stopping" ? "Stopping…" : active ? "Stop" : "Start";
+  startStop.classList.toggle("primary", !active);
+  startStop.classList.toggle("danger", active);
+
+  const pause = $("pause");
+  pause.hidden = !active;
+  pause.firstChild.textContent = next === "paused" ? "Resume " : "Pause ";
+
+  $("banner").classList.toggle("show", next === "offline");
+  showSettingsNote();
+  if (!active) {
+    showBattle(null);
+    $("fps").textContent = "";
+  }
+}
+
+async function control(action) {
+  try {
+    showStatus((await api("POST", `/${action}`)).status);
+  } catch (e) {
+    toast(e.message, true);
+  }
+}
+
+$("startstop").onclick = () => {
+  if (status === "running" || status === "paused") control("stop");
+  else if (status === "stopped") control("start");
+};
+function togglePause() {
+  if (status === "running") control("pause");
+  else if (status === "paused") control("resume");
+}
+$("pause").onclick = togglePause;
+
+document.addEventListener("keydown", (e) => {
+  if (e.key.toLowerCase() !== "p" || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.target.closest("input, select, textarea")) return;
+  e.preventDefault();
+  togglePause();
+});
+
+// ---- Settings -----------------------------------------------------------
+
+const fields = [...document.querySelectorAll("[data-key]")];
+
+function getPath(obj, key) {
+  return key.split(".").reduce((o, k) => o?.[k], obj);
+}
+
+function valueOf(el) {
+  if (el.type === "checkbox") return el.checked;
+  if (el.type === "number") return Math.round(parseFloat(el.value) * 100) / 100;
+  return el.value;
+}
+
+function showConfig(next) {
+  config = next;
+  for (const el of fields) {
+    // Leave the field being typed in alone.
+    if (el === document.activeElement && el.type !== "checkbox") continue;
+    const value = getPath(config, el.dataset.key);
+    if (el.type === "checkbox") el.checked = Boolean(value);
+    else el.value = value;
+  }
+}
+
+function showSettingsNote() {
+  const note = $("settings-note");
+  const active = status === "running" || status === "paused";
+  note.classList.toggle("warn", active);
+  note.textContent = active
+    ? "The running bot keeps its settings, apart from the log level. Stop and start it to use the rest."
+    : "Changes apply straight away, and last until the bot is closed unless saved.";
+}
+
+async function pushSetting(el) {
+  const [section, name] = el.dataset.key.split(".");
+  const value = valueOf(el);
+  if (Number.isNaN(value)) { showConfig(config); return; }
+  if (value === getPath(config, el.dataset.key)) return;
+  try {
+    showConfig(await api("PATCH", "/config", { [section]: { [name]: value } }));
+  } catch (e) {
+    toast(e.message, true);
+    // Back to the value still in use.
+    if (document.activeElement === el) el.blur();
+    showConfig(await api("GET", "/config"));
+  }
+}
+
+for (const el of fields) {
+  el.addEventListener("change", () => pushSetting(el));
+  if (el.type === "text") {
+    el.addEventListener("keydown", (e) => { if (e.key === "Enter") el.blur(); });
+  }
+}
+
+$("save").onclick = async () => {
+  try {
+    await api("POST", "/config/save");
+    toast("Saved to config.yaml");
+  } catch (e) {
+    toast(e.message, true);
+  }
+};
+
+// ---- Live view ------------------------------------------------------------
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+const TILE = 12;
+const GRID_H = 32;
+// Each tower's tiles, [x0, y0, x1, y1] inclusive, tile (0, 0) bottom left.
+const TOWER_TILES = {
+  left_enemy_princess: [2, 24, 4, 26],
+  right_enemy_princess: [13, 24, 15, 26],
+  enemy_king: [7, 27, 10, 30],
+  left_ally_princess: [2, 5, 4, 7],
+  right_ally_princess: [13, 5, 15, 7],
+  ally_king: [7, 1, 10, 4],
+};
+let stateTimes = [];
+
+function svg(tag, attrs, text) {
+  const node = document.createElementNS(SVG_NS, tag);
+  for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+/** Top-left corner, in SVG units, of the tile at (x, y). */
+const tileX = (x) => x * TILE;
+const tileY = (y) => (GRID_H - 1 - y) * TILE;
+
+function drawArena(state) {
+  const battle = state?.battle;
+  $("arena").classList.toggle("live", !!battle);
+  if (!battle) {
+    $("arena-msg").textContent = !state
+      ? (status === "running" || status === "paused" ? "Waiting for the first frame…" : "Start the bot to see what it sees.")
+      : SCREENS[state.screen] ?? state.screen;
+    return;
+  }
+
+  $("arena-towers").replaceChildren(...Object.entries(TOWER_TILES).map(([name, [x0, y0, x1, y1]]) => {
+    const tower = battle.towers[name];
+    const side = name.includes("enemy") ? "enemy" : "ally";
+    const x = tileX(x0), y = tileY(y1), w = (x1 - x0 + 1) * TILE, h = (y1 - y0 + 1) * TILE;
+    const g = svg("g", {});
+    g.append(svg("rect", {
+      x, y, width: w, height: h,
+      fill: tower?.destroyed ? "url(#hatch)" : "var(--panel)",
+      stroke: tower?.destroyed ? "var(--muted)" : `var(--${side})`, "stroke-width": 1.5,
+    }));
+    if (tower && !tower.destroyed) {
+      g.append(svg("text", { class: "hp", x: x + w / 2, y: y + h / 2 + 3, "text-anchor": "middle" },
+                   tower.hp != null ? tower.hp.toLocaleString() : "–"));
+    }
+    return g;
+  }));
+
+  const units = [
+    ...battle.allies.map((d) => [d, "ally"]),
+    ...battle.enemies.map((d) => [d, "enemy"]),
+  ];
+  // One label per clump of the same unit, so swarms stay readable. Labels
+  // go on top, so no tile covers one.
+  const labelled = [];
+  const tiles = units.map(([d, side]) => {
+    const x = tileX(d.tile_x), y = tileY(d.tile_y);
+    const near = labelled.some(([o, s]) => s === side && o.unit === d.unit
+      && Math.abs(o.tile_x - d.tile_x) <= 2 && Math.abs(o.tile_y - d.tile_y) <= 1);
+    if (!near) labelled.push([d, side]);
+    const rect = svg("rect", { x, y, width: TILE, height: TILE, rx: 2, fill: `var(--${side})`,
+                               "fill-opacity": 0.4 + 0.6 * d.conf });
+    rect.append(svg("title", {}, `${side} ${pretty(d.unit)} (${d.tile_x}, ${d.tile_y}) · ${Math.round(d.conf * 100)}%`));
+    return rect;
+  });
+  const labels = labelled.map(([d]) => svg("text",
+    { class: "unit-lbl", x: tileX(d.tile_x) + TILE + 1, y: tileY(d.tile_y) + 8 }, pretty(d.unit)));
+  $("arena-units").replaceChildren(...tiles, ...labels);
+  drawHand(battle, state.pending_play?.hand_index);
+  drawElixirAndTime(battle.elixir, battle.timer);
+}
+
+/** Under the hand: the elixir count, a 10-segment bar, and the time left. */
+function drawElixirAndTime(elixir, timer) {
+  const left = 18, right = 46, gap = 2, w = (216 - left - right - 9 * gap) / 10;
+  const time = svg("text", { class: `time${timer.overtime ? " overtime" : ""}`, x: 216, y: 9, "text-anchor": "end" },
+                   `${timer.overtime ? "OT " : ""}${formatTime(timer.time_left)}`);
+  time.append(svg("title", {}, timer.overtime ? "Overtime left" : "Time left"));
+  $("arena-elixir").replaceChildren(
+    time,
+    svg("text", { class: "elixir-num", x: 0, y: 9 }, elixir),
+    ...Array.from({ length: 10 }, (_, i) => svg("rect", {
+      x: left + i * (w + gap), y: 2, width: w, height: 7, rx: 1.5,
+      fill: i < elixir ? "var(--elixir)" : "var(--border)",
+    })),
+  );
+}
+
+const CARD_W = 42, NEXT_W = 32, CARD_H = 40, CARD_GAP = 4;
+
+/** Short enough to fit a card slot. */
+function clip(text, max) {
+  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+}
+
+/** The four cards in hand, then the next card, under the grid. */
+function drawHand(battle, pending) {
+  const slot = (x, w, name, sub, { dim = false, highlight = false, dashed = false } = {}) => {
+    const g = svg("g", { opacity: dim ? 0.45 : 1 });
+    g.append(svg("rect", {
+      x, y: 0, width: w, height: CARD_H, rx: 3, fill: "var(--panel-2)",
+      stroke: highlight ? "var(--warn)" : "var(--border)", "stroke-width": highlight ? 1.5 : 1,
+      ...(dashed ? { "stroke-dasharray": "2 2" } : {}),
+    }));
+    // Long names wrap onto a second line at the first space.
+    const max = Math.floor((w - 6) / 3.9);
+    const split = name.length > max ? name.indexOf(" ") : -1;
+    const lines = split > 0 ? [name.slice(0, split), name.slice(split + 1)] : [name];
+    lines.forEach((line, i) => g.append(
+      svg("text", { class: "card-name", x: x + 3, y: 11 + i * 8 }, clip(line, max))));
+    g.append(svg("text", { class: "card-cost", x: x + 3, y: CARD_H - 5 }, sub),
+             svg("title", {}, name));
+    return g;
+  };
+  const slots = battle.hand.map((card, i) => slot(
+    i * (CARD_W + CARD_GAP), CARD_W,
+    card.card ? pretty(card.card) : "?",
+    card.cost != null ? `${card.cost} elixir` : "",
+    { dim: !card.playable, highlight: card.hand_index === pending },
+  ));
+  slots.push(slot(4 * (CARD_W + CARD_GAP), NEXT_W,
+                  battle.next_card ? pretty(battle.next_card) : "?", "next",
+                  { dim: true, dashed: true }));
+  $("arena-hand").replaceChildren(...slots);
+}
+
+// ---- Battle ---------------------------------------------------------------
+
+const SCREENS = {
+  lobby: "In the lobby.",
+  end_of_game: "The battle is over.",
+  unknown: "On a screen the bot doesn't recognise.",
+};
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function formatTime(seconds) {
+  if (seconds == null) return "–";
+  const s = Math.max(0, Math.round(seconds));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+
+function showBattle(state) {
+  $("frame-no").textContent = state ? `frame ${state.frame} ·` : "";
+  drawArena(state);
+}
+
+// States come every frame; draw at most once per animation frame.
+let latestState = null;
+let drawQueued = false;
+stream("/states", {
+  onMessage(state) {
+    latestState = state;
+    const now = performance.now();
+    stateTimes.push(now);
+    stateTimes = stateTimes.filter((t) => now - t < 2000);
+    $("fps").textContent = `${(stateTimes.length / 2).toFixed(1)} fps`;
+    if (drawQueued) return;
+    drawQueued = true;
+    requestAnimationFrame(() => {
+      drawQueued = false;
+      if (status === "running" || status === "paused") showBattle(latestState);
+    });
+  },
+});
+
+// ---- Logs -----------------------------------------------------------------
+
+const logBox = $("log");
+const filterBox = $("log-filter");
+
+function matchesFilter(line) {
+  const q = filterBox.value.trim().toLowerCase();
+  return !q || line.textContent.toLowerCase().includes(q);
+}
+
+function appendLog(event) {
+  const atBottom = logBox.scrollHeight - logBox.scrollTop - logBox.clientHeight < 30;
+  const line = el("div", event.level);
+  const time = new Date(event.time).toLocaleTimeString([], { hour12: false });
+  line.append(el("span", "t", time), " ",
+              el("span", "l", event.level.padEnd(8)), " ",
+              el("span", "s", event.source), " ",
+              el("span", "m", event.message));
+  line.classList.toggle("hidden", !matchesFilter(line));
+  logBox.append(line);
+  while (logBox.childElementCount > MAX_LOG_LINES) logBox.firstElementChild.remove();
+  if (atBottom) logBox.scrollTop = logBox.scrollHeight;
+}
+
+filterBox.addEventListener("input", () => {
+  for (const line of logBox.children) line.classList.toggle("hidden", !matchesFilter(line));
+});
+$("log-clear").onclick = () => logBox.replaceChildren();
+
+// ---- Events: status, config and logs --------------------------------------
+
+stream("/events", {
+  async onOpen() {
+    try {
+      showConfig(await api("GET", "/config"));
+    } catch (e) {
+      toast(e.message, true);
+    }
+  },
+  onMessage(event) {
+    if (event.type === "status") showStatus(event.status);
+    else if (event.type === "config") showConfig(event.config);
+    else if (event.type === "log") appendLog(event);
+  },
+  onClose() { showStatus("offline"); },
+});
+</script>
+</body>
+</html>

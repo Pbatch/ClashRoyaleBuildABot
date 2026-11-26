@@ -1,13 +1,14 @@
 import math
 
 from clashroyalebuildabot.actions.generic.action import Action
-from clashroyalebuildabot.namespaces.cards import Cards
+from clashroyalebuildabot.game.cards import Cards
+from clashroyalebuildabot.game.state import State
 
 
 class BabyDragonAction(Action):
     CARD = Cards.BABY_DRAGON
 
-    def calculate_score(self, state):
+    def calculate_score(self, state: State) -> list[float]:
         for det in state.enemies:
             distance = math.hypot(
                 det.position.tile_x - self.tile_x,

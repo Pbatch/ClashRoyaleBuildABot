@@ -1,13 +1,14 @@
 from clashroyalebuildabot.actions.generic.action import Action
-from clashroyalebuildabot.namespaces.cards import Cards
+from clashroyalebuildabot.game.cards import Cards
+from clashroyalebuildabot.game.state import State
 
 
 class GoblinBarrelAction(Action):
     CARD = Cards.GOBLIN_BARREL
 
-    def calculate_score(self, state):
-        left_hp = state.numbers.left_enemy_princess_hp.number
-        right_hp = state.numbers.right_enemy_princess_hp.number
+    def calculate_score(self, state: State) -> list[float]:
+        left_hp = state.towers.left_enemy_princess.hp
+        right_hp = state.towers.right_enemy_princess.hp
 
         if (self.tile_x, self.tile_y) == (3, 25) and left_hp > 0:
             return [1, left_hp <= right_hp]

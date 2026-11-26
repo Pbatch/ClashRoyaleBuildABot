@@ -1,6 +1,6 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["uv_build==0.13.9"]
+build-backend = "uv_build"
 
 [project]
 name = "ClashRoyaleBuildABot"
@@ -10,40 +10,96 @@ authors = [
 ]
 description = "A platform for creating bots to play Clash Royale"
 readme = "README.md"
+license-files = ["LICENSE.md"]
 requires-python = "==3.12.*"
+# Linux and Windows on x86-64: the platforms Google ships ADB for that the
+# dependencies all have wheels for. Only Linux is tested.
+classifiers = [
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+]
 dependencies = [
-    "numpy==2.5.5",
-    "pillow==13.0.0",
-    "keyboard==0.13.5",
+    "numpy==2.3.5",
+    "opencv-python-headless==5.1.0.95",
     "scipy==1.18.1",
     "loguru==0.8.0",
     "PyYAML==6.0.3",
     "requests==2.34.2",
-    "pyqt6==6.12.1",
     "av==19.0.2",
     "tqdm==4.70.1",
+    "pydantic==2.12.5",
+    # Runs on the CPU as it is. The gpu extra adds the NVIDIA libraries it
+    # needs to run on an NVIDIA GPU.
+    "onnxruntime-gpu==1.32.0",
+    "fastapi==0.165.0",
+    "anyio==4.16.0",
+    "uvicorn==0.54.0",
+    # Not imported by the bot, but uvicorn needs it to serve the API's
+    # WebSockets (/api/events, /api/frames).
+    "websockets==17.4",
+    # Serves the API's operations as MCP tools, at /mcp.
+    "fastmcp==4.2.6",
 ]
 [project.optional-dependencies]
-cpu = [
-    "onnxruntime==1.32.0",
-]
+# The CUDA and cuDNN libraries (about 2 GB), so the unit detector runs on an
+# NVIDIA GPU, several times faster than on the CPU.
 gpu = [
-    "onnxruntime-gpu==1.32.0",
+    "onnxruntime-gpu[cuda,cudnn]==1.32.0",
 ]
 dev = [
+    "httpx2==2.16.2",
     "pre-commit==4.7.0",
     "pytest==9.2.0",
     "ruff==0.17.5",
     "ty==0.0.105",
 ]
 
+[dependency-groups]
+# Builds the docs site (zensical.toml). Apart from the project, so the
+# docs build doesn't install the bot.
+docs = [
+    "zensical==0.1.3",
+]
+
+[tool.uv.build-backend]
+# The package is at the repo root, not under src/.
+module-root = ""
+
+[tool.uv]
+# Only resolve for Linux and Windows, and fail to lock if a dependency has
+# no x86-64 wheel for either.
+environments = ["sys_platform == 'linux'", "sys_platform == 'win32'"]
+required-environments = [
+    "sys_platform == 'linux' and platform_machine == 'x86_64'",
+    "sys_platform == 'win32' and platform_machine == 'AMD64'",
+]
+
 [tool.ruff]
 line-length = 79
+# dev/game_data's scripts import each other (game_files) as top-level
+# modules. dev/pyproject.toml says so too, but it isn't committed, so CI
+# needs it here.
+src = [".", "dev/game_data"]
 target-version = "py312"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "B", "UP006", "UP007", "UP035", "UP045"]
+select = [
+    "E", "F", "I", "B", "UP", "SIM", "C4", "RET", "PIE", "PERF", "FURB",
+    "LOG", "G", "ISC", "T20", "W", "TC", "RUF", "PT", "PLW1510", "TID251",
+    "ANN",
+]
 ignore = ["E501", "E231", "E222"]
+
+[tool.ruff.lint.per-file-ignores]
+# Annotating pytest functions and fixtures adds little.
+"tests/**" = ["ANN"]
+# Developer scripts report what they did with print().
+"dev/**" = ["T20"]
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+# Frames are numpy arrays; Pillow may still be installed by another package,
+# so an import of it would work by accident.
+"PIL".msg = "Frames are numpy arrays; use OpenCV (clashroyalebuildabot.utils.image)."
 
 [tool.ruff.format]
 quote-style = "double"
@@ -51,3 +107,5 @@ indent-style = "space"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Warnings fail the suite, so leaks like an unclosed pipe get noticed.
+filterwarnings = ["error"]

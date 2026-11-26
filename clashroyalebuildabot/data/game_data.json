@@ -1,0 +1,4203 @@
+{
+ "cards": {
+  "archer_queen": {
+   "cost": 5,
+   "game_name": "ArcherQueen",
+   "rarity": "champion",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "ArcherQueen",
+     "unit": "archer_queen"
+    }
+   ],
+   "type": "troop"
+  },
+  "archers": {
+   "cost": 3,
+   "game_name": "Archer",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 2,
+     "game_name": "Archer",
+     "unit": "archer"
+    }
+   ],
+   "type": "troop"
+  },
+  "arrows": {
+   "cost": 3,
+   "game_name": "Arrows",
+   "rarity": "common",
+   "spell": {
+    "crown_tower_damage_percent": 20,
+    "damage": 48,
+    "radius": 3.5,
+    "waves": 3
+   },
+   "summons": [],
+   "type": "spell"
+  },
+  "baby_dragon": {
+   "cost": 4,
+   "game_name": "BabyDragon",
+   "rarity": "epic",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "BabyDragon",
+     "unit": "baby_dragon"
+    }
+   ],
+   "type": "troop"
+  },
+  "balloon": {
+   "cost": 5,
+   "game_name": "Balloon",
+   "rarity": "epic",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Balloon",
+     "unit": "balloon"
+    }
+   ],
+   "type": "troop"
+  },
+  "bandit": {
+   "cost": 3,
+   "game_name": "Assassin",
+   "rarity": "legendary",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Assassin",
+     "unit": "bandit"
+    }
+   ],
+   "type": "troop"
+  },
+  "barbarian_barrel": {
+   "cost": 2,
+   "game_name": "BarbLog",
+   "rarity": "epic",
+   "spell": {
+    "crown_tower_damage_percent": null,
+    "damage": 84,
+    "radius": 1.3,
+    "waves": 1
+   },
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Barbarian",
+     "unit": "barbarian"
+    }
+   ],
+   "type": "spell"
+  },
+  "barbarian_hut": {
+   "cost": 6,
+   "game_name": "BarbarianHut",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "BarbarianHut",
+     "unit": "barbarian_hut"
+    }
+   ],
+   "type": "building"
+  },
+  "barbarians": {
+   "cost": 5,
+   "game_name": "Barbarians",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 5,
+     "game_name": "Barbarian",
+     "unit": "barbarian"
+    }
+   ],
+   "type": "troop"
+  },
+  "bats": {
+   "cost": 2,
+   "game_name": "Bats",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 5,
+     "game_name": "Bat",
+     "unit": "bat"
+    }
+   ],
+   "type": "troop"
+  },
+  "battle_healer": {
+   "cost": 4,
+   "game_name": "BattleHealer",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "BattleHealer",
+     "unit": "battle_healer"
+    }
+   ],
+   "type": "troop"
+  },
+  "battle_ram": {
+   "cost": 4,
+   "game_name": "BattleRam",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "BattleRam",
+     "unit": "battle_ram"
+    }
+   ],
+   "type": "troop"
+  },
+  "berserker": {
+   "cost": 2,
+   "game_name": "Berserker",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Berserker",
+     "unit": "berserker"
+    }
+   ],
+   "type": "troop"
+  },
+  "bomb_tower": {
+   "cost": 4,
+   "game_name": "BombTower",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "BombTower",
+     "unit": "bomb_tower"
+    }
+   ],
+   "type": "building"
+  },
+  "bomber": {
+   "cost": 2,
+   "game_name": "Bomber",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Bomber",
+     "unit": "bomber"
+    }
+   ],
+   "type": "troop"
+  },
+  "boss_bandit": {
+   "cost": 6,
+   "game_name": "BossBandit",
+   "rarity": "champion",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "BossBandit",
+     "unit": "boss_bandit"
+    }
+   ],
+   "type": "troop"
+  },
+  "bowler": {
+   "cost": 5,
+   "game_name": "Bowler",
+   "rarity": "epic",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Bowler",
+     "unit": "bowler"
+    }
+   ],
+   "type": "troop"
+  },
+  "cannon": {
+   "cost": 3,
+   "game_name": "Cannon",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Cannon",
+     "unit": "cannon"
+    }
+   ],
+   "type": "building"
+  },
+  "cannon_cart": {
+   "cost": 5,
+   "game_name": "MovingCannon",
+   "rarity": "epic",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "MovingCannon",
+     "unit": "cannon_cart"
+    }
+   ],
+   "type": "troop"
+  },
+  "clone": {
+   "cost": 3,
+   "game_name": "Clone",
+   "rarity": "epic",
+   "spell": {
+    "crown_tower_damage_percent": null,
+    "damage": null,
+    "radius": 3.0,
+    "waves": 1
+   },
+   "summons": [],
+   "type": "spell"
+  },
+  "dark_prince": {
+   "cost": 4,
+   "game_name": "DarkPrince",
+   "rarity": "epic",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "DarkPrince",
+     "unit": "dark_prince"
+    }
+   ],
+   "type": "troop"
+  },
+  "dart_goblin": {
+   "cost": 3,
+   "game_name": "BlowdartGoblin",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "BlowdartGoblin",
+     "unit": "dart_goblin"
+    }
+   ],
+   "type": "troop"
+  },
+  "earthquake": {
+   "cost": 3,
+   "game_name": "Earthquake",
+   "rarity": "rare",
+   "spell": {
+    "crown_tower_damage_percent": null,
+    "damage": null,
+    "radius": 3.5,
+    "waves": 1
+   },
+   "summons": [],
+   "type": "spell"
+  },
+  "electro_dragon": {
+   "cost": 5,
+   "game_name": "ElectroDragon",
+   "rarity": "epic",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "ElectroDragon",
+     "unit": "electro_dragon"
+    }
+   ],
+   "type": "troop"
+  },
+  "electro_giant": {
+   "cost": 7,
+   "game_name": "ElectroGiant",
+   "rarity": "epic",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "ElectroGiant",
+     "unit": "electro_giant"
+    }
+   ],
+   "type": "troop"
+  },
+  "electro_spirit": {
+   "cost": 1,
+   "game_name": "ElectroSpirit",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "ElectroSpirit",
+     "unit": "electro_spirit"
+    }
+   ],
+   "type": "troop"
+  },
+  "electro_wizard": {
+   "cost": 4,
+   "game_name": "ElectroWizard",
+   "rarity": "legendary",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "ElectroWizard",
+     "unit": "electro_wizard"
+    }
+   ],
+   "type": "troop"
+  },
+  "elite_barbarians": {
+   "cost": 6,
+   "game_name": "AngryBarbarians",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 2,
+     "game_name": "AngryBarbarian",
+     "unit": "elite_barbarian"
+    }
+   ],
+   "type": "troop"
+  },
+  "elixir_collector": {
+   "cost": 6,
+   "game_name": "Elixir Collector",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "ElixirCollector",
+     "unit": "elixir_collector"
+    }
+   ],
+   "type": "building"
+  },
+  "elixir_golem": {
+   "cost": 3,
+   "game_name": "ElixirGolem",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "ElixirGolem1",
+     "unit": "elixir_golem_large"
+    }
+   ],
+   "type": "troop"
+  },
+  "executioner": {
+   "cost": 5,
+   "game_name": "AxeMan",
+   "rarity": "epic",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "AxeMan",
+     "unit": "executioner"
+    }
+   ],
+   "type": "troop"
+  },
+  "fire_spirit": {
+   "cost": 1,
+   "game_name": "FireSpirits",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "FireSpirits",
+     "unit": "fire_spirit"
+    }
+   ],
+   "type": "troop"
+  },
+  "fireball": {
+   "cost": 4,
+   "game_name": "Fireball",
+   "rarity": "rare",
+   "spell": {
+    "crown_tower_damage_percent": 23,
+    "damage": 269,
+    "radius": 2.5,
+    "waves": 1
+   },
+   "summons": [],
+   "type": "spell"
+  },
+  "firecracker": {
+   "cost": 3,
+   "game_name": "Firecracker",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Firecracker",
+     "unit": "firecracker"
+    }
+   ],
+   "type": "troop"
+  },
+  "fisherman": {
+   "cost": 3,
+   "game_name": "Fisherman",
+   "rarity": "legendary",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Fisherman",
+     "unit": "fisherman"
+    }
+   ],
+   "type": "troop"
+  },
+  "flying_machine": {
+   "cost": 4,
+   "game_name": "DartBarrell",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "DartBarrell",
+     "unit": "flying_machine"
+    }
+   ],
+   "type": "troop"
+  },
+  "freeze": {
+   "cost": 4,
+   "game_name": "Freeze",
+   "rarity": "epic",
+   "spell": {
+    "crown_tower_damage_percent": 26,
+    "damage": 58,
+    "radius": 3.0,
+    "waves": 1
+   },
+   "summons": [],
+   "type": "spell"
+  },
+  "furnace": {
+   "cost": 4,
+   "game_name": "FirespiritHut",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Furnace_rework",
+     "unit": "furnace"
+    }
+   ],
+   "type": "building"
+  },
+  "giant": {
+   "cost": 5,
+   "game_name": "Giant",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Giant",
+     "unit": "giant"
+    }
+   ],
+   "type": "troop"
+  },
+  "giant_skeleton": {
+   "cost": 6,
+   "game_name": "GiantSkeleton",
+   "rarity": "epic",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "GiantSkeleton",
+     "unit": "giant_skeleton"
+    }
+   ],
+   "type": "troop"
+  },
+  "giant_snowball": {
+   "cost": 2,
+   "game_name": "Snowball",
+   "rarity": "common",
+   "spell": {
+    "crown_tower_damage_percent": 25,
+    "damage": 70,
+    "radius": 2.5,
+    "waves": 1
+   },
+   "summons": [],
+   "type": "spell"
+  },
+  "goblin_barrel": {
+   "cost": 3,
+   "game_name": "GoblinBarrel",
+   "rarity": "epic",
+   "spell": {
+    "crown_tower_damage_percent": null,
+    "damage": null,
+    "radius": 1.5,
+    "waves": 1
+   },
+   "summons": [
+    {
+     "count": 3,
+     "game_name": "BarrelGoblin",
+     "unit": "goblin"
+    }
+   ],
+   "type": "spell"
+  },
+  "goblin_cage": {
+   "cost": 4,
+   "game_name": "GoblinCage",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "GoblinCage",
+     "unit": "goblin_cage"
+    }
+   ],
+   "type": "building"
+  },
+  "goblin_curse": {
+   "cost": 2,
+   "game_name": "GoblinCurse",
+   "rarity": "epic",
+   "spell": {
+    "crown_tower_damage_percent": null,
+    "damage": null,
+    "radius": 3.0,
+    "waves": 1
+   },
+   "summons": [],
+   "type": "spell"
+  },
+  "goblin_demolisher": {
+   "cost": 4,
+   "game_name": "GoblinDemolisher",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "GoblinDemolisher",
+     "unit": "goblin_demolisher"
+    }
+   ],
+   "type": "troop"
+  },
+  "goblin_drill": {
+   "cost": 4,
+   "game_name": "GoblinDrill",
+   "rarity": "epic",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "GoblinDrillDig",
+     "unit": "goblin_drill"
+    }
+   ],
+   "type": "building"
+  },
+  "goblin_gang": {
+   "cost": 3,
+   "game_name": "GoblinGang",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 3,
+     "game_name": "Goblin_Stab",
+     "unit": "goblin"
+    }
+   ],
+   "type": "troop"
+  },
+  "goblin_giant": {
+   "cost": 6,
+   "game_name": "GoblinGiant",
+   "rarity": "epic",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "GoblinGiant",
+     "unit": "goblin_giant"
+    }
+   ],
+   "type": "troop"
+  },
+  "goblin_hut": {
+   "cost": 4,
+   "game_name": "GoblinHut",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "GoblinHut_Rework",
+     "unit": "goblin_hut"
+    }
+   ],
+   "type": "building"
+  },
+  "goblin_machine": {
+   "cost": 5,
+   "game_name": "GoblinMachine",
+   "rarity": "legendary",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "GoblinMachine",
+     "unit": "goblin_machine"
+    }
+   ],
+   "type": "troop"
+  },
+  "goblins": {
+   "cost": 2,
+   "game_name": "Goblins",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 4,
+     "game_name": "Goblin_Stab",
+     "unit": "goblin"
+    }
+   ],
+   "type": "troop"
+  },
+  "goblinstein": {
+   "cost": 5,
+   "game_name": "Goblinstein",
+   "rarity": "champion",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "goblinstein",
+     "unit": "goblinstein"
+    }
+   ],
+   "type": "troop"
+  },
+  "golden_knight": {
+   "cost": 4,
+   "game_name": "GoldenKnight",
+   "rarity": "champion",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "GoldenKnight",
+     "unit": "golden_knight"
+    }
+   ],
+   "type": "troop"
+  },
+  "golem": {
+   "cost": 8,
+   "game_name": "Golem",
+   "rarity": "epic",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Golem",
+     "unit": "golem"
+    }
+   ],
+   "type": "troop"
+  },
+  "graveyard": {
+   "cost": 5,
+   "game_name": "Graveyard",
+   "rarity": "legendary",
+   "spell": {
+    "crown_tower_damage_percent": null,
+    "damage": null,
+    "radius": 4.0,
+    "waves": 1
+   },
+   "summons": [],
+   "type": "spell"
+  },
+  "guards": {
+   "cost": 3,
+   "game_name": "SkeletonWarriors",
+   "rarity": "epic",
+   "summons": [
+    {
+     "count": 3,
+     "game_name": "SkeletonWarrior",
+     "unit": "guard"
+    }
+   ],
+   "type": "troop"
+  },
+  "heal_spirit": {
+   "cost": 1,
+   "game_name": "Heal",
+   "rarity": "rare",
+   "spell": {
+    "crown_tower_damage_percent": null,
+    "damage": null,
+    "radius": null,
+    "waves": 1
+   },
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "HealSpirit",
+     "unit": "heal_spirit"
+    }
+   ],
+   "type": "spell"
+  },
+  "hog_rider": {
+   "cost": 4,
+   "game_name": "HogRider",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "HogRider",
+     "unit": "hog_rider"
+    }
+   ],
+   "type": "troop"
+  },
+  "hunter": {
+   "cost": 4,
+   "game_name": "Hunter",
+   "rarity": "epic",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Hunter",
+     "unit": "hunter"
+    }
+   ],
+   "type": "troop"
+  },
+  "ice_golem": {
+   "cost": 2,
+   "game_name": "IceGolemite",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "IceGolemite",
+     "unit": "ice_golem"
+    }
+   ],
+   "type": "troop"
+  },
+  "ice_spirit": {
+   "cost": 1,
+   "game_name": "IceSpirits",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "IceSpirits",
+     "unit": "ice_spirit"
+    }
+   ],
+   "type": "troop"
+  },
+  "ice_wizard": {
+   "cost": 3,
+   "game_name": "IceWizard",
+   "rarity": "legendary",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "IceWizard",
+     "unit": "ice_wizard"
+    }
+   ],
+   "type": "troop"
+  },
+  "inferno_dragon": {
+   "cost": 4,
+   "game_name": "InfernoDragon",
+   "rarity": "legendary",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "InfernoDragon",
+     "unit": "inferno_dragon"
+    }
+   ],
+   "type": "troop"
+  },
+  "inferno_tower": {
+   "cost": 5,
+   "game_name": "InfernoTower",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "InfernoTower",
+     "unit": "inferno_tower"
+    }
+   ],
+   "type": "building"
+  },
+  "knight": {
+   "cost": 3,
+   "game_name": "Knight",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Knight",
+     "unit": "knight"
+    }
+   ],
+   "type": "troop"
+  },
+  "lava_hound": {
+   "cost": 7,
+   "game_name": "LavaHound",
+   "rarity": "legendary",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "LavaHound",
+     "unit": "lava_hound"
+    }
+   ],
+   "type": "troop"
+  },
+  "lightning": {
+   "cost": 6,
+   "game_name": "Lightning",
+   "rarity": "epic",
+   "spell": {
+    "crown_tower_damage_percent": 25,
+    "damage": 413,
+    "radius": 3.5,
+    "waves": 1
+   },
+   "summons": [],
+   "type": "spell"
+  },
+  "little_prince": {
+   "cost": 3,
+   "game_name": "LittlePrince",
+   "rarity": "champion",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "LittlePrince",
+     "unit": "little_prince"
+    }
+   ],
+   "type": "troop"
+  },
+  "lumberjack": {
+   "cost": 4,
+   "game_name": "RageBarbarian",
+   "rarity": "legendary",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "RageBarbarian",
+     "unit": "lumberjack"
+    }
+   ],
+   "type": "troop"
+  },
+  "magic_archer": {
+   "cost": 4,
+   "game_name": "EliteArcher",
+   "rarity": "legendary",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "EliteArcher",
+     "unit": "magic_archer"
+    }
+   ],
+   "type": "troop"
+  },
+  "mega_knight": {
+   "cost": 7,
+   "game_name": "MegaKnight",
+   "rarity": "legendary",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "MegaKnight",
+     "unit": "mega_knight"
+    }
+   ],
+   "type": "troop"
+  },
+  "mega_minion": {
+   "cost": 3,
+   "game_name": "MegaMinion",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "MegaMinion",
+     "unit": "mega_minion"
+    }
+   ],
+   "type": "troop"
+  },
+  "mighty_miner": {
+   "cost": 4,
+   "game_name": "MightyMiner",
+   "rarity": "champion",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "MightyMiner",
+     "unit": "mighty_miner"
+    }
+   ],
+   "type": "troop"
+  },
+  "miner": {
+   "cost": 3,
+   "game_name": "Miner",
+   "rarity": "legendary",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Miner",
+     "unit": "miner"
+    }
+   ],
+   "type": "troop"
+  },
+  "minion_horde": {
+   "cost": 5,
+   "game_name": "MinionHorde",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 6,
+     "game_name": "Minion",
+     "unit": "minion"
+    }
+   ],
+   "type": "troop"
+  },
+  "minions": {
+   "cost": 3,
+   "game_name": "Minions",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 3,
+     "game_name": "Minion",
+     "unit": "minion"
+    }
+   ],
+   "type": "troop"
+  },
+  "minipekka": {
+   "cost": 4,
+   "game_name": "MiniPekka",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "MiniPekka",
+     "unit": "minipekka"
+    }
+   ],
+   "type": "troop"
+  },
+  "mirror": {
+   "cost": 1,
+   "game_name": "Mirror",
+   "rarity": "epic",
+   "spell": {
+    "crown_tower_damage_percent": null,
+    "damage": null,
+    "radius": null,
+    "waves": 1
+   },
+   "summons": [],
+   "type": "spell"
+  },
+  "monk": {
+   "cost": 5,
+   "game_name": "Monk",
+   "rarity": "champion",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Monk",
+     "unit": "monk"
+    }
+   ],
+   "type": "troop"
+  },
+  "mortar": {
+   "cost": 4,
+   "game_name": "Mortar",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Mortar",
+     "unit": "mortar"
+    }
+   ],
+   "type": "building"
+  },
+  "mother_witch": {
+   "cost": 4,
+   "game_name": "WitchMother",
+   "rarity": "legendary",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "WitchMother",
+     "unit": "mother_witch"
+    }
+   ],
+   "type": "troop"
+  },
+  "musketeer": {
+   "cost": 4,
+   "game_name": "Musketeer",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Musketeer",
+     "unit": "musketeer"
+    }
+   ],
+   "type": "troop"
+  },
+  "night_witch": {
+   "cost": 4,
+   "game_name": "DarkWitch",
+   "rarity": "legendary",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "DarkWitch",
+     "unit": "night_witch"
+    }
+   ],
+   "type": "troop"
+  },
+  "pekka": {
+   "cost": 7,
+   "game_name": "Pekka",
+   "rarity": "epic",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Pekka",
+     "unit": "pekka"
+    }
+   ],
+   "type": "troop"
+  },
+  "phoenix": {
+   "cost": 4,
+   "game_name": "Phoenix",
+   "rarity": "legendary",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Phoenix",
+     "unit": "phoenix_large"
+    }
+   ],
+   "type": "troop"
+  },
+  "poison": {
+   "cost": 4,
+   "game_name": "Poison",
+   "rarity": "epic",
+   "spell": {
+    "crown_tower_damage_percent": null,
+    "damage": null,
+    "radius": 3.5,
+    "waves": 1
+   },
+   "summons": [],
+   "type": "spell"
+  },
+  "prince": {
+   "cost": 5,
+   "game_name": "Prince",
+   "rarity": "epic",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Prince",
+     "unit": "prince"
+    }
+   ],
+   "type": "troop"
+  },
+  "princess": {
+   "cost": 3,
+   "game_name": "Princess",
+   "rarity": "legendary",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Princess",
+     "unit": "princess"
+    }
+   ],
+   "type": "troop"
+  },
+  "rage": {
+   "cost": 2,
+   "game_name": "Rage",
+   "rarity": "epic",
+   "spell": {
+    "crown_tower_damage_percent": null,
+    "damage": null,
+    "radius": 3.0,
+    "waves": 1
+   },
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "RageBottle",
+     "unit": null
+    }
+   ],
+   "type": "spell"
+  },
+  "ram_rider": {
+   "cost": 5,
+   "game_name": "RamRider",
+   "rarity": "legendary",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Ram",
+     "unit": "ram_rider"
+    }
+   ],
+   "type": "troop"
+  },
+  "rascals": {
+   "cost": 5,
+   "game_name": "Rascals",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "RascalBoy",
+     "unit": "rascal_boy"
+    }
+   ],
+   "type": "troop"
+  },
+  "rocket": {
+   "cost": 6,
+   "game_name": "Rocket",
+   "rarity": "rare",
+   "spell": {
+    "crown_tower_damage_percent": 23,
+    "damage": 580,
+    "radius": 2.0,
+    "waves": 1
+   },
+   "summons": [],
+   "type": "spell"
+  },
+  "royal_delivery": {
+   "cost": 3,
+   "game_name": "RoyalDelivery",
+   "rarity": "common",
+   "spell": {
+    "crown_tower_damage_percent": null,
+    "damage": 150,
+    "radius": 3.0,
+    "waves": 1
+   },
+   "summons": [],
+   "type": "spell"
+  },
+  "royal_ghost": {
+   "cost": 3,
+   "game_name": "Ghost",
+   "rarity": "legendary",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Ghost",
+     "unit": "royal_ghost"
+    }
+   ],
+   "type": "troop"
+  },
+  "royal_giant": {
+   "cost": 6,
+   "game_name": "RoyalGiant",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "RoyalGiant",
+     "unit": "royal_giant"
+    }
+   ],
+   "type": "troop"
+  },
+  "royal_hogs": {
+   "cost": 5,
+   "game_name": "RoyalHogs",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 4,
+     "game_name": "RoyalHog",
+     "unit": "royal_hog"
+    }
+   ],
+   "type": "troop"
+  },
+  "royal_recruits": {
+   "cost": 7,
+   "game_name": "RoyalRecruits",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 6,
+     "game_name": "Recruit",
+     "unit": "royal_recruit"
+    }
+   ],
+   "type": "troop"
+  },
+  "rune_giant": {
+   "cost": 4,
+   "game_name": "GiantBuffer",
+   "rarity": "epic",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "GiantBuffer",
+     "unit": "rune_giant"
+    }
+   ],
+   "type": "troop"
+  },
+  "skeleton_army": {
+   "cost": 3,
+   "game_name": "SkeletonArmy",
+   "rarity": "epic",
+   "summons": [
+    {
+     "count": 15,
+     "game_name": "Skeleton",
+     "unit": "skeleton"
+    }
+   ],
+   "type": "troop"
+  },
+  "skeleton_barrel": {
+   "cost": 3,
+   "game_name": "SkeletonBalloon",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "SkeletonBalloon",
+     "unit": "skeleton_barrel"
+    }
+   ],
+   "type": "troop"
+  },
+  "skeleton_dragons": {
+   "cost": 4,
+   "game_name": "SkeletonDragons",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 2,
+     "game_name": "SkeletonDragon",
+     "unit": "skeleton_dragon"
+    }
+   ],
+   "type": "troop"
+  },
+  "skeleton_king": {
+   "cost": 4,
+   "game_name": "SkeletonKing",
+   "rarity": "champion",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "SkeletonKing",
+     "unit": "skeleton_king"
+    }
+   ],
+   "type": "troop"
+  },
+  "skeletons": {
+   "cost": 1,
+   "game_name": "Skeletons",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 3,
+     "game_name": "Skeleton",
+     "unit": "skeleton"
+    }
+   ],
+   "type": "troop"
+  },
+  "sparky": {
+   "cost": 6,
+   "game_name": "ZapMachine",
+   "rarity": "legendary",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "ZapMachine",
+     "unit": "sparky"
+    }
+   ],
+   "type": "troop"
+  },
+  "spear_goblins": {
+   "cost": 2,
+   "game_name": "SpearGoblins",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 3,
+     "game_name": "SpearGoblin",
+     "unit": "spear_goblin"
+    }
+   ],
+   "type": "troop"
+  },
+  "spirit_empress": {
+   "cost": 6,
+   "game_name": "MergeMaiden",
+   "rarity": "legendary",
+   "spell": {
+    "crown_tower_damage_percent": null,
+    "damage": null,
+    "radius": null,
+    "waves": 1
+   },
+   "summons": [],
+   "type": "spell"
+  },
+  "suspicious_bush": {
+   "cost": 2,
+   "game_name": "SuspiciousBush",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "SuspiciousBush",
+     "unit": "suspicious_bush"
+    }
+   ],
+   "type": "troop"
+  },
+  "tesla": {
+   "cost": 4,
+   "game_name": "Tesla",
+   "rarity": "common",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Tesla",
+     "unit": "tesla"
+    }
+   ],
+   "type": "building"
+  },
+  "the_log": {
+   "cost": 2,
+   "game_name": "Log",
+   "rarity": "legendary",
+   "spell": {
+    "crown_tower_damage_percent": 13,
+    "damage": 105,
+    "radius": 1.95,
+    "waves": 1
+   },
+   "summons": [],
+   "type": "spell"
+  },
+  "three_musketeers": {
+   "cost": 9,
+   "game_name": "ThreeMusketeers",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "ThreeMusketeer_Rework_Character_1",
+     "unit": "musketeer"
+    },
+    {
+     "count": 1,
+     "game_name": "ThreeMusketeer_Rework_Character_2",
+     "unit": "musketeer"
+    },
+    {
+     "count": 1,
+     "game_name": "ThreeMusketeer_Rework_Character_3",
+     "unit": "musketeer"
+    }
+   ],
+   "type": "troop"
+  },
+  "tombstone": {
+   "cost": 3,
+   "game_name": "Tombstone",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Tombstone",
+     "unit": "tombstone"
+    }
+   ],
+   "type": "building"
+  },
+  "tornado": {
+   "cost": 3,
+   "game_name": "Tornado",
+   "rarity": "epic",
+   "spell": {
+    "crown_tower_damage_percent": null,
+    "damage": null,
+    "radius": 5.5,
+    "waves": 1
+   },
+   "summons": [],
+   "type": "spell"
+  },
+  "valkyrie": {
+   "cost": 4,
+   "game_name": "Valkyrie",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Valkyrie",
+     "unit": "valkyrie"
+    }
+   ],
+   "type": "troop"
+  },
+  "vines": {
+   "cost": 3,
+   "game_name": "Vines",
+   "rarity": "epic",
+   "spell": {
+    "crown_tower_damage_percent": null,
+    "damage": null,
+    "radius": 2.5,
+    "waves": 1
+   },
+   "summons": [],
+   "type": "spell"
+  },
+  "void": {
+   "cost": 5,
+   "game_name": "DarkMagic",
+   "rarity": "epic",
+   "spell": {
+    "crown_tower_damage_percent": null,
+    "damage": null,
+    "radius": 2.5,
+    "waves": 1
+   },
+   "summons": [],
+   "type": "spell"
+  },
+  "wall_breakers": {
+   "cost": 2,
+   "game_name": "Wallbreakers",
+   "rarity": "epic",
+   "summons": [
+    {
+     "count": 2,
+     "game_name": "Wallbreaker",
+     "unit": "wall_breaker"
+    }
+   ],
+   "type": "troop"
+  },
+  "witch": {
+   "cost": 5,
+   "game_name": "Witch",
+   "rarity": "epic",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Witch",
+     "unit": "witch"
+    }
+   ],
+   "type": "troop"
+  },
+  "wizard": {
+   "cost": 5,
+   "game_name": "Wizard",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Wizard",
+     "unit": "wizard"
+    }
+   ],
+   "type": "troop"
+  },
+  "x_bow": {
+   "cost": 6,
+   "game_name": "Xbow",
+   "rarity": "epic",
+   "summons": [
+    {
+     "count": 1,
+     "game_name": "Xbow",
+     "unit": "x_bow"
+    }
+   ],
+   "type": "building"
+  },
+  "zap": {
+   "cost": 2,
+   "game_name": "Zap",
+   "rarity": "common",
+   "spell": {
+    "crown_tower_damage_percent": 25,
+    "damage": 75,
+    "radius": 2.5,
+    "waves": 1
+   },
+   "summons": [],
+   "type": "spell"
+  },
+  "zappies": {
+   "cost": 4,
+   "game_name": "MiniSparkys",
+   "rarity": "rare",
+   "summons": [
+    {
+     "count": 3,
+     "game_name": "MiniZapMachine",
+     "unit": "zappy"
+    }
+   ],
+   "type": "troop"
+  }
+ },
+ "elixir": {
+  "max": 10,
+  "phases": [
+   {
+    "from": 0,
+    "seconds_per_elixir": 2.8,
+    "to": 120
+   },
+   {
+    "from": 120,
+    "seconds_per_elixir": 1.4,
+    "to": 240
+   },
+   {
+    "from": 240,
+    "seconds_per_elixir": 0.93,
+    "to": 300
+   }
+  ],
+  "sections": [
+   {
+    "length": 180,
+    "type": "normal"
+   },
+   {
+    "length": 120,
+    "type": "overtime"
+   }
+  ],
+  "starting": 6
+ },
+ "level_scaling": "A stat at level L is the level-1 value times multipliers[L - 1] / 100, rounded down.",
+ "multipliers": [
+  100,
+  110,
+  121,
+  133,
+  146,
+  160,
+  176,
+  193,
+  212,
+  233,
+  256,
+  281,
+  309,
+  339,
+  372,
+  409,
+  450,
+  495,
+  545,
+  600
+ ],
+ "rarities": {
+  "champion": {
+   "min_level": 11
+  },
+  "common": {
+   "min_level": 1
+  },
+  "epic": {
+   "min_level": 6
+  },
+  "experimental": {
+   "min_level": 9
+  },
+  "legendary": {
+   "min_level": 9
+  },
+  "rare": {
+   "min_level": 3
+  }
+ },
+ "source": "Clash Royale's logic files, exported by dev/game_data/export_game_data.py",
+ "towers": {
+  "king": {
+   "damage_level_1": 50,
+   "game_name": "KingTower",
+   "hit_speed": 1.0,
+   "hitpoints_level_1": 2400,
+   "range": 7.0
+  },
+  "princess": {
+   "damage_level_1": 50,
+   "game_name": "PrincessTower",
+   "hit_speed": 0.8,
+   "hitpoints_level_1": 1400,
+   "range": 7.5
+  }
+ },
+ "units": {
+  "archer": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 44,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.4,
+   "flying": false,
+   "game_name": "Archer",
+   "hit_speed": 0.9,
+   "hitpoints": 119,
+   "lifetime": null,
+   "mass": 3,
+   "range": 5.0,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "archer_queen": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 91,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.9,
+   "flying": false,
+   "game_name": "ArcherQueen",
+   "hit_speed": 1.2,
+   "hitpoints": 391,
+   "lifetime": null,
+   "mass": 6,
+   "range": 5.0,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "baby_dragon": {
+   "area_damage_radius": 1.5,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 66,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.2,
+   "flying": true,
+   "game_name": "BabyDragon",
+   "hit_speed": 1.5,
+   "hitpoints": 450,
+   "lifetime": null,
+   "mass": 5,
+   "range": 3.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 90,
+   "targets_only_buildings": false
+  },
+  "balloon": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 250,
+   "death_damage": null,
+   "death_spawns": {
+    "count": 1,
+    "game_name": "BalloonBomb",
+    "unit": null
+   },
+   "deploy_time": 1.0,
+   "first_hit": 1.8,
+   "flying": true,
+   "game_name": "Balloon",
+   "hit_speed": 2.0,
+   "hitpoints": 655,
+   "lifetime": null,
+   "mass": 6,
+   "range": 0.1,
+   "shield_hitpoints": null,
+   "sight_range": 7.7,
+   "speed": 60,
+   "targets_only_buildings": true
+  },
+  "bandit": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.6,
+   "damage": 76,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.6,
+   "flying": false,
+   "game_name": "Assassin",
+   "hit_speed": 1.0,
+   "hitpoints": 354,
+   "lifetime": null,
+   "mass": 3,
+   "range": 0.75,
+   "shield_hitpoints": null,
+   "sight_range": 6.0,
+   "speed": 90,
+   "targets_only_buildings": false
+  },
+  "barbarian": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 75,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.0,
+   "flying": false,
+   "game_name": "Barbarian",
+   "hit_speed": 1.4,
+   "hitpoints": 280,
+   "lifetime": null,
+   "mass": 4,
+   "range": 0.7,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "barbarian_hut": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": true,
+   "collision_radius": 1.0,
+   "damage": null,
+   "death_damage": null,
+   "death_spawns": {
+    "count": 1,
+    "game_name": "Barbarian",
+    "unit": "barbarian"
+   },
+   "deploy_time": 1.0,
+   "first_hit": null,
+   "flying": false,
+   "game_name": "BarbarianHut",
+   "hit_speed": 10.0,
+   "hitpoints": 455,
+   "lifetime": 30.0,
+   "mass": null,
+   "range": null,
+   "shield_hitpoints": null,
+   "sight_range": null,
+   "spawns": {
+    "count": 3,
+    "game_name": "Barbarian",
+    "interval": 14.0,
+    "unit": "barbarian"
+   },
+   "speed": null,
+   "targets_only_buildings": false
+  },
+  "bat": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 32,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.6,
+   "flying": true,
+   "game_name": "Bat",
+   "hit_speed": 1.2,
+   "hitpoints": 32,
+   "lifetime": null,
+   "mass": 1,
+   "range": 1.2,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 120,
+   "targets_only_buildings": false
+  },
+  "battle_healer": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 105,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.6,
+   "flying": false,
+   "game_name": "BattleHealer",
+   "hit_speed": 2.0,
+   "hitpoints": 750,
+   "lifetime": null,
+   "mass": 6,
+   "range": 1.6,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "battle_ram": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.75,
+   "damage": 112,
+   "death_damage": null,
+   "death_spawns": {
+    "count": 2,
+    "game_name": "Barbarian",
+    "unit": "barbarian"
+   },
+   "deploy_time": 1.0,
+   "first_hit": 0.35,
+   "flying": false,
+   "game_name": "BattleRam",
+   "hit_speed": 0.4,
+   "hitpoints": 378,
+   "lifetime": null,
+   "mass": 6,
+   "range": 0.5,
+   "shield_hitpoints": null,
+   "sight_range": 6.5,
+   "speed": 60,
+   "targets_only_buildings": true
+  },
+  "berserker": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.45,
+   "damage": null,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.4,
+   "flying": false,
+   "game_name": null,
+   "hit_speed": 0.6,
+   "hitpoints": 350,
+   "lifetime": null,
+   "mass": 2,
+   "range": 0.8,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 90,
+   "targets_only_buildings": false
+  },
+  "bomb": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": true,
+   "collision_radius": 0.45,
+   "damage": null,
+   "death_damage": null,
+   "deploy_time": 3.0,
+   "first_hit": null,
+   "flying": false,
+   "game_name": "GiantSkeletonBomb",
+   "hit_speed": null,
+   "hitpoints": null,
+   "lifetime": null,
+   "mass": null,
+   "range": null,
+   "shield_hitpoints": null,
+   "sight_range": null,
+   "speed": null,
+   "targets_only_buildings": false
+  },
+  "bomb_tower": {
+   "area_damage_radius": 1.5,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": true,
+   "collision_radius": 0.6,
+   "damage": 87,
+   "death_damage": null,
+   "death_spawns": {
+    "count": 1,
+    "game_name": "BombTowerBomb",
+    "unit": null
+   },
+   "deploy_time": 1.0,
+   "first_hit": 1.3,
+   "flying": false,
+   "game_name": "BombTower",
+   "hit_speed": 1.8,
+   "hitpoints": 530,
+   "lifetime": 30.0,
+   "mass": null,
+   "range": 6.0,
+   "shield_hitpoints": null,
+   "sight_range": 6.0,
+   "speed": null,
+   "targets_only_buildings": false
+  },
+  "bomber": {
+   "area_damage_radius": 1.5,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 83,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.6,
+   "flying": false,
+   "game_name": "Bomber",
+   "hit_speed": 1.8,
+   "hitpoints": 119,
+   "lifetime": null,
+   "mass": 4,
+   "range": 4.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "boss_bandit": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.6,
+   "damage": 96,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.7,
+   "flying": false,
+   "game_name": null,
+   "hit_speed": 1.1,
+   "hitpoints": 1025,
+   "lifetime": null,
+   "mass": 4,
+   "range": 0.8,
+   "shield_hitpoints": null,
+   "sight_range": 6.0,
+   "speed": 90,
+   "targets_only_buildings": false
+  },
+  "bowler": {
+   "area_damage_radius": 1.8,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.75,
+   "damage": 113,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 2.0,
+   "flying": false,
+   "game_name": "Bowler",
+   "hit_speed": 2.5,
+   "hitpoints": 813,
+   "lifetime": null,
+   "mass": 18,
+   "range": 4.0,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 45,
+   "targets_only_buildings": false
+  },
+  "brawler": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 132,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.9,
+   "flying": false,
+   "game_name": "GoblinBrawler",
+   "hit_speed": 1.1,
+   "hitpoints": 438,
+   "lifetime": null,
+   "mass": 2,
+   "range": 0.8,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 90,
+   "targets_only_buildings": false
+  },
+  "cannon": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": true,
+   "collision_radius": 0.6,
+   "damage": 79,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.1,
+   "flying": false,
+   "game_name": "Cannon",
+   "hit_speed": 1.0,
+   "hitpoints": 322,
+   "lifetime": 30.0,
+   "mass": null,
+   "range": 5.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": null,
+   "targets_only_buildings": false
+  },
+  "cannon_cart": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 79,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.4,
+   "flying": false,
+   "game_name": null,
+   "hit_speed": 0.9,
+   "hitpoints": 707,
+   "lifetime": null,
+   "mass": 6,
+   "range": 5.5,
+   "shield_hitpoints": null,
+   "sight_range": 6.0,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "dark_prince": {
+   "area_damage_radius": 1.1,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.6,
+   "damage": 104,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.0,
+   "flying": false,
+   "game_name": "DarkPrince",
+   "hit_speed": 1.4,
+   "hitpoints": 469,
+   "lifetime": null,
+   "mass": 6,
+   "range": 1.2,
+   "shield_hitpoints": 94,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "dart_goblin": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 56,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.45,
+   "flying": false,
+   "game_name": "BlowdartGoblin",
+   "hit_speed": 0.8,
+   "hitpoints": 102,
+   "lifetime": null,
+   "mass": 3,
+   "range": 6.5,
+   "shield_hitpoints": null,
+   "sight_range": 7.0,
+   "speed": 120,
+   "targets_only_buildings": false
+  },
+  "electro_dragon": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.6,
+   "damage": 75,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.6,
+   "flying": true,
+   "game_name": "ElectroDragon",
+   "hit_speed": 2.1,
+   "hitpoints": 410,
+   "lifetime": null,
+   "mass": 7,
+   "range": 3.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "electro_giant": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.75,
+   "damage": 72,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.8,
+   "flying": false,
+   "game_name": "ElectroGiant",
+   "hit_speed": 1.8,
+   "hitpoints": 1544,
+   "lifetime": null,
+   "mass": 18,
+   "range": 1.2,
+   "shield_hitpoints": null,
+   "sight_range": 7.5,
+   "speed": 45,
+   "targets_only_buildings": true
+  },
+  "electro_spirit": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.4,
+   "damage": 39,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.1,
+   "flying": false,
+   "game_name": "ElectroSpirit",
+   "hit_speed": 0.3,
+   "hitpoints": 84,
+   "lifetime": null,
+   "mass": 1,
+   "range": 2.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 120,
+   "targets_only_buildings": false
+  },
+  "electro_wizard": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 46,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.2,
+   "flying": false,
+   "game_name": "ElectroWizard",
+   "hit_speed": 1.8,
+   "hitpoints": 279,
+   "lifetime": null,
+   "mass": 5,
+   "range": 5.0,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 90,
+   "targets_only_buildings": false
+  },
+  "elite_barbarian": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 150,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.9,
+   "flying": false,
+   "game_name": "AngryBarbarian",
+   "hit_speed": 1.4,
+   "hitpoints": 524,
+   "lifetime": null,
+   "mass": 4,
+   "range": 1.2,
+   "shield_hitpoints": null,
+   "sight_range": 6.0,
+   "speed": 90,
+   "targets_only_buildings": false
+  },
+  "elixir_collector": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": false,
+   "building": true,
+   "collision_radius": 1.0,
+   "damage": null,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": null,
+   "flying": false,
+   "game_name": "ElixirCollector",
+   "hit_speed": null,
+   "hitpoints": 418,
+   "lifetime": 110.0,
+   "mass": null,
+   "range": null,
+   "shield_hitpoints": null,
+   "sight_range": null,
+   "speed": null,
+   "targets_only_buildings": false
+  },
+  "elixir_golem_large": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.6,
+   "damage": 99,
+   "death_damage": null,
+   "death_spawns": {
+    "count": 2,
+    "game_name": "ElixirGolem2",
+    "unit": "elixir_golem_medium"
+   },
+   "deploy_time": 1.0,
+   "first_hit": 0.3,
+   "flying": false,
+   "game_name": "ElixirGolem1",
+   "hit_speed": 1.1,
+   "hitpoints": 613,
+   "lifetime": null,
+   "mass": 15,
+   "range": 0.8,
+   "shield_hitpoints": null,
+   "sight_range": 7.5,
+   "speed": 45,
+   "targets_only_buildings": true
+  },
+  "elixir_golem_medium": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 50,
+   "death_damage": null,
+   "death_spawns": {
+    "count": 2,
+    "game_name": "ElixirGolem4",
+    "unit": "elixir_golem_small"
+   },
+   "deploy_time": 1.0,
+   "first_hit": 0.3,
+   "flying": false,
+   "game_name": "ElixirGolem2",
+   "hit_speed": 1.1,
+   "hitpoints": 298,
+   "lifetime": null,
+   "mass": 10,
+   "range": 0.8,
+   "shield_hitpoints": null,
+   "sight_range": 7.5,
+   "speed": 60,
+   "targets_only_buildings": true
+  },
+  "elixir_golem_small": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.4,
+   "damage": 25,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.3,
+   "flying": false,
+   "game_name": "ElixirGolem4",
+   "hit_speed": 1.1,
+   "hitpoints": 141,
+   "lifetime": null,
+   "mass": 5,
+   "range": 0.8,
+   "shield_hitpoints": null,
+   "sight_range": 7.5,
+   "speed": 90,
+   "targets_only_buildings": true
+  },
+  "executioner": {
+   "area_damage_radius": 1.0,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.6,
+   "damage": 70,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.4,
+   "flying": false,
+   "game_name": "AxeMan",
+   "hit_speed": 0.9,
+   "hitpoints": 500,
+   "lifetime": null,
+   "mass": 4,
+   "range": 4.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "fire_spirit": {
+   "area_damage_radius": 2.3,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.4,
+   "damage": 84,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.1,
+   "flying": false,
+   "game_name": "FireSpirits",
+   "hit_speed": 0.3,
+   "hitpoints": 84,
+   "lifetime": null,
+   "mass": 1,
+   "range": 2.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 120,
+   "targets_only_buildings": false
+  },
+  "firecracker": {
+   "area_damage_radius": 0.4,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 25,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 2.35,
+   "flying": false,
+   "game_name": "Firecracker",
+   "hit_speed": 3.0,
+   "hitpoints": 119,
+   "lifetime": null,
+   "mass": 6,
+   "range": 6.0,
+   "shield_hitpoints": null,
+   "sight_range": 8.0,
+   "speed": 90,
+   "targets_only_buildings": false
+  },
+  "fisherman": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 76,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.2,
+   "flying": false,
+   "game_name": "Fisherman",
+   "hit_speed": 1.3,
+   "hitpoints": 340,
+   "lifetime": null,
+   "mass": 10,
+   "range": 1.2,
+   "shield_hitpoints": null,
+   "sight_range": 7.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "flying_machine": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 70,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.6,
+   "flying": true,
+   "game_name": "DartBarrell",
+   "hit_speed": 1.1,
+   "hitpoints": 240,
+   "lifetime": null,
+   "mass": 3,
+   "range": 6.0,
+   "shield_hitpoints": null,
+   "sight_range": 6.0,
+   "speed": 90,
+   "targets_only_buildings": false
+  },
+  "furnace": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.6,
+   "damage": 70,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.2,
+   "flying": false,
+   "game_name": null,
+   "hit_speed": 1.7,
+   "hitpoints": 284,
+   "lifetime": null,
+   "mass": 6,
+   "range": 5.5,
+   "shield_hitpoints": null,
+   "sight_range": 6.0,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "giant": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.75,
+   "damage": 99,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.0,
+   "flying": false,
+   "game_name": "Giant",
+   "hit_speed": 1.5,
+   "hitpoints": 1550,
+   "lifetime": null,
+   "mass": 18,
+   "range": 1.2,
+   "shield_hitpoints": null,
+   "sight_range": 7.5,
+   "speed": 45,
+   "targets_only_buildings": true
+  },
+  "giant_skeleton": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.75,
+   "damage": 108,
+   "death_damage": null,
+   "death_spawns": {
+    "count": 1,
+    "game_name": "GiantSkeletonBomb",
+    "unit": "bomb"
+   },
+   "deploy_time": 1.0,
+   "first_hit": 1.0,
+   "flying": false,
+   "game_name": "GiantSkeleton",
+   "hit_speed": 1.3,
+   "hitpoints": 1313,
+   "lifetime": null,
+   "mass": 18,
+   "range": 0.8,
+   "shield_hitpoints": null,
+   "sight_range": 5.0,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "goblin": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 49,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.7,
+   "flying": false,
+   "game_name": "Goblin",
+   "hit_speed": 1.1,
+   "hitpoints": 79,
+   "lifetime": null,
+   "mass": 2,
+   "range": 0.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 120,
+   "targets_only_buildings": false
+  },
+  "goblin_cage": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": true,
+   "collision_radius": 1.0,
+   "damage": null,
+   "death_damage": null,
+   "death_spawns": {
+    "count": 1,
+    "game_name": "GoblinBrawler",
+    "unit": "brawler"
+   },
+   "deploy_time": 1.0,
+   "first_hit": null,
+   "flying": false,
+   "game_name": "GoblinCage",
+   "hit_speed": 10.0,
+   "hitpoints": 305,
+   "lifetime": 20.0,
+   "mass": null,
+   "range": 5.0,
+   "shield_hitpoints": null,
+   "sight_range": 20.0,
+   "speed": null,
+   "targets_only_buildings": false
+  },
+  "goblin_demolisher": {
+   "area_damage_radius": 1.5,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.6,
+   "damage": 73,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.6,
+   "flying": false,
+   "game_name": null,
+   "hit_speed": 1.1,
+   "hitpoints": 508,
+   "lifetime": null,
+   "mass": 6,
+   "range": 5.0,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "goblin_drill": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": true,
+   "collision_radius": 0.5,
+   "damage": null,
+   "death_damage": null,
+   "death_spawns": {
+    "count": 2,
+    "game_name": "Goblin",
+    "unit": "goblin"
+   },
+   "deploy_time": 1.0,
+   "first_hit": 0.2,
+   "flying": false,
+   "game_name": "GoblinDrill",
+   "hit_speed": 1.1,
+   "hitpoints": 513,
+   "lifetime": 10.0,
+   "mass": null,
+   "range": 2.0,
+   "shield_hitpoints": null,
+   "sight_range": 2.0,
+   "spawns": {
+    "count": 1,
+    "game_name": "Goblin",
+    "interval": 3.0,
+    "unit": "goblin"
+   },
+   "speed": null,
+   "targets_only_buildings": false
+  },
+  "goblin_giant": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.75,
+   "damage": 69,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.7,
+   "flying": false,
+   "game_name": "GoblinGiant",
+   "hit_speed": 1.5,
+   "hitpoints": 1215,
+   "lifetime": null,
+   "mass": 18,
+   "range": 1.2,
+   "shield_hitpoints": null,
+   "sight_range": 7.5,
+   "spawns": {
+    "count": 2,
+    "game_name": "SpearGoblinGiant",
+    "interval": null,
+    "unit": null
+   },
+   "speed": 60,
+   "targets_only_buildings": true
+  },
+  "goblin_hut": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": true,
+   "collision_radius": 1.0,
+   "damage": null,
+   "death_damage": null,
+   "death_spawns": {
+    "count": 1,
+    "game_name": "SpearGoblin",
+    "unit": "spear_goblin"
+   },
+   "deploy_time": 1.0,
+   "first_hit": null,
+   "flying": false,
+   "game_name": null,
+   "hit_speed": 10.0,
+   "hitpoints": 461,
+   "lifetime": 30.0,
+   "mass": null,
+   "range": 6.0,
+   "shield_hitpoints": null,
+   "sight_range": null,
+   "speed": null,
+   "targets_only_buildings": false
+  },
+  "goblin_machine": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.75,
+   "damage": 91,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.7,
+   "flying": false,
+   "game_name": null,
+   "hit_speed": 1.2,
+   "hitpoints": 885,
+   "lifetime": null,
+   "mass": 18,
+   "range": 1.2,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "goblinstein": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.75,
+   "damage": 50,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.7,
+   "flying": false,
+   "game_name": null,
+   "hit_speed": 1.5,
+   "hitpoints": 875,
+   "lifetime": null,
+   "mass": 18,
+   "range": 1.2,
+   "shield_hitpoints": null,
+   "sight_range": 7.5,
+   "speed": 60,
+   "targets_only_buildings": true
+  },
+  "goblinstein_doctor": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 53,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.3,
+   "flying": false,
+   "game_name": null,
+   "hit_speed": 1.8,
+   "hitpoints": 282,
+   "lifetime": null,
+   "mass": 4,
+   "range": 5.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "golden_knight": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.8,
+   "damage": 66,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.7,
+   "flying": false,
+   "game_name": "GoldenKnight",
+   "hit_speed": 0.9,
+   "hitpoints": 703,
+   "lifetime": null,
+   "mass": 10,
+   "range": 1.2,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "golem": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.75,
+   "damage": 122,
+   "death_damage": null,
+   "death_spawns": {
+    "count": 2,
+    "game_name": "Golemite",
+    "unit": "golemite"
+   },
+   "deploy_time": 3.0,
+   "first_hit": 1.5,
+   "flying": false,
+   "game_name": "Golem",
+   "hit_speed": 2.5,
+   "hitpoints": 2000,
+   "lifetime": null,
+   "mass": 20,
+   "range": 0.75,
+   "shield_hitpoints": null,
+   "sight_range": 7.5,
+   "speed": 45,
+   "targets_only_buildings": true
+  },
+  "golemite": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 33,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.5,
+   "flying": false,
+   "game_name": "Golemite",
+   "hit_speed": 2.5,
+   "hitpoints": 406,
+   "lifetime": null,
+   "mass": 6,
+   "range": 0.25,
+   "shield_hitpoints": null,
+   "sight_range": 7.0,
+   "speed": 45,
+   "targets_only_buildings": true
+  },
+  "guard": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 46,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.5,
+   "flying": false,
+   "game_name": "SkeletonWarrior",
+   "hit_speed": 1.0,
+   "hitpoints": 32,
+   "lifetime": null,
+   "mass": 1,
+   "range": 1.6,
+   "shield_hitpoints": 100,
+   "sight_range": 5.5,
+   "speed": 90,
+   "targets_only_buildings": false
+  },
+  "heal_spirit": {
+   "area_damage_radius": 1.5,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.4,
+   "damage": 43,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.1,
+   "flying": false,
+   "game_name": "HealSpirit",
+   "hit_speed": 0.3,
+   "hitpoints": 84,
+   "lifetime": null,
+   "mass": 1,
+   "range": 2.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 120,
+   "targets_only_buildings": false
+  },
+  "hog": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.6,
+   "damage": 21,
+   "death_damage": null,
+   "deploy_time": 0.2,
+   "first_hit": 0.95,
+   "flying": false,
+   "game_name": "VoodooHog",
+   "hit_speed": 1.2,
+   "hitpoints": 246,
+   "lifetime": null,
+   "mass": 2,
+   "range": 0.75,
+   "shield_hitpoints": null,
+   "sight_range": 9.5,
+   "speed": 120,
+   "targets_only_buildings": true
+  },
+  "hog_rider": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.6,
+   "damage": 124,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.0,
+   "flying": false,
+   "game_name": "HogRider",
+   "hit_speed": 1.6,
+   "hitpoints": 663,
+   "lifetime": null,
+   "mass": 4,
+   "range": 0.8,
+   "shield_hitpoints": null,
+   "sight_range": 9.5,
+   "speed": 120,
+   "targets_only_buildings": true
+  },
+  "hunter": {
+   "area_damage_radius": 0.07,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.6,
+   "damage": 33,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.5,
+   "flying": false,
+   "game_name": "Hunter",
+   "hit_speed": 2.2,
+   "hitpoints": 346,
+   "lifetime": null,
+   "mass": 5,
+   "range": 4.0,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "ice_golem": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.7,
+   "damage": 33,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.5,
+   "flying": false,
+   "game_name": "IceGolemite",
+   "hit_speed": 2.5,
+   "hitpoints": 480,
+   "lifetime": null,
+   "mass": 6,
+   "range": 0.75,
+   "shield_hitpoints": null,
+   "sight_range": 7.0,
+   "speed": 45,
+   "targets_only_buildings": true
+  },
+  "ice_spirit": {
+   "area_damage_radius": 1.5,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.4,
+   "damage": 43,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.1,
+   "flying": false,
+   "game_name": "IceSpirits",
+   "hit_speed": 0.3,
+   "hitpoints": 84,
+   "lifetime": null,
+   "mass": 1,
+   "range": 2.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 120,
+   "targets_only_buildings": false
+  },
+  "ice_wizard": {
+   "area_damage_radius": 1.5,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 35,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.2,
+   "flying": false,
+   "game_name": "IceWizard",
+   "hit_speed": 1.7,
+   "hitpoints": 269,
+   "lifetime": null,
+   "mass": 5,
+   "range": 5.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "inferno_dragon": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 14,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.2,
+   "flying": true,
+   "game_name": "InfernoDragon",
+   "hit_speed": 0.4,
+   "hitpoints": 506,
+   "lifetime": null,
+   "mass": 5,
+   "range": 3.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "inferno_tower": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": true,
+   "collision_radius": 0.6,
+   "damage": 17,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.2,
+   "flying": false,
+   "game_name": "InfernoTower",
+   "hit_speed": 0.4,
+   "hitpoints": 683,
+   "lifetime": 30.0,
+   "mass": null,
+   "range": 6.0,
+   "shield_hitpoints": null,
+   "sight_range": 6.0,
+   "speed": null,
+   "targets_only_buildings": false
+  },
+  "knight": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 79,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.7,
+   "flying": false,
+   "game_name": "Knight",
+   "hit_speed": 1.2,
+   "hitpoints": 690,
+   "lifetime": null,
+   "mass": 6,
+   "range": 1.2,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "lava_hound": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.75,
+   "damage": 28,
+   "death_damage": null,
+   "death_spawns": {
+    "count": 6,
+    "game_name": "LavaPups",
+    "unit": "lava_pup"
+   },
+   "deploy_time": 1.0,
+   "first_hit": 0.5,
+   "flying": true,
+   "game_name": "LavaHound",
+   "hit_speed": 1.5,
+   "hitpoints": 1399,
+   "lifetime": null,
+   "mass": 5,
+   "range": 3.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 45,
+   "targets_only_buildings": true
+  },
+  "lava_pup": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.45,
+   "damage": 32,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.7,
+   "flying": true,
+   "game_name": "LavaPups",
+   "hit_speed": 1.7,
+   "hitpoints": 84,
+   "lifetime": null,
+   "mass": 5,
+   "range": 1.6,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "little_prince": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 41,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.8,
+   "flying": false,
+   "game_name": "LittlePrince",
+   "hit_speed": 1.2,
+   "hitpoints": 273,
+   "lifetime": null,
+   "mass": 4,
+   "range": 5.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "lumberjack": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 100,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.4,
+   "flying": false,
+   "game_name": "RageBarbarian",
+   "hit_speed": 0.8,
+   "hitpoints": 501,
+   "lifetime": null,
+   "mass": 4,
+   "range": 0.7,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 120,
+   "targets_only_buildings": false
+  },
+  "magic_archer": {
+   "area_damage_radius": 0.25,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.6,
+   "damage": 53,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.4,
+   "flying": false,
+   "game_name": "EliteArcher",
+   "hit_speed": 1.1,
+   "hitpoints": 207,
+   "lifetime": null,
+   "mass": 3,
+   "range": 7.0,
+   "shield_hitpoints": null,
+   "sight_range": 7.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "mega_knight": {
+   "area_damage_radius": 1.3,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.75,
+   "damage": 105,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.2,
+   "flying": false,
+   "game_name": "MegaKnight",
+   "hit_speed": 1.7,
+   "hitpoints": 1560,
+   "lifetime": null,
+   "mass": 18,
+   "range": 1.2,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "mega_minion": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.6,
+   "damage": 122,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.1,
+   "flying": true,
+   "game_name": "MegaMinion",
+   "hit_speed": 1.5,
+   "hitpoints": 327,
+   "lifetime": null,
+   "mass": 6,
+   "range": 1.6,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "mighty_miner": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 17,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.7,
+   "flying": false,
+   "game_name": "MightyMiner",
+   "hit_speed": 0.4,
+   "hitpoints": 879,
+   "lifetime": null,
+   "mass": 6,
+   "range": 1.6,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "miner": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 76,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.8,
+   "flying": false,
+   "game_name": "Miner",
+   "hit_speed": 1.3,
+   "hitpoints": 473,
+   "lifetime": null,
+   "mass": 6,
+   "range": 1.2,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 90,
+   "targets_only_buildings": false
+  },
+  "minion": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 42,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.7,
+   "flying": true,
+   "game_name": "Minion",
+   "hit_speed": 1.2,
+   "hitpoints": 90,
+   "lifetime": null,
+   "mass": 2,
+   "range": 2.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 90,
+   "targets_only_buildings": false
+  },
+  "minipekka": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.45,
+   "damage": 295,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.1,
+   "flying": false,
+   "game_name": "MiniPekka",
+   "hit_speed": 1.6,
+   "hitpoints": 543,
+   "lifetime": null,
+   "mass": 4,
+   "range": 0.8,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 90,
+   "targets_only_buildings": false
+  },
+  "monk": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 55,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.6,
+   "flying": false,
+   "game_name": "Monk",
+   "hit_speed": 0.8,
+   "hitpoints": 865,
+   "lifetime": null,
+   "mass": 6,
+   "range": 1.2,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "mortar": {
+   "area_damage_radius": 2.0,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": true,
+   "collision_radius": 0.6,
+   "damage": 104,
+   "death_damage": null,
+   "deploy_time": 3.5,
+   "first_hit": 3.7,
+   "flying": false,
+   "game_name": "Mortar",
+   "hit_speed": 4.7,
+   "hitpoints": 535,
+   "lifetime": 30.0,
+   "mass": null,
+   "range": 11.5,
+   "shield_hitpoints": null,
+   "sight_range": 11.5,
+   "speed": null,
+   "targets_only_buildings": false
+  },
+  "mother_witch": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 52,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.7,
+   "flying": false,
+   "game_name": "WitchMother",
+   "hit_speed": 1.0,
+   "hitpoints": 207,
+   "lifetime": null,
+   "mass": 6,
+   "range": 5.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "musketeer": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 85,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.3,
+   "flying": false,
+   "game_name": "Musketeer",
+   "hit_speed": 1.0,
+   "hitpoints": 282,
+   "lifetime": null,
+   "mass": 5,
+   "range": 6.0,
+   "shield_hitpoints": null,
+   "sight_range": 6.0,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "night_witch": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 123,
+   "death_damage": null,
+   "death_spawns": {
+    "count": 1,
+    "game_name": "Bat",
+    "unit": "bat"
+   },
+   "deploy_time": 1.0,
+   "first_hit": 0.55,
+   "flying": false,
+   "game_name": "DarkWitch",
+   "hit_speed": 1.3,
+   "hitpoints": 354,
+   "lifetime": null,
+   "mass": 4,
+   "range": 1.6,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "spawns": {
+    "count": 2,
+    "game_name": "Bat",
+    "interval": 5.0,
+    "unit": "bat"
+   },
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "pekka": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.75,
+   "damage": 329,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.3,
+   "flying": false,
+   "game_name": "Pekka",
+   "hit_speed": 1.8,
+   "hitpoints": 1469,
+   "lifetime": null,
+   "mass": 18,
+   "range": 1.2,
+   "shield_hitpoints": null,
+   "sight_range": 5.0,
+   "speed": 45,
+   "targets_only_buildings": false
+  },
+  "phoenix_egg": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.6,
+   "damage": null,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.5,
+   "flying": false,
+   "game_name": "PhoenixEgg",
+   "hit_speed": 1.0,
+   "hitpoints": 124,
+   "lifetime": null,
+   "mass": 3,
+   "range": 5.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "spawns": {
+    "count": 1,
+    "game_name": "PhoenixNoRespawn",
+    "interval": 4.3,
+    "unit": null
+   },
+   "speed": 40,
+   "targets_only_buildings": false
+  },
+  "phoenix_large": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 85,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.4,
+   "flying": true,
+   "game_name": "Phoenix",
+   "hit_speed": 1.0,
+   "hitpoints": 411,
+   "lifetime": null,
+   "mass": 2,
+   "range": 1.6,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "phoenix_small": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 85,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.4,
+   "flying": true,
+   "game_name": "Phoenix",
+   "hit_speed": 1.0,
+   "hitpoints": 411,
+   "lifetime": null,
+   "mass": 2,
+   "range": 1.6,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "prince": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.6,
+   "damage": 153,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.9,
+   "flying": false,
+   "game_name": "Prince",
+   "hit_speed": 1.4,
+   "hitpoints": 750,
+   "lifetime": null,
+   "mass": 6,
+   "range": 1.6,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "princess": {
+   "area_damage_radius": 2.5,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": null,
+   "death_damage": null,
+   "deploy_time": 1.2,
+   "first_hit": 2.7,
+   "flying": false,
+   "game_name": "Princess",
+   "hit_speed": 3.0,
+   "hitpoints": 102,
+   "lifetime": null,
+   "mass": 3,
+   "range": 9.0,
+   "shield_hitpoints": null,
+   "sight_range": 9.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "ram_rider": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.6,
+   "damage": 106,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.1,
+   "flying": false,
+   "game_name": "Ram",
+   "hit_speed": 1.7,
+   "hitpoints": 690,
+   "lifetime": null,
+   "mass": 4,
+   "range": 0.8,
+   "shield_hitpoints": null,
+   "sight_range": 7.5,
+   "spawns": {
+    "count": 1,
+    "game_name": "RamRider",
+    "interval": null,
+    "unit": null
+   },
+   "speed": 60,
+   "targets_only_buildings": true
+  },
+  "rascal_boy": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.75,
+   "damage": 85,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.1,
+   "flying": false,
+   "game_name": "RascalBoy",
+   "hit_speed": 1.5,
+   "hitpoints": 716,
+   "lifetime": null,
+   "mass": 10,
+   "range": 0.8,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "rascal_girl": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 49,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.5,
+   "flying": false,
+   "game_name": "RascalGirl",
+   "hit_speed": 1.0,
+   "hitpoints": 102,
+   "lifetime": null,
+   "mass": 2,
+   "range": 5.0,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "royal_ghost": {
+   "area_damage_radius": 1.0,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.6,
+   "damage": 103,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.2,
+   "flying": false,
+   "game_name": "Ghost",
+   "hit_speed": 1.8,
+   "hitpoints": 450,
+   "lifetime": null,
+   "mass": 3,
+   "range": 1.2,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 90,
+   "targets_only_buildings": false
+  },
+  "royal_giant": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.75,
+   "damage": 120,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.9,
+   "flying": false,
+   "game_name": "RoyalGiant",
+   "hit_speed": 1.8,
+   "hitpoints": 1236,
+   "lifetime": null,
+   "mass": 18,
+   "range": 5.0,
+   "shield_hitpoints": null,
+   "sight_range": 7.5,
+   "speed": 45,
+   "targets_only_buildings": true
+  },
+  "royal_hog": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.6,
+   "damage": 29,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.8,
+   "flying": false,
+   "game_name": "RoyalHog",
+   "hit_speed": 1.2,
+   "hitpoints": 327,
+   "lifetime": null,
+   "mass": 2,
+   "range": 0.75,
+   "shield_hitpoints": null,
+   "sight_range": 9.5,
+   "speed": 120,
+   "targets_only_buildings": true
+  },
+  "royal_recruit": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 52,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.8,
+   "flying": false,
+   "game_name": "Recruit",
+   "hit_speed": 1.3,
+   "hitpoints": 214,
+   "lifetime": null,
+   "mass": 5,
+   "range": 1.6,
+   "shield_hitpoints": 94,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "rune_giant": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.75,
+   "damage": 60,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.0,
+   "flying": false,
+   "game_name": null,
+   "hit_speed": 1.5,
+   "hitpoints": 1100,
+   "lifetime": null,
+   "mass": 18,
+   "range": 1.2,
+   "shield_hitpoints": null,
+   "sight_range": 7.5,
+   "speed": 60,
+   "targets_only_buildings": true
+  },
+  "skeleton": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 32,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.6,
+   "flying": false,
+   "game_name": "Skeleton",
+   "hit_speed": 1.1,
+   "hitpoints": 32,
+   "lifetime": null,
+   "mass": 1,
+   "range": 0.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 90,
+   "targets_only_buildings": false
+  },
+  "skeleton_barrel": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": null,
+   "death_damage": null,
+   "death_spawns": {
+    "count": 1,
+    "game_name": "SkeletonContainerNew",
+    "unit": null
+   },
+   "deploy_time": 1.0,
+   "first_hit": 0.2,
+   "flying": true,
+   "game_name": "SkeletonBalloon",
+   "hit_speed": 0.3,
+   "hitpoints": 208,
+   "lifetime": null,
+   "mass": 7,
+   "range": 0.35,
+   "shield_hitpoints": null,
+   "sight_range": 7.7,
+   "speed": 90,
+   "targets_only_buildings": true
+  },
+  "skeleton_dragon": {
+   "area_damage_radius": 1.5,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.9,
+   "damage": 59,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.6,
+   "flying": true,
+   "game_name": "SkeletonDragon",
+   "hit_speed": 2.0,
+   "hitpoints": 219,
+   "lifetime": null,
+   "mass": 4,
+   "range": 3.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 90,
+   "targets_only_buildings": false
+  },
+  "skeleton_king": {
+   "area_damage_radius": 1.3,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 1.0,
+   "damage": 80,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.3,
+   "flying": false,
+   "game_name": "SkeletonKing",
+   "hit_speed": 1.6,
+   "hitpoints": 898,
+   "lifetime": null,
+   "mass": 10,
+   "range": 1.2,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "sparky": {
+   "area_damage_radius": 1.8,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 1.0,
+   "damage": 520,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 3.0,
+   "flying": false,
+   "game_name": "ZapMachine",
+   "hit_speed": 4.0,
+   "hitpoints": 567,
+   "lifetime": null,
+   "mass": 18,
+   "range": 5.0,
+   "shield_hitpoints": null,
+   "sight_range": 5.0,
+   "speed": 45,
+   "targets_only_buildings": false
+  },
+  "spear_goblin": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 32,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.1,
+   "flying": false,
+   "game_name": "SpearGoblin",
+   "hit_speed": 1.6,
+   "hitpoints": 52,
+   "lifetime": null,
+   "mass": 1,
+   "range": 5.0,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 120,
+   "targets_only_buildings": false
+  },
+  "spirit_empress": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 125,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.8,
+   "flying": false,
+   "game_name": null,
+   "hit_speed": 1.2,
+   "hitpoints": 438,
+   "lifetime": null,
+   "mass": 5,
+   "range": 1.2,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 90,
+   "targets_only_buildings": false
+  },
+  "spirit_empress_mounted": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.6,
+   "damage": 125,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.9,
+   "flying": true,
+   "game_name": null,
+   "hit_speed": 1.4,
+   "hitpoints": 438,
+   "lifetime": null,
+   "mass": 5,
+   "range": 5.0,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "suspicious_bush": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 0,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.3,
+   "flying": false,
+   "game_name": null,
+   "hit_speed": 0.3,
+   "hitpoints": 32,
+   "lifetime": null,
+   "mass": 2,
+   "range": 1.6,
+   "shield_hitpoints": null,
+   "sight_range": 7.5,
+   "speed": 60,
+   "targets_only_buildings": true
+  },
+  "tesla": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": true,
+   "collision_radius": 0.5,
+   "damage": 86,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.7,
+   "flying": false,
+   "game_name": "Tesla",
+   "hit_speed": 1.1,
+   "hitpoints": 462,
+   "lifetime": 25.0,
+   "mass": null,
+   "range": 5.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": null,
+   "targets_only_buildings": false
+  },
+  "tombstone": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": true,
+   "collision_radius": 1.0,
+   "damage": null,
+   "death_damage": null,
+   "death_spawns": {
+    "count": 4,
+    "game_name": "Skeleton",
+    "unit": "skeleton"
+   },
+   "deploy_time": 1.0,
+   "first_hit": null,
+   "flying": false,
+   "game_name": "Tombstone",
+   "hit_speed": 10.0,
+   "hitpoints": 207,
+   "lifetime": 30.0,
+   "mass": null,
+   "range": null,
+   "shield_hitpoints": null,
+   "sight_range": null,
+   "spawns": {
+    "count": 2,
+    "game_name": "Skeleton",
+    "interval": 3.5,
+    "unit": "skeleton"
+   },
+   "speed": null,
+   "targets_only_buildings": false
+  },
+  "valkyrie": {
+   "area_damage_radius": 2.0,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 104,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.4,
+   "flying": false,
+   "game_name": "Valkyrie",
+   "hit_speed": 1.5,
+   "hitpoints": 745,
+   "lifetime": null,
+   "mass": 5,
+   "range": 1.2,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "wall_breaker": {
+   "area_damage_radius": 1.5,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.4,
+   "damage": 118,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.0,
+   "flying": false,
+   "game_name": "Wallbreaker",
+   "hit_speed": 1.2,
+   "hitpoints": 129,
+   "lifetime": null,
+   "mass": 4,
+   "range": 0.5,
+   "shield_hitpoints": null,
+   "sight_range": 7.0,
+   "speed": 120,
+   "targets_only_buildings": true
+  },
+  "witch": {
+   "area_damage_radius": 1.5,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 53,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.4,
+   "flying": false,
+   "game_name": "Witch",
+   "hit_speed": 1.1,
+   "hitpoints": 328,
+   "lifetime": null,
+   "mass": 8,
+   "range": 5.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "spawns": {
+    "count": 4,
+    "game_name": "Skeleton",
+    "interval": 7.0,
+    "unit": "skeleton"
+   },
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "wizard": {
+   "area_damage_radius": 1.5,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.5,
+   "damage": 119,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 0.9,
+   "flying": false,
+   "game_name": "Wizard",
+   "hit_speed": 1.4,
+   "hitpoints": 295,
+   "lifetime": null,
+   "mass": 5,
+   "range": 5.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.5,
+   "speed": 60,
+   "targets_only_buildings": false
+  },
+  "x_bow": {
+   "area_damage_radius": null,
+   "attacks_air": false,
+   "attacks_ground": true,
+   "building": true,
+   "collision_radius": 0.6,
+   "damage": 24,
+   "death_damage": null,
+   "deploy_time": 3.5,
+   "first_hit": null,
+   "flying": false,
+   "game_name": "Xbow",
+   "hit_speed": 0.4,
+   "hitpoints": 625,
+   "lifetime": 30.0,
+   "mass": null,
+   "range": 11.5,
+   "shield_hitpoints": null,
+   "sight_range": 11.5,
+   "speed": null,
+   "targets_only_buildings": false
+  },
+  "zappy": {
+   "area_damage_radius": null,
+   "attacks_air": true,
+   "attacks_ground": true,
+   "building": false,
+   "collision_radius": 0.6,
+   "damage": 46,
+   "death_damage": null,
+   "deploy_time": 1.0,
+   "first_hit": 1.5,
+   "flying": false,
+   "game_name": "MiniZapMachine",
+   "hit_speed": 2.3,
+   "hitpoints": 207,
+   "lifetime": null,
+   "mass": 4,
+   "range": 4.5,
+   "shield_hitpoints": null,
+   "sight_range": 5.0,
+   "speed": 60,
+   "targets_only_buildings": false
+  }
+ }
+}

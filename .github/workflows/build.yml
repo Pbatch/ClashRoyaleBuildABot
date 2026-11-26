@@ -1,12 +1,13 @@
-name: Build
+name: Install check
 
 on:
-  pull_request:
   push:
+    branches: [main]
+  pull_request:
   workflow_dispatch:
 
 jobs:
-  build:
+  install-check:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -24,13 +25,7 @@ jobs:
       run: uv python install ${{ matrix.python-version }}
 
     - name: Install dependencies
-      run: uv sync --extra cpu
+      run: uv sync
 
     - name: Verify installation
       run: uv pip check
-
-    - name: Clean up
-      run: |
-        rm -rf build
-        rm -rf *.egg-info
-        rm -rf dist

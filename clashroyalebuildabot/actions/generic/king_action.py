@@ -1,6 +1,7 @@
 import math
 
 from clashroyalebuildabot.actions.generic.action import Action
+from clashroyalebuildabot.game.state import State
 
 
 class KingAction(Action):
@@ -8,7 +9,7 @@ class KingAction(Action):
     Play the card behind the king, on the side of the closest enemy
     """
 
-    def calculate_score(self, state):
+    def calculate_score(self, state: State) -> list[float]:
         if (self.tile_x, self.tile_y) not in {(8, 0), (9, 0)}:
             return [0]
 

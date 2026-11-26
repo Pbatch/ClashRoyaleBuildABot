@@ -1,22 +1,20 @@
+import os
+
 import pytest
 
-from clashroyalebuildabot.namespaces import Screens, State
-from clashroyalebuildabot.namespaces.numbers import NumberDetection, Numbers
-from clashroyalebuildabot.namespaces.units import (
+from clashroyalebuildabot.config import Config, load_config
+from clashroyalebuildabot.game import ScreenName, State
+from clashroyalebuildabot.game.timer import Timer
+from clashroyalebuildabot.game.towers import Tower, Towers
+from clashroyalebuildabot.game.units import (
     Position,
     UnitDetection,
     Units,
 )
 
-_BBOX = (0, 0, 0, 0)
-
-
-def _number(value):
-    return NumberDetection(_BBOX, value)
-
 
 def make_unit(tile_x, tile_y, unit=Units.KNIGHT):
-    return UnitDetection(unit, Position(_BBOX, 1.0, tile_x, tile_y))
+    return UnitDetection(unit, Position(1.0, tile_x, tile_y))
 
 
 def make_state(
@@ -30,19 +28,20 @@ def make_state(
     right_ally_hp=1.0,
     cards=(),
     ready=(),
-    screen=Screens.IN_GAME,
+    screen=ScreenName.IN_GAME,
 ):
-    numbers = Numbers(
-        left_enemy_princess_hp=_number(left_enemy_hp),
-        right_enemy_princess_hp=_number(right_enemy_hp),
-        left_ally_princess_hp=_number(left_ally_hp),
-        right_ally_princess_hp=_number(right_ally_hp),
-        elixir=_number(elixir),
+    towers = Towers(
+        left_enemy_princess=Tower(hp=left_enemy_hp),
+        right_enemy_princess=Tower(hp=right_enemy_hp),
+        left_ally_princess=Tower(hp=left_ally_hp),
+        right_ally_princess=Tower(hp=right_ally_hp),
     )
     return State(
         allies=list(allies),
         enemies=list(enemies),
-        numbers=numbers,
+        elixir=elixir,
+        towers=towers,
+        timer=Timer(),
         cards=list(cards),
         ready=list(ready),
         screen=screen,
@@ -57,3 +56,8 @@ def state_factory():
 @pytest.fixture
 def unit_factory():
     return make_unit
+
+
+def default_config() -> Config:
+    """The shipped default settings, ignoring any local config.yaml."""
+    return load_config(user_config_path=os.devnull + ".missing")

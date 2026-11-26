@@ -1,6 +1,6 @@
 import pytest
 
-from clashroyalebuildabot.emulator.emulator import parse_wm_size
+from clashroyalebuildabot.emulator import parse_wm_size
 
 
 def test_physical_size():
@@ -13,5 +13,5 @@ def test_override_wins():
 
 
 def test_unreadable_output():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Can't read the screen size"):
         parse_wm_size("error: closed")

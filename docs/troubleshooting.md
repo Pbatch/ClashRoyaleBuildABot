@@ -4,23 +4,19 @@
 Unknown error, please create an issue.
 
 ### Error E001
-A required import is missing. Install the dependencies by running `uv sync --extra cpu` (or `uv sync --extra gpu`) in the project folder. Also, make sure that you're using the venv [as described in the setup guide](bot-installation.md#step-4-create-a-virtual-environment).
+A required import is missing. Install the dependencies by running `uv sync` in the project folder. Also, make sure that you're using the venv [as described in the setup guide](bot-installation.md#step-4-create-a-virtual-environment).
 
 
 ### Error E002
-Parsing of config file failed. Your settings are in `config.yaml` in the project folder: check it's valid YAML and that each setting is in the right section, as in [the defaults](../clashroyalebuildabot/default_config.yaml). To go back to the default settings, delete your `config.yaml`.
+Parsing of config file failed. Your settings are in `config.yaml` in the project folder. If the error lists settings, fix each one it names: an unknown setting is usually misspelt or in the wrong section, and the others have a value of the wrong kind (for example text where a number should be). Otherwise, check the file is valid YAML. Compare it with [the defaults](https://github.com/Pbatch/ClashRoyaleBuildABot/blob/main/clashroyalebuildabot/default_config.yaml). To go back to the default settings, delete your `config.yaml`.
 
 
 ### Error E003
 Bot crashed during its runtime with an unknown error. Please create an issue.
 
 
-### Error E004
-GUI couldn't initialize. If you see this error despite not having modified files in the `/gui` folder, please create an issue.
-
-
 ### Error E005
-Strategy definition error: some part of the bot's strategy has been misconfigured (actions, cards, etc.). Check that you've listed exactly 8 actions in `main.py`, one for each card in your deck, and that each card has an image in `clashroyalebuildabot/images/cards`. See [the bot development tutorial](bot-development.md) for more details.
+Strategy definition error: some part of the bot's strategy has been misconfigured (actions, cards, etc.). Check that you've listed exactly 8 actions in `main.py`, one for each card in your deck, and that each card has an embedding in `clashroyalebuildabot/models/card_embeddings.npz` (a card the game added recently may not have one yet). See [the bot development tutorial](bot-development.md) for more details.
 
 Also, don't forget that each Action class must have a CARD attribute:
 ```
@@ -30,7 +26,7 @@ class ArchersAction(Action):
 
 
 ### Error E006
-Error while connecting to the ADB device: Make sure to have ADB enabled on your device/emulator, and that your computer recognizes it by running `platform-tools\adb.exe devices -l` (Windows) or `platform-tools/adb devices -l` (macOS / Linux) in the project folder, and checking that your device is present in the displayed list. The bot downloads this copy of ADB the first time it starts.
+Error while connecting to the ADB device: Make sure to have ADB enabled on your device/emulator, and that your computer recognizes it by running `platform-tools/adb devices -l` in the project folder, and checking that your device is present in the displayed list. This is the bot's own copy of ADB, installed during [setup](bot-installation.md#step-7-run-setup).
 
 
 ### Error E007
@@ -46,4 +42,13 @@ Couldn't save your settings to `config.yaml` in the project folder. Check that t
 
 
 ### Error E010
-The bot couldn't reach the OneJev screen detector. Start its server in another terminal before starting the bot (see [Bot Installation](bot-installation.md#step-7-start-the-screen-detector)), and check that the **Server URL** under Screen Detector in the Settings tab (`screen_detector.base_url` in `config.yaml`) matches its address (`http://localhost:8000` by default).
+No longer used. Older versions of the bot raised it when they couldn't reach the vision model server they read the screen with; the bot no longer has one.
+
+### Error E011
+The bot's copy of ADB isn't installed, and the bot couldn't install it itself; the error says why (usually no internet). Run `uv run python -m clashroyalebuildabot.install` in the project folder (see [Bot Installation](bot-installation.md#step-7-run-setup)). It downloads ADB into `platform-tools/`.
+
+If you also have another `adb` installed, for example from your package manager or Android Studio, don't run it while the bot is running: two different versions of ADB keep restarting each other's server, which drops the bot's connection.
+
+
+### Error E012
+No longer used. Older versions of the bot raised it when the vision model server they started didn't come up; the bot no longer has one.

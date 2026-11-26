@@ -15,6 +15,7 @@ from clashroyalebuildabot.actions import (
     WitchAction,
 )
 from clashroyalebuildabot.utils.error_handling import WikifiedError
+from tests.conftest import default_config
 
 ACTIONS = [
     ArchersAction,
@@ -29,16 +30,12 @@ ACTIONS = [
 
 
 class FakeEmulator:
-    instances: list["FakeEmulator"] = []
-
-    def __init__(self, device_serial):
-        self.device_serial = device_serial
+    def __init__(self):
         self.closed = False
-        FakeEmulator.instances.append(self)
 
     def take_screenshot(self):
         time.sleep(0.01)
-        return None
+        return
 
     def load_deck(self, cards):
         raise RuntimeError("deck link failed")
@@ -47,34 +44,38 @@ class FakeEmulator:
         self.closed = True
 
 
-class FakeDetector:
-    def __init__(self, cards, screen_config=None):
-        pass
+class FakeStateReader:
+    def run(self, image):
+        return None
 
     def close(self):
         pass
 
 
 class FakeVisualizer:
-    def __init__(self, **kwargs):
+    def run(self, image, state):
         pass
 
 
 def make_config(load_deck=False):
-    return {
-        "bot": {"auto_start_game": False, "load_deck": load_deck},
-        "adb": {"device_serial": "test-device"},
-        "visuals": {},
-        "ingame": {"play_action": 1},
-    }
+    config = default_config()
+    config.bot.auto_start_game = False
+    config.bot.load_deck = load_deck
+    config.adb.device_serial = "test-device"
+    config.ingame.play_action = 1
+    return config
 
 
-@pytest.fixture(autouse=True)
-def fakes(monkeypatch):
-    FakeEmulator.instances = []
-    monkeypatch.setattr(bot_module, "Emulator", FakeEmulator)
-    monkeypatch.setattr(bot_module, "Detector", FakeDetector)
-    monkeypatch.setattr(bot_module, "Visualizer", FakeVisualizer)
+def make_bot(device, config=None, state_reader=None, visualizer=None):
+    """A bot on ``device``, with a fake state reader and visualizer unless
+    others are given."""
+    return bot_module.Bot(
+        ACTIONS,
+        config or make_config(),
+        device=device,
+        state_reader=state_reader or FakeStateReader(),
+        visualizer=visualizer or FakeVisualizer(),
+    )
 
 
 def run_in_thread(bot):
@@ -84,18 +85,19 @@ def run_in_thread(bot):
 
 
 def test_stop_ends_run_and_closes_emulator():
-    bot = bot_module.Bot(ACTIONS, make_config())
+    emulator = FakeEmulator()
+    bot = make_bot(emulator)
     thread = run_in_thread(bot)
 
     bot.stop()
     thread.join(timeout=2)
 
     assert not thread.is_alive()
-    assert FakeEmulator.instances[0].closed
+    assert emulator.closed
 
 
 def test_stop_interrupts_a_long_wait():
-    bot = bot_module.Bot(ACTIONS, make_config())
+    bot = make_bot(FakeEmulator())
     thread = threading.Thread(
         target=bot._log_and_wait, args=("Waiting", 30), daemon=True
     )
@@ -108,7 +110,7 @@ def test_stop_interrupts_a_long_wait():
 
 
 def test_paused_bot_does_not_step(monkeypatch):
-    bot = bot_module.Bot(ACTIONS, make_config())
+    bot = make_bot(FakeEmulator())
     steps = []
     monkeypatch.setattr(bot, "step", lambda state: steps.append(state))
 
@@ -125,7 +127,7 @@ def test_paused_bot_does_not_step(monkeypatch):
 
 
 def test_toggle_pause():
-    bot = bot_module.Bot(ACTIONS, make_config())
+    bot = make_bot(FakeEmulator())
     assert not bot.is_paused
     bot.toggle_pause()
     assert bot.is_paused
@@ -134,20 +136,22 @@ def test_toggle_pause():
 
 
 def test_failed_setup_closes_emulator():
+    emulator = FakeEmulator()
     with pytest.raises(RuntimeError, match="deck link failed"):
-        bot_module.Bot(ACTIONS, make_config(load_deck=True))
+        make_bot(emulator, make_config(load_deck=True))
 
-    assert len(FakeEmulator.instances) == 1
-    assert FakeEmulator.instances[0].closed
+    assert emulator.closed
 
 
 def test_wrong_deck_size_fails_before_creating_the_emulator(monkeypatch):
-    # Use the real Detector, which owns the deck-size check.
-    from clashroyalebuildabot.detectors.detector import Detector
-
-    monkeypatch.setattr(bot_module, "Detector", Detector)
+    # The bot's own StateReader owns the deck-size check, and must fail before
+    # the bot makes its own emulator.
+    created = []
+    monkeypatch.setattr(
+        bot_module, "Emulator", lambda **kwargs: created.append(kwargs)
+    )
 
     with pytest.raises(WikifiedError, match="E005"):
-        bot_module.Bot(ACTIONS[:7], make_config())
+        bot_module.Bot(ACTIONS[:7], make_config(), visualizer=FakeVisualizer())
 
-    assert FakeEmulator.instances == []
+    assert created == []

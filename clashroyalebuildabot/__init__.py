@@ -1,31 +1,34 @@
 # Exports for clashroyalebuildabot
 from . import constants
 from .bot import Bot
+from .bot.visualizer import Visualizer
 from .detectors import (
     CardDetector,
-    Detector,
-    NumberDetector,
-    OnnxDetector,
+    ElixirReader,
     ScreenDetector,
+    StateReader,
+    TimerReader,
+    TowerHPReader,
     UnitDetector,
 )
 from .emulator import Emulator
-from .namespaces import Cards, Screens, State, Units
-from .visualizer import Visualizer
+from .game import Cards, ScreenName, Screens, State, Units
 
 __all__ = [
-    "constants",
-    "Visualizer",
-    "Cards",
-    "Screens",
-    "Units",
-    "State",
-    "Detector",
-    "OnnxDetector",
-    "ScreenDetector",
-    "NumberDetector",
-    "UnitDetector",
-    "CardDetector",
-    "Emulator",
     "Bot",
+    "CardDetector",
+    "Cards",
+    "ElixirReader",
+    "Emulator",
+    "ScreenDetector",
+    "ScreenName",
+    "Screens",
+    "State",
+    "StateReader",
+    "TimerReader",
+    "TowerHPReader",
+    "UnitDetector",
+    "Units",
+    "Visualizer",
+    "constants",
 ]

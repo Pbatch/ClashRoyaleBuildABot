@@ -1,6 +1,7 @@
 import math
 
 from clashroyalebuildabot.actions.generic.action import Action
+from clashroyalebuildabot.game.state import State
 
 
 class OverheadAction(Action):
@@ -8,8 +9,9 @@ class OverheadAction(Action):
     Play the card directly on top of enemy units
     """
 
-    def calculate_score(self, state):
-        score = [0.5] if state.numbers.elixir.number == 10 else [0]
+    def calculate_score(self, state: State) -> list[float]:
+        score: list[float] = [0.5] if state.elixir == 10 else [0]
+
         for det in state.enemies:
             distance = math.hypot(
                 det.position.tile_x - self.tile_x,

@@ -1,7 +1,9 @@
 import math
+from typing import ClassVar
 
 from clashroyalebuildabot.actions.generic.action import Action
-from clashroyalebuildabot.namespaces.units import Units
+from clashroyalebuildabot.game.state import State
+from clashroyalebuildabot.game.units import Unit, Units
 
 
 class SpellAction(Action):
@@ -11,9 +13,9 @@ class SpellAction(Action):
 
     RADIUS = 1
     MIN_SCORE = 5
-    UNIT_TO_SCORE = {Units.SKELETON: 1}
+    UNIT_TO_SCORE: ClassVar[dict[Unit, int]] = {Units.SKELETON: 1}
 
-    def calculate_score(self, state):
+    def calculate_score(self, state: State) -> list[float]:
         hit_score = 0
         max_distance = float("inf")
         for det in state.enemies:

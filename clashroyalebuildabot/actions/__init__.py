@@ -16,12 +16,12 @@ from .zap_action import ZapAction
 __all__ = [
     "ArchersAction",
     "ArrowsAction",
+    "BabyDragonAction",
     "BatsAction",
     "CannonAction",
     "FireballAction",
     "GiantAction",
     "GoblinBarrelAction",
-    "BabyDragonAction",
     "KnightAction",
     "MinionsAction",
     "MinipekkaAction",

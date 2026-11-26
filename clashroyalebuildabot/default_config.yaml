@@ -16,13 +16,20 @@ bot:
   load_deck: False
   auto_start_game: False
 
+  # Who decides which cards to play in a battle.
+  # "builtin": the bot's own scoring of each card's Action.
+  # "external": a client of the HTTP API, through POST /api/play. The bot
+  # still reads the screen and gets through the menus, but plays nothing
+  # unless asked. See docs/headless-and-api.md.
+  policy: "builtin"
+
 adb:
   # The serial number of your device
   # Use adb devices to obtain it
   device_serial: emulator-5554
 
 visuals:
-  # show_images displays the bot's current view in a GUI.
+  # show_images annotates each frame for /api/frames and /api/screenshot.jpg.
   # save_images saves the images seen by the bot.
   # save_labels saves the images along with the labels and the bot's perspective.
   save_labels: False
@@ -30,19 +37,8 @@ visuals:
   show_images: False
 
 ingame:
-  # The delay between actions.
-  # The default is 1. For faster action execution on high-performance PCs, you can set this to 0.5.
-  # For lower-performance PCs, consider using 1.25 to 1.5.
+  # After playing a card, the bot waits until the screen shows it played (it
+  # leaves the hand, or elixir drops) before playing another, so it doesn't
+  # play the same card twice. This is the longest it waits, in seconds, if
+  # the screen never shows it, e.g. when the tap missed.
   play_action: 1
-
-screen_detector:
-  # The bot recognises the lobby, battle and end-of-game screens with OneJev,
-  # a small vision model. Start its server before the bot (needs an NVIDIA GPU):
-  #   flide serve --model OmniJev/OneJev1.6-0.8B --port 8000
-  base_url: http://localhost:8000
-  # Treat answers below this probability as an unknown screen.
-  min_confidence: 0.5
-  # Seconds between checks, and how long an answer stays valid.
-  interval: 1.0
-  max_age: 5.0
-  timeout: 10.0
