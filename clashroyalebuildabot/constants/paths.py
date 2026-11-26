@@ -15,6 +15,9 @@ MODELS_DIR = os.path.join(SRC_DIR, "models")
 GAME_DATA_PATH = os.path.join(SRC_DIR, "data", "game_data.json")
 # The browser UI the API serves at /.
 WEB_UI_PATH = os.path.join(SRC_DIR, "web", "index.html")
+# The screen server the bot runs on the device, built from jpeg_server/ by
+# jpeg_server/build.sh.
+JPEG_SERVER_PATH = os.path.join(SRC_DIR, "data", "jpeg-server.jar")
 
 # Shipped in git, in the project folder: only the GUIs use it, so it stays
 # out of the installed package.

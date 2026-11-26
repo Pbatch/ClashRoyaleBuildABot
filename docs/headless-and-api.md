@@ -137,7 +137,7 @@ The bot can leave the decisions to another program: a script, a bot of your own 
 | `GET /api/actions` | The cards you can play right now, with every tile each can go on, or why nothing can be played. |
 | `POST /api/play` | Play a card. Waits until the bot has tapped it, then returns. |
 | `GET /api/screenshot.jpg` | The latest annotated screenshot, as a JPEG, while `visuals.show_images` is on. `404` until there is one. |
-| `/api/states` (WebSocket) | Every frame's state as it's read, the same as `GET /api/state` returns. A slow connection skips to the newest. |
+| `/api/states` (WebSocket) | Every frame's state as it's read, the same as `GET /api/state` returns: up to 10 a second in a battle, and 2 a second outside one. A slow connection skips to the newest. |
 
 Every request is listed, with its exact JSON, at `http://127.0.0.1:8000/docs`. The schema is at `/openapi.json`, if you want to generate a client from it.
 

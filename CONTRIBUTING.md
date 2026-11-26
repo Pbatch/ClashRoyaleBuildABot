@@ -15,7 +15,7 @@ and you can get started.
 
 ## Setting up
 
-Follow the [Bot Installation guide](docs/bot-installation.md) to clone the repository, then install the dev dependencies and the pre-commit hooks:
+Follow the [Bot Installation guide](https://pbatch.github.io/ClashRoyaleBuildABot/bot-installation/) to clone the repository, then install the dev dependencies and the pre-commit hooks:
 
 ```bash
 uv sync --extra dev

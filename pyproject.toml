@@ -25,7 +25,6 @@ dependencies = [
     "loguru==0.8.0",
     "PyYAML==6.0.3",
     "requests==2.34.2",
-    "av==19.0.2",
     "tqdm==4.70.1",
     "pydantic==2.12.5",
     # Runs on the CPU as it is. The gpu extra adds the NVIDIA libraries it

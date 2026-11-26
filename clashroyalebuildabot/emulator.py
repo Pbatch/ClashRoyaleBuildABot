@@ -1,19 +1,18 @@
-import base64
 import re
 import subprocess
 import threading
 import time
 from collections.abc import Sequence
 
-import av
 import numpy as np
 from loguru import logger
 
-from clashroyalebuildabot.constants.paths import ADB_PATH, APP_DIR
-from clashroyalebuildabot.constants.screenshot import (
-    SCREENSHOT_HEIGHT,
-    SCREENSHOT_WIDTH,
+from clashroyalebuildabot.constants.device_screen import (
+    DISPLAY_DENSITY,
+    DISPLAY_HEIGHT,
+    DISPLAY_WIDTH,
 )
+from clashroyalebuildabot.constants.paths import ADB_PATH, APP_DIR
 from clashroyalebuildabot.game.cards import Card
 from clashroyalebuildabot.install import (
     ADB_VERSION,
@@ -21,97 +20,125 @@ from clashroyalebuildabot.install import (
     adb_up_to_date,
     install_adb,
 )
+from clashroyalebuildabot.jpeg_screen import (
+    DISPLAY_OFF,
+    JpegScreen,
+    ScreenServerError,
+)
 from clashroyalebuildabot.utils.error_handling import WikifiedError
 
 
-def parse_wm_size(output: str) -> tuple[int, int]:
-    """Read the screen size from ``adb shell wm size``.
-
-    With an override set (``wm size 720x1280``) it prints both the physical
-    and the override size; apps render at the override, so that one wins.
-    """
-    sizes = {
-        kind: (int(w), int(h))
-        for kind, w, h in re.findall(r"(\w+) size: (\d+)x(\d+)", output)
-    }
-    if "Override" in sizes:
-        return sizes["Override"]
-    if "Physical" in sizes:
-        return sizes["Physical"]
-    raise ValueError(f"Can't read the screen size from {output!r}")
+def parse_wm_setting(output: str, setting: str) -> tuple[str | None, str]:
+    """(override, physical) from ``adb shell wm size`` or ``wm density``,
+    e.g. (None, "1080x2400") or ("240", "420"). Override is None if there's
+    none."""
+    found = dict(re.findall(rf"(Physical|Override) {setting}: (\S+)", output))
+    if "Physical" not in found:
+        raise ValueError(f"Can't read the screen {setting} from {output!r}")
+    return found.get("Override"), found["Physical"]
 
 
-def recording_size(width: int, height: int) -> tuple[int, int]:
-    """The size the device records at: as small as the bot's screenshots
-    while keeping the screen's shape, so the device doesn't encode and send
-    pixels that would only be thrown away.
-
-    Both sides are multiples of 16, the block size of H.264, since some
-    phones' encoders reject anything else.
-    """
-    scale = SCREENSHOT_WIDTH / width
-    return (
-        _round_to_16(SCREENSHOT_WIDTH),
-        _round_to_16(height * scale),
-    )
-
-
-def _round_to_16(n: float) -> int:
-    return max(16, round(n / 16) * 16)
-
-
-def recording_script(width: int, height: int) -> str:
-    """The shell script that streams the screen as H.264 to stdout.
-
-    screenrecord stops after at most 3 minutes, so it runs in a loop. If the
-    device can't record at the small size, it records at full size instead,
-    and the bot scales the frames down itself. If that fails too, the sleep
-    stops the loop from spinning.
-    """
-    small_w, small_h = recording_size(width, height)
-    record = (
-        "screenrecord --output-format=h264 --time-limit 179 "
-        '--bit-rate "5M" --size "{}x{}" -'
-    )
-    return (
-        "#!/bin/bash\n"
-        "while true; do\n"
-        f"    {record.format(small_w, small_h)} ||\n"
-        f"    {record.format(width, height)} ||\n"
-        "    sleep 1\n"
-        "done\n"
-    )
+# The screen server mirrors the display with a call Android added in 14.
+MIN_SDK = 34
 
 
 class Emulator:
-    # screenrecord only sends a frame when the screen changes, so a quiet
-    # stream usually means a static screen, not a dead one.
-    FRAME_TIMEOUT = 5
-    # The first frame arrives as soon as recording starts.
+    # How long the screen server may go without a picture: before the first
+    # one, and once the bot has had one.
     FIRST_FRAME_TIMEOUT = 15
+    FRAME_TIMEOUT = 5
+    # How often to ask again while the JPEG server has no picture yet, or
+    # the screen is off.
+    JPEG_RETRY_DELAY = 0.05
+    SCREEN_OFF_RETRY_DELAY = 0.5
 
     def __init__(self, device_serial: str) -> None:
         self.device_serial = device_serial
 
-        self.frame_thread = None
-        self.video_process = None
+        # Sends the frames: see jpeg_screen.py.
+        self.screen: JpegScreen | None = None
+        # (setting, value) to put back on close: what the device had before
+        # _set_display changed it, or "reset" for its own.
+        self._display_restore: list[tuple[str, str]] = []
         # A shell on the device that taps are written to, opened on the
         # first tap. Guarded by the lock, as close() may run on another
         # thread.
         self.input_shell: subprocess.Popen | None = None
         self._input_lock = threading.Lock()
         self._closed = threading.Event()
-        self._stream_ended = threading.Event()
-        self._last_frame = None
-        self.frame = None
-        self.codec = av.codec.CodecContext.create("h264", "r")
+        self._last_frame: np.ndarray | None = None
 
         self._check_adb()
         self._restart_server()
         self.device_serial = self._get_valid_device_serial()
-        self.width, self.height = self._get_width_and_height()
-        self._start_recording()
-        self._start_updating_frame()
+        self._check_android_version()
+        try:
+            self._set_display()
+            self._start_screen()
+        except BaseException:
+            # Puts the display back, and stops whatever had started.
+            self.close()
+            raise
+
+    def _set_display(self) -> None:
+        """Set the device's screen to the size and density the bot reads it
+        at, remembering what it had to put back on close. Changing them
+        makes the game reload, so they're left alone if already right."""
+        targets = {
+            "size": f"{DISPLAY_WIDTH}x{DISPLAY_HEIGHT}",
+            "density": str(DISPLAY_DENSITY),
+        }
+        for setting, target in targets.items():
+            output = self._run_command(["shell", "wm", setting])
+            override, physical = parse_wm_setting(output, setting)
+            current = override or physical
+            if current == target:
+                continue
+            self._run_command(["shell", "wm", setting, target])
+            self._display_restore.append((setting, override or "reset"))
+            logger.info(
+                f"Set the device's screen {setting} to {target} while the "
+                f"bot runs (it was {current})."
+            )
+
+    def _restore_display(self) -> None:
+        """Undo _set_display. Never raises: it runs as the bot stops."""
+        restore, self._display_restore = self._display_restore, []
+        for setting, value in reversed(restore):
+            try:
+                self._run_command(["shell", "wm", setting, value])
+            except Exception as e:
+                logger.warning(
+                    f"Couldn't put the device's screen {setting} back "
+                    f"({e}). Run `platform-tools/adb shell wm {setting} "
+                    f"{value}` to do it yourself."
+                )
+
+    def _check_android_version(self) -> None:
+        output = self._run_command(
+            ["shell", "getprop", "ro.build.version.sdk"]
+        )
+        sdk = int(output.strip())
+        if sdk < MIN_SDK:
+            release = self._run_command(
+                ["shell", "getprop", "ro.build.version.release"]
+            ).strip()
+            raise WikifiedError(
+                "013",
+                f"The device runs Android {release} (API {sdk}), but the bot "
+                f"needs Android 14 (API {MIN_SDK}) or newer.",
+            )
+
+    def _start_screen(self) -> None:
+        try:
+            self.screen = self._start_jpeg_screen()
+        except ScreenServerError as e:
+            raise WikifiedError(
+                "008", f"Couldn't start the screen server on the device: {e}"
+            ) from e
+
+    def _start_jpeg_screen(self) -> JpegScreen:
+        return JpegScreen(self.device_serial)
 
     def _get_valid_device_serial(self) -> str:
         try:
@@ -156,19 +183,6 @@ class Emulator:
                 raise WikifiedError(
                     "006", "Could not find a valid device to connect to."
                 ) from adb_error
-
-    def _start_recording(self) -> None:
-        cmd = recording_script(self.width, self.height)
-        cmd = base64.standard_b64encode(cmd.encode("utf-8")).decode("utf-8")
-        cmd = ["echo", cmd, "|", "base64", "-d", "|", "sh"]
-        cmd = " ".join(cmd) + "\n"
-        self.video_process = subprocess.Popen(
-            [ADB_PATH, "-s", self.device_serial, "shell", cmd],
-            stderr=subprocess.DEVNULL,
-            stdout=subprocess.PIPE,
-            stdin=subprocess.DEVNULL,
-            bufsize=0,
-        )
 
     def _check_adb(self) -> None:
         if adb_up_to_date():
@@ -240,85 +254,21 @@ class Emulator:
         )
         self._run_command(["start-server"])
 
-    def _update_frame(self) -> None:
-        try:
-            self._read_frames()
-        finally:
-            self._stream_ended.set()
-            if not self._closed.is_set():
-                logger.error("The video stream from the device stopped.")
-
-    def _read_frames(self) -> None:
-        logger.debug("Starting to update frames...")
-        if self.video_process is None:
-            logger.error("Video process is None")
-            return
-
-        video_stdout = self.video_process.stdout
-        if video_stdout is None:
-            logger.error("Video process stdout is None")
-            return
-
-        for line in iter(video_stdout.readline, b""):
-            try:
-                last_frame = self._get_last_frame(line)
-                if not last_frame:
-                    continue
-
-                image = last_frame.to_ndarray(
-                    width=SCREENSHOT_WIDTH,
-                    height=SCREENSHOT_HEIGHT,
-                    format="rgb24",
-                )
-                self._last_frame = image
-                self.frame = image
-            except Exception as e:
-                logger.error(f"Unexpected error in frame update: {e!s}")
-
-    def _get_last_frame(self, line: bytes) -> av.VideoFrame | None:
-        if not line:
-            return None
-
-        # Every packet must be decoded, even if only the newest frame is
-        # kept: H.264 frames depend on earlier ones, and the first packet
-        # carries the stream headers.
-        frames = []
-        for packet in self.codec.parse(line):
-            frames.extend(self.codec.decode(packet))
-        return frames[-1] if frames else None
-
-    def _start_updating_frame(self) -> None:
-        self.frame_thread = threading.Thread(target=self._update_frame)
-        self.frame_thread.daemon = True
-        self.frame_thread.start()
-
-    def _get_width_and_height(self) -> tuple[int, int]:
-        return parse_wm_size(self._run_command(["shell", "wm", "size"]))
-
     def close(self) -> None:
-        """Stop the screen recording and the frame thread. Safe to call twice."""
+        """Stop the screen server and the input shell, and put the display
+        back. Safe to call twice, and from another thread."""
         if self._closed.is_set():
             return
         self._closed.set()
 
-        if self.video_process is not None:
-            self.video_process.terminate()
-            try:
-                self.video_process.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                self.video_process.kill()
-                self.video_process.wait()
+        # Unblocks a take_screenshot() waiting on it.
+        if self.screen is not None:
+            self.screen.close()
 
         with self._input_lock:
             self._stop_input_shell()
 
-        # Terminating the process closes its stdout, which ends _update_frame.
-        if self.frame_thread is not None:
-            self.frame_thread.join(timeout=5)
-        # Our end of the pipe stays open until closed. Closing it after the
-        # join keeps it from being pulled out from under the reader.
-        if self.video_process is not None and self.video_process.stdout:
-            self.video_process.stdout.close()
+        self._restore_display()
         logger.debug("Emulator closed.")
 
     def stop_game(self) -> None:
@@ -405,41 +355,55 @@ class Emulator:
             shell.wait()
 
     def take_screenshot(self) -> np.ndarray | None:
-        """
-        Wait for the next frame, as a (height, width, 3) RGB array.
+        """The newest frame, as a (height, width, 3) RGB array, from the
+        screen server. If the screen hasn't changed since the last one,
+        that's still the newest. While the screen is off, waits for it to
+        come on.
 
-        If no new frame arrives within FRAME_TIMEOUT, the screen hasn't
-        changed, so the last frame is returned. Returns None once the
-        emulator is closed. Raises WikifiedError if the stream has stopped
-        or the first frame never arrives.
+        Returns None once the emulator is closed. Raises WikifiedError if
+        the connection to the server is lost, or no picture comes.
         """
-        logger.debug("Starting to take screenshot...")
+        screen = self.screen
+        if screen is None:
+            return None
         timeout = (
             self.FRAME_TIMEOUT
             if self._last_frame is not None
             else self.FIRST_FRAME_TIMEOUT
         )
         deadline = time.monotonic() + timeout
-        while self.frame is None:
-            if self._closed.is_set():
-                return None
-            if self._stream_ended.is_set():
+        warned_off = False
+        while not self._closed.is_set():
+            try:
+                frame = screen.frame()
+            except (OSError, EOFError, ScreenServerError) as e:
+                if self._closed.is_set():
+                    return None
                 raise WikifiedError(
-                    "008", "Lost the video stream from the device."
-                )
-            if time.monotonic() >= deadline:
-                if self._last_frame is None:
-                    raise WikifiedError(
-                        "008",
-                        f"No video from the device after {timeout} seconds.",
+                    "008", "Lost the connection to the screen server."
+                ) from e
+            if frame.image is not None:
+                self._last_frame = frame.image
+                return frame.image
+            if frame.status == DISPLAY_OFF:
+                if not warned_off:
+                    logger.warning(
+                        "The device's screen is off. Waiting for it to "
+                        "come on."
                     )
-                logger.debug("No new frame, reusing the last one.")
+                    warned_off = True
+                self._closed.wait(self.SCREEN_OFF_RETRY_DELAY)
+                deadline = time.monotonic() + timeout
+                continue
+            if self._last_frame is not None:
                 return self._last_frame
-            time.sleep(0.01)
-
-        screenshot, self.frame = self.frame, None
-
-        return screenshot
+            if time.monotonic() >= deadline:
+                raise WikifiedError(
+                    "008",
+                    f"No picture from the device after {timeout} seconds.",
+                )
+            self._closed.wait(self.JPEG_RETRY_DELAY)
+        return None
 
     def load_deck(self, cards: Sequence[Card]) -> None:
         id_str = ";".join([str(card.id_) for card in cards])
