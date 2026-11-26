@@ -29,7 +29,7 @@ adb:
   device_serial: emulator-5554
 
 visuals:
-  # show_images displays the bot's current view in a GUI.
+  # show_images annotates each frame for /api/frames and /api/screenshot.jpg.
   # save_images saves the images seen by the bot.
   # save_labels saves the images along with the labels and the bot's perspective.
   save_labels: False

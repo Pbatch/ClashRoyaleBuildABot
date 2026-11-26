@@ -6,7 +6,7 @@ There are two ways to run it:
 
 | Command | What you get |
 |---|---|
-| `uv run python main.py` | The bot's controls, live view, battle state, settings and logs open in your browser. |
+| `uv run python main.py` | The bot's controls, a map of the arena, battle state, settings and logs open in your browser. |
 | `uv run python main.py --headless` | The same, but no browser is opened. Use it on a machine with no screen, or when only scripts control the bot. |
 
 Both start the API at `http://127.0.0.1:8000/api`, and serve the browser UI at `http://127.0.0.1:8000/`. Open `http://127.0.0.1:8000/docs` in a browser for an interactive page that lists every endpoint and lets you try them.
@@ -86,7 +86,7 @@ Two [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)
   {"type": "status", "status": "running"}
   {"type": "log", "time": "2026-11-25T00:41:05.234+00:00", "level": "INFO", "source": "bot:step:186", "message": "New screen state: IN_GAME"}
   ```
-- **`/api/frames`** sends each annotated screenshot, the picture the web UI's live view shows, as a JPEG image. It only sends frames while `visuals.show_images` is on. A slow connection skips frames instead of slowing the bot down.
+- **`/api/frames`** sends each annotated screenshot as a JPEG image. It only sends frames while `visuals.show_images` is on. A slow connection skips frames instead of slowing the bot down.
 
 For example, this prints every event. It uses the `websockets` library, which is installed with the bot:
 ```bash
