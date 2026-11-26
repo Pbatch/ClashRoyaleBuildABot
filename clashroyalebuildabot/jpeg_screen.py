@@ -1,11 +1,31 @@
 """Frames from the device as JPEG images, one per request.
 
-The bot runs a small server on the device (jpeg_server/, shipped built as
-data/jpeg-server.jar). It mirrors the screen at exactly the bot's
-screenshot size and, each time it's asked, JPEG-encodes the newest image.
-So a frame is only as old as it takes to encode and send it (about 50 ms
-over Wi-Fi), the device only encodes the frames the bot uses, and there's
-no video to decode. See jpeg_server/src/JpegServer.java for the protocol.
+The bot runs a small server on the device (data/jpeg-server.jar, started
+with app_process over adb, as scrcpy's server is). It mirrors the screen at
+exactly the bot's screenshot size and, each time it's asked, JPEG-encodes
+the newest image. So a frame is only as old as it takes to encode and send
+it (about 50 ms over Wi-Fi), the device only encodes the frames the bot
+uses, and there's no video to decode. It needs Android 14 or newer.
+
+The server is run as
+``CLASSPATH=<jar> app_process / JpegServer WIDTH HEIGHT QUALITY`` and
+listens on the abstract socket ``jpeg_server``, which adb forwards to a
+local port. The protocol, all big-endian:
+
+- On connect the server sends a header: ``b"JPGS"``, int32 version (1),
+  int32 width and height of the frames, int32 width and height of the
+  device's display.
+- Then the client sends 1-byte requests, each answered in turn:
+
+  - ``b"p"``: int64, the device's ``System.nanoTime()``.
+  - ``b"f"``: int64 capture time (ns, same clock), int64 send time (ns),
+    int32 status: the length of the JPEG that follows, or 0 if there's no
+    new image since the last frame sent (the screen hasn't changed), or -1
+    if the display is off.
+  - Anything else closes the connection.
+
+- The server serves one client at a time, and waits for the next when one
+  disconnects.
 """
 
 import contextlib

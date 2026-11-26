@@ -543,7 +543,9 @@ function drawArena(state) {
     }));
     if (tower && !tower.destroyed) {
       g.append(svg("text", { class: "hp", x: x + w / 2, y: y + h / 2 + 3, "text-anchor": "middle" },
-                   tower.hp != null ? tower.hp.toLocaleString() : "–"));
+                   tower.hp != null ? tower.hp.toLocaleString()
+                   // A king tower shows no HP until it's first hit.
+                   : name.endsWith("king") ? "full" : "–"));
     }
     return g;
   }));
