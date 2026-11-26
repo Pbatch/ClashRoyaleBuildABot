@@ -139,7 +139,7 @@
 
   /* Arena: the 18 x 32 tile grid, drawn from each frame's state */
   .arena { position: relative; padding: 10px; }
-  .arena svg { display: block; width: 100%; height: auto; max-width: 360px; margin: 0 auto; }
+  .arena svg { display: block; width: 100%; height: auto; max-width: 336px; margin: 0 auto; }
   .arena svg text { font-family: var(--mono); fill: var(--muted); font-size: 7px; }
   .arena svg .lbl { fill: var(--text); font-size: 6.5px; font-weight: 500; }
   .arena svg .hp { fill: var(--text); font-size: 8px; font-weight: 600; }
@@ -156,8 +156,21 @@
     background: color-mix(in srgb, var(--panel) 70%, transparent);
   }
   .arena.live .empty { display: none; }
-  .arena-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; justify-content: center; font-size: 12px; color: var(--muted); padding: 0 10px 10px; }
-  .arena-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+  /* Their deck, as far as the bot has seen it, at their end of the arena */
+  .opp-deck { padding: 10px 10px 0; }
+  .opp-deck[hidden] { display: none; }
+  .opp-deck .head { display: flex; align-items: baseline; gap: 8px; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .opp-deck .head .right { margin-left: auto; }
+  .opp-deck ol {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px;
+  }
+  .opp-deck li {
+    background: var(--panel-2); border: 1px solid var(--enemy); border-radius: 4px;
+    padding: 4px 6px; font-size: 12px; line-height: 1.25; font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+  .opp-deck li.unknown { border: 1px dashed var(--border); color: var(--muted); font-weight: 400; }
 
 
   /* Settings */
@@ -224,10 +237,13 @@
 <div id="banner">Lost connection to the bot. Retrying…</div>
 
 <main>
-  <section class="card" id="view">
-    <h2>Arena <span class="right note"><span id="frame-no"></span> <span id="fps"></span></span></h2>
+  <section class="card" id="view" aria-label="Arena">
+    <div class="opp-deck" id="opp-deck" hidden>
+      <div class="head"><span>Their deck</span><span class="right" id="opp-deck-count"></span></div>
+      <ol id="opp-deck-cards" aria-label="The opponent's cards seen this battle"></ol>
+    </div>
     <div class="arena" id="arena">
-      <svg viewBox="0 0 236 466" role="img" aria-label="The arena as an 18 by 32 tile grid, with the towers and the units the bot sees, and the hand, elixir and time left below it">
+      <svg viewBox="0 0 220 452" role="img" aria-label="The arena as an 18 by 32 tile grid, with the towers and the units the bot sees, and the hand, elixir and time left below it">
         <defs>
           <pattern id="grid" width="12" height="12" patternUnits="userSpaceOnUse">
             <path d="M12 0H0V12" fill="none" stroke="var(--border)" stroke-width="0.5"/>
@@ -237,7 +253,7 @@
             <line x1="0" y1="0" x2="0" y2="4" stroke="var(--muted)" stroke-width="1.2"/>
           </pattern>
         </defs>
-        <g transform="translate(14,4)">
+        <g transform="translate(2,2)">
           <rect width="216" height="384" fill="var(--grass)"/>
           <rect width="216" height="384" fill="url(#grid)"/>
           <rect y="180" width="216" height="24" fill="var(--river)"/>
@@ -246,20 +262,11 @@
           <rect class="bridge" x="168" y="180" width="12" height="24"/>
           <g id="arena-towers"></g>
           <g id="arena-units"></g>
-          <g id="arena-hand" transform="translate(0,402)"></g>
-          <g id="arena-elixir" transform="translate(0,448)"></g>
-          <text x="6" y="393" text-anchor="middle">0</text>
-          <text x="210" y="393" text-anchor="middle">17</text>
-          <text x="-3" y="381" text-anchor="end">0</text>
-          <text x="-3" y="9" text-anchor="end">31</text>
+          <g id="arena-hand" transform="translate(0,392)"></g>
+          <g id="arena-elixir" transform="translate(0,438)"></g>
         </g>
       </svg>
       <div class="empty" id="arena-msg">Start the bot to see what it sees.</div>
-    </div>
-    <div class="arena-legend">
-      <span><i style="background:var(--ally)"></i>ally</span>
-      <span><i style="background:var(--enemy)"></i>enemy</span>
-      <span><i style="background:url(#hatch);border:1px solid var(--muted)"></i>destroyed</span>
     </div>
   </section>
 
@@ -399,8 +406,7 @@ function showStatus(next) {
   $("banner").classList.toggle("show", next === "offline");
   showSettingsNote();
   if (!active) {
-    showBattle(null);
-    $("fps").textContent = "";
+    drawArena(null);
   }
 }
 
@@ -508,7 +514,6 @@ const TOWER_TILES = {
   right_ally_princess: [13, 5, 15, 7],
   ally_king: [7, 1, 10, 4],
 };
-let stateTimes = [];
 
 function svg(tag, attrs, text) {
   const node = document.createElementNS(SVG_NS, tag);
@@ -524,6 +529,7 @@ const tileY = (y) => (GRID_H - 1 - y) * TILE;
 function drawArena(state) {
   const battle = state?.battle;
   $("arena").classList.toggle("live", !!battle);
+  drawOpponentDeck(battle);
   if (!battle) {
     $("arena-msg").textContent = !state
       ? (status === "running" || status === "paused" ? "Waiting for the first frame…" : "Start the bot to see what it sees.")
@@ -536,6 +542,7 @@ function drawArena(state) {
     const side = name.includes("enemy") ? "enemy" : "ally";
     const x = tileX(x0), y = tileY(y1), w = (x1 - x0 + 1) * TILE, h = (y1 - y0 + 1) * TILE;
     const g = svg("g", {});
+    g.append(svg("title", {}, `${pretty(name)} tower${tower?.destroyed ? ", destroyed" : ""}`));
     g.append(svg("rect", {
       x, y, width: w, height: h,
       fill: tower?.destroyed ? "url(#hatch)" : "var(--panel)",
@@ -572,6 +579,31 @@ function drawArena(state) {
   $("arena-units").replaceChildren(...tiles, ...labels);
   drawHand(battle, state.pending_play?.hand_index);
   drawElixirAndTime(battle.elixir, battle.timer);
+}
+
+const DECK_SIZE = 8;
+const SPELLS_NOTE = "Worked out from the units they put down, so spells never show up.";
+
+/** Their cards seen so far this battle, in the order they were seen, then
+ *  a "?" for each card not seen yet. */
+function drawOpponentDeck(battle) {
+  $("opp-deck").hidden = !battle;
+  if (!battle) return;
+  const known = battle.opponent_cards;
+  const items = known.map((name) => {
+    const li = el("li", "", pretty(name));
+    li.title = pretty(name);
+    return li;
+  });
+  for (let i = known.length; i < DECK_SIZE; i++) {
+    const li = el("li", "unknown", "?");
+    li.title = `Not seen yet. ${SPELLS_NOTE}`;
+    items.push(li);
+  }
+  $("opp-deck-cards").replaceChildren(...items);
+  const count = $("opp-deck-count");
+  count.textContent = `${known.length} of ${DECK_SIZE} seen`;
+  count.title = SPELLS_NOTE;
 }
 
 /** Under the hand: the elixir count, a 10-segment bar, and the time left. */
@@ -649,26 +681,17 @@ function formatTime(seconds) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
-function showBattle(state) {
-  $("frame-no").textContent = state ? `frame ${state.frame} ·` : "";
-  drawArena(state);
-}
-
 // States come every frame; draw at most once per animation frame.
 let latestState = null;
 let drawQueued = false;
 stream("/states", {
   onMessage(state) {
     latestState = state;
-    const now = performance.now();
-    stateTimes.push(now);
-    stateTimes = stateTimes.filter((t) => now - t < 2000);
-    $("fps").textContent = `${(stateTimes.length / 2).toFixed(1)} fps`;
     if (drawQueued) return;
     drawQueued = true;
     requestAnimationFrame(() => {
       drawQueued = false;
-      if (status === "running" || status === "paused") showBattle(latestState);
+      if (status === "running" || status === "paused") drawArena(latestState);
     });
   },
 });

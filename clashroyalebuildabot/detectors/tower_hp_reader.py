@@ -29,6 +29,23 @@ other pop-ups often cover it for a moment. So:
 
 Until a tower's first reading, its HP is ``UNKNOWN_HP``: treated as
 standing, never as destroyed.
+
+A number that is read can still be wrong: a troop, a spell or a damage
+number over it can make a digit misread or vanish for a frame. Towers can't
+heal, so each tower's readings go through an ``HPFilter``:
+
+- No reading is above a tower's full HP: for its level once that's known,
+  for the highest level until then.
+- HP never goes up. A higher reading is a misread, unless readings stay
+  above for ``RECOVER_SECONDS``: then the HP taken was the misread.
+- A lower reading is only taken once the next reading backs it up (is at
+  or below it), so one stray frame never gets through. A drop of more than
+  ``BIG_DROP`` must be backed up for ``CONFIRM_SECONDS``, since a vanished
+  digit (2030 read as 230) looks just like a big hit, and a troop standing
+  on the number can make the same misread for several frames.
+
+So a tower's HP lags its true HP by a frame (``CONFIRM_SECONDS`` for a big
+hit), and that includes its first reading.
 """
 
 import dataclasses
@@ -64,6 +81,14 @@ RUBBLE_SECONDS = 2.0
 # coloured and falls below it, but then it only counts as rubble if its
 # number is unreadable for RUBBLE_SECONDS too, and it's about to fall.
 BAR_SHARE = 0.03
+# A drop bigger than this, more than any one hit's damage to a tower at most
+# levels, must be backed up by readings for CONFIRM_SECONDS before it's
+# taken.
+BIG_DROP = 1000
+CONFIRM_SECONDS = 0.3
+# Seconds of readings above a tower's HP after which that HP was a misread,
+# and the latest reading is taken instead.
+RECOVER_SECONDS = 1.0
 # Each side's towers, king last.
 SIDES = [
     (f"left_{side}_princess", f"right_{side}_princess", f"{side}_king")
@@ -80,6 +105,57 @@ def bar_share(image: np.ndarray, enemy: bool) -> float:
     else:
         bar = (b > 190) & (r < 130) & (g > 110) & (b - r > 90)
     return float(bar.mean())
+
+
+def full_hp(name: str, level: int) -> float:
+    """The most HP a tower can show: full HP for its level, or for the
+    highest level while its level isn't known."""
+    kind = "king" if name.endswith("king") else "princess"
+    full = game_data.tower_hitpoints(kind, level)
+    return full if full is not None else max(game_data.TOWER_HITPOINTS[kind])
+
+
+class HPFilter:
+    """Turns one tower's readings into an HP that only goes down, and only
+    when the readings agree (see the module docstring)."""
+
+    def __init__(self) -> None:
+        # The lower reading waiting to be backed up, and since when.
+        self._pending: float | None = None
+        self._pending_since = 0.0
+        # Since when every reading has been above the HP, or None.
+        self._above_since: float | None = None
+
+    def update(
+        self, hp: float, reading: float, now: float, cap: float
+    ) -> float:
+        """The tower's HP, given its HP so far and this frame's reading."""
+        if reading > cap:
+            return hp
+        if reading > hp:
+            self._pending = None
+            if self._above_since is None:
+                self._above_since = now
+            elif now - self._above_since >= RECOVER_SECONDS:
+                self._above_since = None
+                return reading
+            return hp
+        self._above_since = None
+        if reading == hp:
+            self._pending = None
+            return hp
+        if self._pending is None or reading > self._pending:
+            # A new drop, or the last one went too low: wait for the next
+            # reading to back this one up.
+            self._pending, self._pending_since = reading, now
+            return hp
+        big = hp != UNKNOWN_HP and hp - self._pending > BIG_DROP
+        if big and now - self._pending_since < CONFIRM_SECONDS:
+            return hp
+        hp = self._pending
+        self._pending = None if reading == hp else reading
+        self._pending_since = now
+        return hp
 
 
 class TowerHPReader:
@@ -107,6 +183,7 @@ class TowerHPReader:
         # Per princess tower, its first reading: full HP, unless the bot
         # started once it was already hit.
         self._first_hp: dict[str, float] = {}
+        self._filters = {name: HPFilter() for name in TOWER_BOXES}
 
     def run(self, image: np.ndarray) -> Towers:
         """Read all six towers in this frame, in one batch, and return
@@ -121,13 +198,14 @@ class TowerHPReader:
             if princess and last.hp == 0:
                 continue  # rubble doesn't come back
             bar = bar_share(tower, "enemy" in name) >= BAR_SHARE
+            if hp is not None and (princess or bar):
+                cap = full_hp(name, last.level)
+                filtered = self._filters[name].update(last.hp, hp, now, cap)
+                changes[name] = Tower(hp=filtered, level=last.level)
+                if princess and filtered != UNKNOWN_HP:
+                    self._first_hp.setdefault(name, filtered)
             if not princess:
-                if hp is not None and bar:
-                    changes[name] = Tower(hp=hp, level=last.level)
                 continue
-            if hp is not None:
-                changes[name] = Tower(hp=hp, level=last.level)
-                self._first_hp.setdefault(name, hp)
             if hp is not None or bar:
                 self._unseen_since[name] = None
                 continue

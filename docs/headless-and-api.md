@@ -6,7 +6,7 @@ There are two ways to run it:
 
 | Command | What you get |
 |---|---|
-| `uv run python main.py` | The bot's controls, a map of the arena, battle state, settings and logs open in your browser. |
+| `uv run python main.py` | The bot's controls, a map of the arena, battle state, the opponent's cards seen so far, settings and logs open in your browser. |
 | `uv run python main.py --headless` | The same, but no browser is opened. Use it on a machine with no screen, or when only scripts control the bot. |
 
 Both start the API at `http://127.0.0.1:8000/api`, and serve the browser UI at `http://127.0.0.1:8000/`. Open `http://127.0.0.1:8000/docs` in a browser for an interactive page that lists every endpoint and lets you try them.
@@ -186,7 +186,8 @@ Troops and buildings can only go on your half, apart from the tiles under your o
     "allies": [],
     "enemies": [
       {"unit": "giant", "tile_x": 4, "tile_y": 20, "conf": 0.81}
-    ]
+    ],
+    "opponent_cards": ["giant", "musketeer"]
   },
   "pending_play": null
 }
@@ -198,6 +199,7 @@ Troops and buildings can only go on your half, apart from the tiles under your o
 - `null` inside `battle` means "not read yet". A tower's `hp` is `null` until its health bar is first read, and a king tower's stays `null` until it's first hit, since it shows no health bar before then. Use `destroyed` to tell whether a tower is standing.
 - A hand card is `playable` when the game shows it in colour (not greyed out) and the elixir read covers its cost. That's when `POST /api/play` will take it.
 - **Detections are noisy.** They come from the unit detector, so units can flicker in and out between frames, and a swarm may be miscounted. `conf` is the detector's confidence, from 0 to 1. Look at a few frames before you react to a single detection.
+- `opponent_cards` are the opponent's cards seen so far this battle, in the order they were first seen. They're worked out from the units the opponent puts down, once a unit has been seen in two separate plays (so a unit misread for a moment doesn't add a card), so spells never show up, and a unit several cards make (a goblin could be Goblins, Goblin Gang, Goblin Barrel or Goblin Drill) only names its card once one of those is known. Enemy units are named in favour of these cards, and once all eight are known, only from them.
 - `elixir_rate` is how fast elixir comes in now: one every 2.8 seconds, then double (1.4 s) from the last minute of regulation time, then triple (0.93 s) for the last minute of overtime. It comes from the timer, so it's `null` until the timer has been read.
 - `pending_play` is the card the bot last tapped, while the screen doesn't yet show it played. Nothing else can be played until it does, or about a second passes (`ingame.play_action`).
 

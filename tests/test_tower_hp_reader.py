@@ -4,8 +4,11 @@ import os
 import numpy as np
 
 from clashroyalebuildabot.detectors.tower_hp_reader import (
+    CONFIRM_SECONDS,
+    RECOVER_SECONDS,
     RUBBLE_SECONDS,
     TOWER_BOXES,
+    HPFilter,
     TowerHPReader,
 )
 from clashroyalebuildabot.game import game_data
@@ -81,9 +84,12 @@ def test_levels_stay_unknown_without_full_princess_towers():
 
 def full_at_start(reader):
     """Show both enemy princess towers at 2030 (level 6's full HP) first,
-    then the battle frame."""
+    then the battle frame: each twice, as a reading is only taken once the
+    next backs it up."""
     image = battle_frame(right_enemy_princess="tower_left_enemy_princess")
     reader.run(image)
+    reader.run(image)
+    reader.run(battle_frame())  # backs up the right one's drop
     return reader.run(battle_frame())
 
 
@@ -104,6 +110,7 @@ def test_full_princess_towers_give_their_sides_level():
 def test_level_comes_only_from_first_readings():
     reader, _ = reader_and_clock()
     reader.run(battle_frame())  # 2030 and 1145 first
+    reader.run(battle_frame())
     image = battle_frame(right_enemy_princess="tower_left_enemy_princess")
     assert reader.run(image).enemy_king.level == UNKNOWN_LEVEL
 
@@ -146,6 +153,7 @@ def test_a_bar_seen_again_restarts_the_wait():
     clock.now = RUBBLE_SECONDS - 0.1
     # Its number shows again, for a moment.
     reader.run(battle_frame(left_ally_princess="tower_right_ally_princess"))
+    reader.run(battle_frame(left_ally_princess="tower_right_ally_princess"))
     clock.now = RUBBLE_SECONDS
     reader.run(battle_frame())  # gone again, but only just
     assert reader.latest().left_ally_princess.hp == 1459
@@ -168,6 +176,7 @@ def test_covered_number_keeps_the_previous_reading():
     # "Not enough elixir" covers the number, but the bar's still there.
     reader, clock = reader_and_clock()
     reader.run(battle_frame())
+    reader.run(battle_frame())
     image = battle_frame(right_ally_princess="tower_covered_bar")
     for t in range(1, 5):
         clock.now = float(t)
@@ -186,6 +195,7 @@ def test_untouched_king_tower_never_reads_as_destroyed():
 
 def test_king_tower_keeps_its_last_reading():
     reader, _ = reader_and_clock()
+    reader.run(battle_frame())
     reader.run(battle_frame())
     assert reader.run(frame()).ally_king.hp == 3803
 
@@ -214,3 +224,58 @@ def test_reset_forgets_readings():
 
 def test_every_tower_has_a_box():
     assert set(TOWER_BOXES) == {name for name, _ in Towers().items()}
+
+
+def filtered(readings, cap=4032.0, start=UNKNOWN_HP, step=0.1):
+    """The HP an HPFilter gives after each reading, one every step
+    seconds."""
+    hp_filter, hp, out = HPFilter(), start, []
+    for i, reading in enumerate(readings):
+        hp = hp_filter.update(hp, reading, i * step, cap)
+        out.append(hp)
+    return out
+
+
+def test_filter_takes_a_reading_once_the_next_backs_it_up():
+    assert filtered([2030, 2030, 1900, 1850, 1850]) == [
+        UNKNOWN_HP,
+        2030,
+        2030,
+        1900,
+        1850,
+    ]
+
+
+def test_filter_ignores_one_stray_low_reading():
+    # A digit lost for one frame.
+    assert filtered([2030, 2030, 203, 2030, 2030])[-1] == 2030
+    assert filtered([2030, 2030, 1500, 2000, 2000])[-1] == 2000
+
+
+def test_filter_never_goes_up():
+    assert filtered([1459, 1459, 1489, 1459, 1499])[-1] == 1459
+
+
+def test_filter_ignores_readings_above_full_hp():
+    assert filtered([20300, 20300, 2030, 2030]) == [
+        UNKNOWN_HP,
+        UNKNOWN_HP,
+        UNKNOWN_HP,
+        2030,
+    ]
+
+
+def test_filter_waits_for_a_big_drop_to_hold():
+    # 3000 to 300 could be a lost digit, even over a few frames.
+    steps = round(CONFIRM_SECONDS / 0.1)
+    out = filtered([3000, 3000] + [300] * (steps + 2))
+    assert out[: steps + 2] == [UNKNOWN_HP] + [3000] * (steps + 1)
+    assert out[-1] == 300
+
+
+def test_filter_recovers_from_a_misread_it_took():
+    steps = round(RECOVER_SECONDS / 0.1)
+    out = filtered([1459, 1459, 1159, 1159] + [1459] * (steps + 1))
+    assert out[3] == 1159
+    assert out[-2] == 1159
+    assert out[-1] == 1459
