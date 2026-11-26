@@ -7,7 +7,10 @@ import time
 import pytest
 
 from clashroyalebuildabot.emulator import Emulator
-from tests.test_emulator_lifecycle import emulator  # noqa: F401 (fixture)
+from tests.test_emulator_lifecycle import (  # noqa: F401 (fixtures)
+    emulator,
+    make_emulator,
+)
 
 # Stand-in for `adb shell -T`: writes each line it reads to a file, and
 # exits at the end of its input, as the device's shell does.

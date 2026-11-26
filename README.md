@@ -30,25 +30,9 @@ Welcome to Clash Royale Build-A-Bot! This project provides an advanced state gen
 
 ## Getting Started with Your Clash Royale Bot 🛠️
 
-To set up the bot, follow the [Quick Start](docs/README.md#quick-start): set up your Android device, install uv and Git, then install and configure the bot. To get a newer version later, see [Updating](docs/bot-installation.md#updating).
+To set up the bot, follow the [Quick Start](https://pbatch.github.io/ClashRoyaleBuildABot/#quick-start): set up your Android device, install uv and Git, then install and configure the bot. To get a newer version later, see [Updating](https://pbatch.github.io/ClashRoyaleBuildABot/bot-installation/#updating).
 
 Need help? Join our [Discord server](https://discord.gg/K4UfbsfcMa).
-
----
-
-## Upcoming Features 🚀
-
-We're continuously working to enhance the bot. Here’s what you can expect in future updates:
-
-- **Improve Error Handling**: [#252](https://github.com/Pbatch/ClashRoyaleBuildABot/issues/252)
-- **Open Chests**: [#250](https://github.com/Pbatch/ClashRoyaleBuildABot/issues/250)
-- **Mobile Tutorial**: Add a tutorial for using the bot on your phone. [#249](https://github.com/Pbatch/ClashRoyaleBuildABot/issues/249)
-- **Unit Detection Counts**: Integrate unit detection counts into the GUI. [#248](https://github.com/Pbatch/ClashRoyaleBuildABot/issues/248)
-- **Deck Swapping**: Ability to swap decks directly from the GUI. [#247](https://github.com/Pbatch/ClashRoyaleBuildABot/issues/247)
-- **Synthetic Data Generation**: Enhance data generation capabilities. [#246](https://github.com/Pbatch/ClashRoyaleBuildABot/issues/246)
-- **HP Detector Fix**: Improve the HP detector functionality. [#245](https://github.com/Pbatch/ClashRoyaleBuildABot/issues/245)
-- **Ignore Regions**: Add ignore regions to the object detector. [#244](https://github.com/Pbatch/ClashRoyaleBuildABot/issues/244)
-- **Tracking Algorithm**: Develop a new tracking algorithm. [#146](https://github.com/Pbatch/ClashRoyaleBuildABot/issues/146)
 
 ---
 

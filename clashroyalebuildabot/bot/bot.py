@@ -41,6 +41,10 @@ WAITING_SCREENS = {ScreenName.UNKNOWN}
 # Seconds between looks at a screen outside a battle. Nothing there needs
 # an answer faster.
 SCREEN_POLL_DELAY = 0.5
+# The most steps a second: the bot reads the screen and decides what to
+# play at most this often, on a fixed schedule.
+MAX_FPS = 10
+STEP_PERIOD = 1 / MAX_FPS
 # How many recent frames' times the bot remembers, to tell how old the
 # frame a client decided on is.
 FRAME_HISTORY = 256
@@ -356,9 +360,10 @@ class Bot:
         return False
 
     def _handle_game_step(self, state: State) -> None:
-        # The bot never sleeps in a battle: it looks again at the next
-        # frame, so it plays as soon as a card is affordable or worth
-        # playing, and as soon as the last card it played has landed.
+        # The bot never waits after a step in a battle: it looks again at
+        # the next tick (MAX_FPS a second), so it plays as soon as a card
+        # is affordable or worth playing, and as soon as the last card it
+        # played has landed.
         if self.policy is None:
             self._serve_request(state)
             return
@@ -430,11 +435,23 @@ class Bot:
     def run(self) -> None:
         """Play until stop() is called. Always closes the emulator on exit."""
         state = None
+        next_step = time.monotonic()
         try:
             while not self._stop_event.is_set():
                 if self.is_paused:
                     self._stop_event.wait(0.1)
                     continue
+
+                if self._stop_event.wait(next_step - time.monotonic()):
+                    break
+                # The next tick on the schedule. If the last step ran over
+                # by a whole tick or more, the schedule starts again from
+                # now, rather than running the missed ticks back to back on
+                # frames that are already old.
+                now = time.monotonic()
+                next_step += STEP_PERIOD
+                if next_step <= now:
+                    next_step = now + STEP_PERIOD
 
                 state = self.step(state)
         except KeyboardInterrupt:

@@ -137,7 +137,7 @@ The bot can leave the decisions to another program: a script, a bot of your own 
 | `GET /api/actions` | The cards you can play right now, with every tile each can go on, or why nothing can be played. |
 | `POST /api/play` | Play a card. Waits until the bot has tapped it, then returns. |
 | `GET /api/screenshot.jpg` | The latest annotated screenshot, as a JPEG, while `visuals.show_images` is on. `404` until there is one. |
-| `/api/states` (WebSocket) | Every frame's state as it's read, the same as `GET /api/state` returns. A slow connection skips to the newest. |
+| `/api/states` (WebSocket) | Every frame's state as it's read, the same as `GET /api/state` returns: up to 10 a second in a battle, and 2 a second outside one. A slow connection skips to the newest. |
 
 Every request is listed, with its exact JSON, at `http://127.0.0.1:8000/docs`. The schema is at `/openapi.json`, if you want to generate a client from it.
 
@@ -249,7 +249,7 @@ $ curl "http://127.0.0.1:8000/api/units/knight?level=11"
 - **Levels** are the game's 1–15 scale (higher levels are accepted too). Each rarity starts higher: rare cards at 3, epic at 6, legendary at 9, champions at 11. A level below a card's rarity's start is a `422`. Without `level`, it's 11, the tournament standard, or the card's lowest level if that's higher. You can't see your opponent's card levels, but they're usually close to their king tower's level.
 - **Distances** (range, radius) are in tiles. **Times** are in seconds. **Speed** is the game's own number: 45 slow, 60 medium, 90 fast, 120 very fast.
 - **Damage** is per hit, or per wave for spells with several (Arrows). Spells that do their damage over time, like Poison and Earthquake, have `null` damage for now.
-- **Tower stats** (`tower_stats` in `/api/meta`) are for level 1 only: towers grow with level by a table the game files the bot reads don't include.
+- **Tower stats** (`tower_stats` in `/api/meta`) are for level 1 only: towers grow with level by a table the game files the bot reads don't include. The bot carries the towers' full HP for levels 1 to 14 itself, to work out each side's level and an untouched king tower's HP.
 
 The numbers come from the game's own files. Stats that grow with level are the level-1 value times the game's multiplier for that level, rounded down. That rule matches all 4,945 per-level values in RoyaleAPI's public data, and the Knight matches its published level-11 stats. The base values are as current as the game files they were exported from, which are newer than RoyaleAPI's data (October 2023), so the two differ wherever a card has been rebalanced since. They're exported by `dev/game_data/export_game_data.py`; after a game update, re-run it to bring them up to date.
 

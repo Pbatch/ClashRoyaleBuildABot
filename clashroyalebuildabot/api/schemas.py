@@ -46,11 +46,14 @@ def _card_name(card: Card | None) -> str | None:
 
 class TowerOut(BaseModel):
     destroyed: bool
-    # Hit points, as written on the health bar: 0 once destroyed. Null when
-    # unknown: not read yet, or a king tower that hasn't been hit, which
-    # shows no health bar until it is.
+    # Hit points, as written on the health bar: 0 once destroyed. A king
+    # tower shows no health bar until it's hit: until then it's its full HP
+    # for its level. Null when unknown: not read yet, or an untouched king
+    # tower whose level isn't known.
     hp: float | None
-    # Null: not read.
+    # From the princess towers' full HP at the start of the battle: a side's
+    # three towers share a level. Null until then, or if the bot started
+    # once they were hit.
     level: int | None
 
     @classmethod

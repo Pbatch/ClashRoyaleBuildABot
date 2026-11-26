@@ -93,3 +93,21 @@ def test_unknown_names():
 )
 def test_elixir_rate_follows_the_timer(timer, expected):
     assert game_data.seconds_per_elixir(timer) == expected
+
+
+def test_tower_level_from_princess_hp():
+    # Seen in real battles: level 9 and 11 princess towers.
+    assert game_data.tower_level(2534) == 9
+    assert game_data.tower_level(3052) == 11
+    assert game_data.tower_level(3051) is None
+    assert game_data.king_hitpoints(11) == 4824
+    assert game_data.king_hitpoints(99) is None
+    # Level 1 matches the game's files.
+    assert (
+        game_data.king_hitpoints(1)
+        == game_data.towers()["king"]["hitpoints_level_1"]
+    )
+    assert (
+        game_data.TOWER_HITPOINTS["princess"][0]
+        == (game_data.towers()["princess"]["hitpoints_level_1"])
+    )

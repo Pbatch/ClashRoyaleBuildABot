@@ -131,6 +131,33 @@ def towers() -> dict[str, Any]:
     return data()["towers"]
 
 
+# Full HP by tower level, from 1. Towers scale by their own table, which the
+# game's files leave out (see towers()), so it's written out here. Level 1
+# matches the files' 2400 and 1400; real battles showed level 9 and 11
+# princess towers at 2534 and 3052. Levels past 14 aren't known yet.
+TOWER_HITPOINTS = {
+    "princess": (1400, 1512, 1624, 1750, 1890, 2030, 2184,
+                 2352, 2534, 2786, 3052, 3346, 3668, 4032),
+    "king": (2400, 2568, 2736, 2904, 3096, 3312, 3528,
+             3768, 4008, 4392, 4824, 5304, 5832, 6408),
+}  # fmt: skip
+
+
+def tower_level(princess_hp: float) -> int | None:
+    """The level of a princess tower at full health, and so of its side's
+    king tower too. None if no level has that HP."""
+    try:
+        return TOWER_HITPOINTS["princess"].index(princess_hp) + 1
+    except ValueError:
+        return None
+
+
+def king_hitpoints(level: int) -> int | None:
+    """A king tower's full HP at a level. None if it isn't known."""
+    table = TOWER_HITPOINTS["king"]
+    return table[level - 1] if 1 <= level <= len(table) else None
+
+
 def elixir() -> dict[str, Any]:
     return data()["elixir"]
 

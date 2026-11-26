@@ -8,6 +8,7 @@ from clashroyalebuildabot.detectors.tower_hp_reader import (
     TOWER_BOXES,
     TowerHPReader,
 )
+from clashroyalebuildabot.game import game_data
 from clashroyalebuildabot.game.towers import (
     UNKNOWN_HP,
     UNKNOWN_LEVEL,
@@ -69,10 +70,49 @@ def test_reads_every_towers_hp():
     assert hps(reader.run(battle_frame())) == BATTLE
 
 
-def test_levels_stay_unknown():
+def test_levels_stay_unknown_without_full_princess_towers():
+    # This frame's princess towers are all hit already. The enemy's left
+    # one shows 2030, a level 6 tower's full HP, but its right one doesn't.
     reader, _ = reader_and_clock()
     towers = reader.run(battle_frame())
     assert all(t.level == UNKNOWN_LEVEL for _, t in towers.items())
+    assert towers.enemy_king.hp == UNKNOWN_HP
+
+
+def full_at_start(reader):
+    """Show both enemy princess towers at 2030 (level 6's full HP) first,
+    then the battle frame."""
+    image = battle_frame(right_enemy_princess="tower_left_enemy_princess")
+    reader.run(image)
+    return reader.run(battle_frame())
+
+
+def test_full_princess_towers_give_their_sides_level():
+    reader, _ = reader_and_clock()
+    towers = full_at_start(reader)
+    for name in ("left_enemy_princess", "right_enemy_princess", "enemy_king"):
+        assert getattr(towers, name).level == 6
+    # The untouched king tower is at full HP for that level.
+    assert towers.enemy_king.hp == game_data.king_hitpoints(6)
+    # Hit since, the right one keeps its level.
+    assert towers.right_enemy_princess.hp == 1145
+    # The other side's towers didn't show a level's full HP.
+    assert towers.ally_king.level == UNKNOWN_LEVEL
+    assert towers.ally_king.hp == 3803
+
+
+def test_level_comes_only_from_first_readings():
+    reader, _ = reader_and_clock()
+    reader.run(battle_frame())  # 2030 and 1145 first
+    image = battle_frame(right_enemy_princess="tower_left_enemy_princess")
+    assert reader.run(image).enemy_king.level == UNKNOWN_LEVEL
+
+
+def test_reset_forgets_levels():
+    reader, _ = reader_and_clock()
+    full_at_start(reader)
+    reader.reset()
+    assert reader.run(battle_frame()).enemy_king.level == UNKNOWN_LEVEL
 
 
 def test_unknown_until_first_reading():
@@ -148,6 +188,17 @@ def test_king_tower_keeps_its_last_reading():
     reader, _ = reader_and_clock()
     reader.run(battle_frame())
     assert reader.run(frame()).ally_king.hp == 3803
+
+
+def test_king_tower_number_without_a_bar_is_ignored():
+    # Before it's hit, a king tower shows no bar, so a number there is its
+    # badge, a troop's badge or a damage number: not its HP.
+    reader, _ = reader_and_clock()
+    image = battle_frame()
+    left, top, right, bottom = TOWER_BOXES["ally_king"]
+    grey = image[top:bottom, left:right].mean(axis=-1, keepdims=True)
+    image[top:bottom, left:right] = grey.astype(np.uint8)
+    assert reader.run(image).ally_king.hp == UNKNOWN_HP
 
 
 def test_reset_forgets_readings():

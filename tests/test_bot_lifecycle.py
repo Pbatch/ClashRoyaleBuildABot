@@ -1,3 +1,4 @@
+import itertools
 import threading
 import time
 
@@ -155,3 +156,38 @@ def test_wrong_deck_size_fails_before_creating_the_emulator(monkeypatch):
         bot_module.Bot(ACTIONS[:7], make_config(), visualizer=FakeVisualizer())
 
     assert created == []
+
+
+def _step_times(bot, monkeypatch, seconds, slow_step=None):
+    """When each step starts, over seconds of running. slow_step: the index
+    of one step that takes 0.35 s."""
+    times = []
+
+    def step(state):
+        times.append(time.monotonic())
+        if len(times) - 1 == slow_step:
+            time.sleep(0.35)
+
+    monkeypatch.setattr(bot, "step", step)
+    thread = run_in_thread(bot)
+    time.sleep(seconds)
+    bot.stop()
+    thread.join(timeout=2)
+    return times
+
+
+def test_steps_are_capped_at_max_fps(monkeypatch):
+    times = _step_times(make_bot(FakeEmulator()), monkeypatch, 1.0)
+    # Frames are always ready, so only the cap holds the bot back.
+    assert len(times) <= bot_module.MAX_FPS + 1
+    gaps = [b - a for a, b in itertools.pairwise(times)]
+    assert min(gaps) >= bot_module.STEP_PERIOD * 0.9
+
+
+def test_a_slow_step_isnt_followed_by_catch_up_steps(monkeypatch):
+    times = _step_times(
+        make_bot(FakeEmulator()), monkeypatch, 1.0, slow_step=1
+    )
+    gaps = [b - a for a, b in itertools.pairwise(times)]
+    # Every step after the slow one still waits a whole tick.
+    assert min(gaps[2:]) >= bot_module.STEP_PERIOD * 0.9

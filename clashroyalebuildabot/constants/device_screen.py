@@ -12,6 +12,9 @@ from clashroyalebuildabot.utils.image import Box
 
 DISPLAY_WIDTH = 720
 DISPLAY_HEIGHT = 1280
+# The screen density the game is laid out at for the bot. The emulator sets
+# the device to this size and density while the bot runs.
+DISPLAY_DENSITY = 240
 
 # The arena's grid of tiles. Tile (0, 0) is the bottom-left tile, and its
 # bottom-left corner is TILE_INIT_X across and TILE_INIT_Y up from the

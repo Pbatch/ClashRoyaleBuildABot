@@ -34,7 +34,7 @@ Error while running a command on the device using ADB: if the error concerns a d
 
 
 ### Error E008
-Lost the video stream from the device, or no video arrived after connecting. Check that the device/emulator is still running and connected (`adb devices -l`), then restart the bot. If the screen is on and the error persists, please create an issue.
+Lost the connection to the screen server the bot runs on the device, the server couldn't start, or no picture arrived after connecting. Check that the device/emulator is still running and connected (`adb devices -l`), then restart the bot. If the screen is on and the error persists, please create an issue.
 
 
 ### Error E009
@@ -52,3 +52,6 @@ If you also have another `adb` installed, for example from your package manager 
 
 ### Error E012
 No longer used. Older versions of the bot raised it when the vision model server they started didn't come up; the bot no longer has one.
+
+### Error E013
+The device runs a version of Android older than 14. The bot reads the screen with a small server it runs on the device, which needs Android 14 or newer. Use a newer phone, or an Android Studio emulator with an Android 14 or newer system image (see [Device Setup](emulator-setup.md)).
