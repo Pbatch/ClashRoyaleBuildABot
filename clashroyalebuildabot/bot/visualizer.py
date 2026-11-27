@@ -14,37 +14,26 @@ from clashroyalebuildabot.constants.screenshot import (
     TIMER_BOX,
 )
 from clashroyalebuildabot.game.state import State
-from clashroyalebuildabot.game.towers import UNKNOWN_LEVEL
-from clashroyalebuildabot.game.units import UnitDetection, Units
+from clashroyalebuildabot.game.units import UnitDetection
 from clashroyalebuildabot.utils.image import Box, save
 
 type RGBA = tuple[int, int, int, int]
 type FrameCallback = Callable[[np.ndarray], None]
 
 WHITE: RGBA = (255, 255, 255, 255)
+# Frames are RGB.
+ALLY_RGBA: RGBA = (0, 200, 80, 200)
+ENEMY_RGBA: RGBA = (230, 40, 50, 200)
 FONT = cv2.FONT_HERSHEY_SIMPLEX
 FONT_SCALE = 0.35
 
 
-class Visualizer:
-    _COLOUR_AND_RGBA = (
-        ("navy", (0, 38, 63, 127)),
-        ("blue", (0, 120, 210, 127)),
-        ("aqua", (115, 221, 252, 127)),
-        ("teal", (15, 205, 202, 127)),
-        ("olive", (52, 153, 114, 127)),
-        ("green", (0, 204, 84, 127)),
-        ("lime", (1, 255, 127, 127)),
-        ("yellow", (255, 216, 70, 127)),
-        ("orange", (255, 125, 57, 127)),
-        ("red", (255, 47, 65, 127)),
-        ("maroon", (135, 13, 75, 127)),
-        ("fuchsia", (246, 0, 184, 127)),
-        ("purple", (179, 17, 193, 127)),
-        ("gray", (168, 168, 168, 127)),
-        ("silver", (220, 220, 220, 127)),
-    )
+def display_name(name: str) -> str:
+    """baby_dragon as Baby Dragon."""
+    return name.replace("_", " ").title()
 
+
+class Visualizer:
     def __init__(
         self,
         save_labels: bool,
@@ -63,8 +52,6 @@ class Visualizer:
         self.labels_dir = labels_dir
         self.screenshots_dir = screenshots_dir
         self.on_frame = on_frame
-
-        self.unit_names = [unit.name for unit in Units.all()]
 
         os.makedirs(self.labels_dir, exist_ok=True)
         os.makedirs(self.screenshots_dir, exist_ok=True)
@@ -159,16 +146,37 @@ class Visualizer:
             cv2.LINE_AA,
         )
 
-    def _draw_unit_bboxes(
-        self, d: np.ndarray, dets: list[UnitDetection], prefix: str
+    def _draw_unit_labels(
+        self, d: np.ndarray, dets: list[UnitDetection], rgba: RGBA
     ) -> None:
+        """Each unit's name, on a tag of its side's colour, centred just
+        below its tile."""
         for det in dets:
-            colour_idx = self.unit_names.index(det.unit.name) % len(
-                self._COLOUR_AND_RGBA
+            left, _, right, bottom = tile_box(
+                det.position.tile_x, det.position.tile_y
             )
-            rgba = self._COLOUR_AND_RGBA[colour_idx][1]
-            box = tile_box(det.position.tile_x, det.position.tile_y)
-            self._draw_text(d, box, f"{prefix}_{det.unit.name}", rgba)
+            name = display_name(det.unit.name)
+            (text_width, text_height), baseline = cv2.getTextSize(
+                name, FONT, FONT_SCALE, 1
+            )
+            x = round((left + right - text_width) / 2)
+            top = round(bottom)
+            self._rectangle(
+                d,
+                (x, top, x + text_width, top + text_height + baseline),
+                rgba,
+                filled=True,
+            )
+            cv2.putText(
+                d,
+                name,
+                (x, top + text_height),
+                FONT,
+                FONT_SCALE,
+                WHITE[:3],
+                1,
+                cv2.LINE_AA,
+            )
 
     @staticmethod
     def _number_labels(state: State) -> Iterator[tuple[Box, str]]:
@@ -176,8 +184,7 @@ class Visualizer:
         yield ELIXIR_BOX, f"{state.elixir}"
         boxes = {**PRINCESS_TOWER_BOXES, **KING_TOWER_BOXES}
         for name, tower in state.towers.items():
-            level = f" L{tower.level}" if tower.level != UNKNOWN_LEVEL else ""
-            yield boxes[name], f"{tower.hp:g}{level}"
+            yield boxes[name], f"{tower.hp:g}"
         timer = state.timer
         overtime = " OT" if timer.overtime else ""
         yield TIMER_BOX, f"{timer.time_left:g}s{overtime}"
@@ -190,13 +197,15 @@ class Visualizer:
             self._rectangle(d, bbox)
             self._draw_text(d, bbox, text)
 
-        self._draw_unit_bboxes(d, state.allies, "ally")
-        self._draw_unit_bboxes(d, state.enemies, "enemy")
+        self._draw_unit_labels(d, state.allies, ALLY_RGBA)
+        self._draw_unit_labels(d, state.enemies, ENEMY_RGBA)
 
         for card, position in zip(state.cards, CARD_BOXES, strict=False):
             self._rectangle(d, position)
             self._draw_text(
-                d, position, "empty" if card is None else card.name
+                d,
+                position,
+                "Empty" if card is None else display_name(card.name),
             )
 
         return d
