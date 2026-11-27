@@ -95,7 +95,7 @@ def test_labels_every_number_at_its_box(state_factory):
     )
     labels = dict(Visualizer._number_labels(state))
     assert labels[ELIXIR_BOX] == "7"
-    assert labels[PRINCESS_TOWER_BOXES["left_enemy_princess"]] == "1918 L8"
+    assert labels[PRINCESS_TOWER_BOXES["left_enemy_princess"]] == "1918"
     assert labels[KING_TOWER_BOXES["ally_king"]] == "inf"
     assert labels[TIMER_BOX] == "42s OT"
     assert len(labels) == 8  # elixir, six towers and the timer

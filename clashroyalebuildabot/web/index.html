@@ -26,9 +26,6 @@
     --elixir: #c45bdb;
     --ally: #57a6ff;
     --enemy: #f85149;
-    --grass: #18221a;
-    --river: #1f3550;
-    --bridge: #5a4a36;
     --radius: 8px;
     --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   }
@@ -49,9 +46,6 @@
       --elixir: #8e3aa8;
       --ally: #0969da;
       --enemy: #cf222e;
-      --grass: #eef3e8;
-      --river: #cfe3f7;
-      --bridge: #c9b08a;
     }
   }
   * { box-sizing: border-box; }
@@ -133,30 +127,11 @@
   .card .body { padding: 14px; }
   #view { grid-area: view; align-self: start; }
   #logs { grid-area: logs; display: flex; flex-direction: column; }
-  /* The log fills the card, which the arena beside it sets the height of. */
+  /* The log fills the card, which the screenshot beside it sets the height of. */
   .log-wrap { position: relative; flex: 1; min-height: 300px; }
   #settings-card { grid-area: settings; }
 
-  /* Arena: the 18 x 32 tile grid, drawn from each frame's state */
-  .arena { position: relative; padding: 10px; }
-  .arena svg { display: block; width: 100%; height: auto; max-width: 336px; margin: 0 auto; }
-  .arena svg text { font-family: var(--mono); fill: var(--muted); font-size: 7px; }
-  .arena svg .lbl { fill: var(--text); font-size: 6.5px; font-weight: 500; }
-  .arena svg .hp { fill: var(--text); font-size: 8px; font-weight: 600; }
-  .arena svg .card-name { fill: var(--text); font-size: 6.5px; font-weight: 600; }
-  .arena svg .card-cost { fill: var(--elixir); font-size: 6.5px; }
-  .arena svg .bridge { fill: var(--bridge); stroke: var(--muted); stroke-width: 0.5; }
-  .arena svg .elixir-num { fill: var(--elixir); font-size: 10px; font-weight: 600; }
-  .arena svg .time { fill: var(--text); font-size: 10px; font-weight: 600; }
-  .arena svg .time.overtime { fill: var(--warn); }
-  .arena svg .unit-lbl { fill: var(--text); font-size: 6px; paint-order: stroke; stroke: var(--bg); stroke-width: 2px; }
-  .arena .empty {
-    position: absolute; inset: 10px; display: grid; place-items: center;
-    color: var(--muted); text-align: center; padding: 24px;
-    background: color-mix(in srgb, var(--panel) 70%, transparent);
-  }
-  .arena.live .empty { display: none; }
-  /* Their deck, as far as the bot has seen it, at their end of the arena */
+  /* Their deck, as far as the bot has seen it, above the screenshot */
   .opp-deck { padding: 10px 10px 0; }
   .opp-deck[hidden] { display: none; }
   .opp-deck .head { display: flex; align-items: baseline; gap: 8px; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
@@ -171,6 +146,20 @@
     overflow-wrap: anywhere;
   }
   .opp-deck li.unknown { border: 1px dashed var(--border); color: var(--muted); font-weight: 400; }
+
+  .shot { position: relative; padding: 10px; }
+  /* The bot's screenshots are 368 x 652; the box keeps that shape before the first one arrives. */
+  .shot img {
+    display: block; width: 100%; max-width: 368px; margin: 0 auto;
+    aspect-ratio: 368 / 652; object-fit: contain;
+    background: var(--panel-2); border-radius: 4px;
+  }
+  .shot img:not([src]) { visibility: hidden; }
+  .shot .empty {
+    position: absolute; inset: 10px; display: grid; place-content: center; gap: 10px;
+    color: var(--muted); text-align: center; padding: 24px; justify-items: center;
+  }
+  .shot.live .empty { display: none; }
 
 
   /* Settings */
@@ -237,36 +226,15 @@
 <div id="banner">Lost connection to the bot. Retrying…</div>
 
 <main>
-  <section class="card" id="view" aria-label="Arena">
+  <section class="card" id="view" aria-label="What the bot sees">
     <div class="opp-deck" id="opp-deck" hidden>
       <div class="head"><span>Their deck</span><span class="right" id="opp-deck-count"></span></div>
       <ol id="opp-deck-cards" aria-label="The opponent's cards seen this battle"></ol>
     </div>
-    <div class="arena" id="arena">
-      <svg viewBox="0 0 220 452" role="img" aria-label="The arena as an 18 by 32 tile grid, with the towers and the units the bot sees, and the hand, elixir and time left below it">
-        <defs>
-          <pattern id="grid" width="12" height="12" patternUnits="userSpaceOnUse">
-            <path d="M12 0H0V12" fill="none" stroke="var(--border)" stroke-width="0.5"/>
-          </pattern>
-          <pattern id="hatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-            <rect width="4" height="4" fill="var(--panel)"/>
-            <line x1="0" y1="0" x2="0" y2="4" stroke="var(--muted)" stroke-width="1.2"/>
-          </pattern>
-        </defs>
-        <g transform="translate(2,2)">
-          <rect width="216" height="384" fill="var(--grass)"/>
-          <rect width="216" height="384" fill="url(#grid)"/>
-          <rect y="180" width="216" height="24" fill="var(--river)"/>
-          <!-- Bridges: x 3 and 14, rows 15-16, as the API's grid has them -->
-          <rect class="bridge" x="36" y="180" width="12" height="24"/>
-          <rect class="bridge" x="168" y="180" width="12" height="24"/>
-          <g id="arena-towers"></g>
-          <g id="arena-units"></g>
-          <g id="arena-hand" transform="translate(0,392)"></g>
-          <g id="arena-elixir" transform="translate(0,438)"></g>
-        </g>
-      </svg>
-      <div class="empty" id="arena-msg">Start the bot to see what it sees.</div>
+    <div class="shot" id="shot">
+      <img id="shot-img" alt="The latest screenshot, annotated with the units, towers, cards, elixir and time the bot read">
+      <div class="empty"><span id="shot-msg">Start the bot to see what it sees.</span>
+        <button class="btn small" id="shot-enable" hidden>Turn on annotated frames</button></div>
     </div>
   </section>
 
@@ -367,21 +335,31 @@ async function api(method, path, body) {
   return data;
 }
 
-/** A WebSocket that reconnects, with backoff, until the page closes. */
+/** A WebSocket that reconnects, with backoff, until the page closes or the
+ *  returned function is called. */
 function stream(path, { binary = false, onMessage, onOpen, onClose }) {
   let delay = 500;
+  let ws = null;
+  let retry = null;
+  let stopped = false;
   const connect = () => {
-    const ws = new WebSocket(WS_BASE + path);
+    ws = new WebSocket(WS_BASE + path);
     if (binary) ws.binaryType = "blob";
     ws.onopen = () => { delay = 500; onOpen?.(); };
     ws.onmessage = (event) => onMessage(binary ? event.data : JSON.parse(event.data));
     ws.onclose = () => {
+      if (stopped) return;
       onClose?.();
-      setTimeout(connect, delay);
+      retry = setTimeout(connect, delay);
       delay = Math.min(delay * 2, 5000);
     };
   };
   connect();
+  return () => {
+    stopped = true;
+    clearTimeout(retry);
+    ws?.close();
+  };
 }
 
 // ---- Status and controls ------------------------------------------------
@@ -406,8 +384,9 @@ function showStatus(next) {
   $("banner").classList.toggle("show", next === "offline");
   showSettingsNote();
   if (!active) {
-    drawArena(null);
+    drawOpponentDeck(null);
   }
+  syncFrames();
 }
 
 async function control(action) {
@@ -458,6 +437,7 @@ function showConfig(next) {
     if (el.type === "checkbox") el.checked = Boolean(value);
     else el.value = value;
   }
+  showShotMessage();
 }
 
 function showSettingsNote() {
@@ -500,86 +480,7 @@ $("save").onclick = async () => {
   }
 };
 
-// ---- Live view ------------------------------------------------------------
-
-const SVG_NS = "http://www.w3.org/2000/svg";
-const TILE = 12;
-const GRID_H = 32;
-// Each tower's tiles, [x0, y0, x1, y1] inclusive, tile (0, 0) bottom left.
-const TOWER_TILES = {
-  left_enemy_princess: [2, 24, 4, 26],
-  right_enemy_princess: [13, 24, 15, 26],
-  enemy_king: [7, 27, 10, 30],
-  left_ally_princess: [2, 5, 4, 7],
-  right_ally_princess: [13, 5, 15, 7],
-  ally_king: [7, 1, 10, 4],
-};
-
-function svg(tag, attrs, text) {
-  const node = document.createElementNS(SVG_NS, tag);
-  for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
-  if (text !== undefined) node.textContent = text;
-  return node;
-}
-
-/** Top-left corner, in SVG units, of the tile at (x, y). */
-const tileX = (x) => x * TILE;
-const tileY = (y) => (GRID_H - 1 - y) * TILE;
-
-function drawArena(state) {
-  const battle = state?.battle;
-  $("arena").classList.toggle("live", !!battle);
-  drawOpponentDeck(battle);
-  if (!battle) {
-    $("arena-msg").textContent = !state
-      ? (status === "running" || status === "paused" ? "Waiting for the first frame…" : "Start the bot to see what it sees.")
-      : SCREENS[state.screen] ?? state.screen;
-    return;
-  }
-
-  $("arena-towers").replaceChildren(...Object.entries(TOWER_TILES).map(([name, [x0, y0, x1, y1]]) => {
-    const tower = battle.towers[name];
-    const side = name.includes("enemy") ? "enemy" : "ally";
-    const x = tileX(x0), y = tileY(y1), w = (x1 - x0 + 1) * TILE, h = (y1 - y0 + 1) * TILE;
-    const g = svg("g", {});
-    g.append(svg("title", {}, `${pretty(name)} tower${tower?.destroyed ? ", destroyed" : ""}`));
-    g.append(svg("rect", {
-      x, y, width: w, height: h,
-      fill: tower?.destroyed ? "url(#hatch)" : "var(--panel)",
-      stroke: tower?.destroyed ? "var(--muted)" : `var(--${side})`, "stroke-width": 1.5,
-    }));
-    if (tower && !tower.destroyed) {
-      g.append(svg("text", { class: "hp", x: x + w / 2, y: y + h / 2 + 3, "text-anchor": "middle" },
-                   tower.hp != null ? tower.hp.toLocaleString()
-                   // A king tower shows no HP until it's first hit.
-                   : name.endsWith("king") ? "full" : "–"));
-    }
-    return g;
-  }));
-
-  const units = [
-    ...battle.allies.map((d) => [d, "ally"]),
-    ...battle.enemies.map((d) => [d, "enemy"]),
-  ];
-  // One label per clump of the same unit, so swarms stay readable. Labels
-  // go on top, so no tile covers one.
-  const labelled = [];
-  const tiles = units.map(([d, side]) => {
-    const x = tileX(d.tile_x), y = tileY(d.tile_y);
-    const near = labelled.some(([o, s]) => s === side && o.unit === d.unit
-      && Math.abs(o.tile_x - d.tile_x) <= 2 && Math.abs(o.tile_y - d.tile_y) <= 1);
-    if (!near) labelled.push([d, side]);
-    const rect = svg("rect", { x, y, width: TILE, height: TILE, rx: 2, fill: `var(--${side})`,
-                               "fill-opacity": 0.4 + 0.6 * d.conf });
-    rect.append(svg("title", {}, `${side} ${pretty(d.unit)} (${d.tile_x}, ${d.tile_y}) · ${Math.round(d.conf * 100)}%`));
-    return rect;
-  });
-  const labels = labelled.map(([d]) => svg("text",
-    { class: "unit-lbl", x: tileX(d.tile_x) + TILE + 1, y: tileY(d.tile_y) + 8 }, pretty(d.unit)));
-  $("arena-units").replaceChildren(...tiles, ...labels);
-  drawHand(battle, state.pending_play?.hand_index);
-  drawElixirAndTime(battle.elixir, battle.timer);
-}
+// ---- Opponent's deck -----------------------------------------------------
 
 const DECK_SIZE = 8;
 const SPELLS_NOTE = "Worked out from the units they put down, so spells never show up.";
@@ -606,60 +507,6 @@ function drawOpponentDeck(battle) {
   count.title = SPELLS_NOTE;
 }
 
-/** Under the hand: the elixir count, a 10-segment bar, and the time left. */
-function drawElixirAndTime(elixir, timer) {
-  const left = 18, right = 46, gap = 2, w = (216 - left - right - 9 * gap) / 10;
-  const time = svg("text", { class: `time${timer.overtime ? " overtime" : ""}`, x: 216, y: 9, "text-anchor": "end" },
-                   `${timer.overtime ? "OT " : ""}${formatTime(timer.time_left)}`);
-  time.append(svg("title", {}, timer.overtime ? "Overtime left" : "Time left"));
-  $("arena-elixir").replaceChildren(
-    time,
-    svg("text", { class: "elixir-num", x: 0, y: 9 }, elixir),
-    ...Array.from({ length: 10 }, (_, i) => svg("rect", {
-      x: left + i * (w + gap), y: 2, width: w, height: 7, rx: 1.5,
-      fill: i < elixir ? "var(--elixir)" : "var(--border)",
-    })),
-  );
-}
-
-const CARD_W = 42, NEXT_W = 32, CARD_H = 40, CARD_GAP = 4;
-
-/** Short enough to fit a card slot. */
-function clip(text, max) {
-  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
-}
-
-/** The four cards in hand, then the next card, under the grid. */
-function drawHand(battle, pending) {
-  const slot = (x, w, name, sub, { dim = false, highlight = false, dashed = false } = {}) => {
-    const g = svg("g", { opacity: dim ? 0.45 : 1 });
-    g.append(svg("rect", {
-      x, y: 0, width: w, height: CARD_H, rx: 3, fill: "var(--panel-2)",
-      stroke: highlight ? "var(--warn)" : "var(--border)", "stroke-width": highlight ? 1.5 : 1,
-      ...(dashed ? { "stroke-dasharray": "2 2" } : {}),
-    }));
-    // Long names wrap onto a second line at the first space.
-    const max = Math.floor((w - 6) / 3.9);
-    const split = name.length > max ? name.indexOf(" ") : -1;
-    const lines = split > 0 ? [name.slice(0, split), name.slice(split + 1)] : [name];
-    lines.forEach((line, i) => g.append(
-      svg("text", { class: "card-name", x: x + 3, y: 11 + i * 8 }, clip(line, max))));
-    g.append(svg("text", { class: "card-cost", x: x + 3, y: CARD_H - 5 }, sub),
-             svg("title", {}, name));
-    return g;
-  };
-  const slots = battle.hand.map((card, i) => slot(
-    i * (CARD_W + CARD_GAP), CARD_W,
-    card.card ? pretty(card.card) : "?",
-    card.cost != null ? `${card.cost} elixir` : "",
-    { dim: !card.playable, highlight: card.hand_index === pending },
-  ));
-  slots.push(slot(4 * (CARD_W + CARD_GAP), NEXT_W,
-                  battle.next_card ? pretty(battle.next_card) : "?", "next",
-                  { dim: true, dashed: true }));
-  $("arena-hand").replaceChildren(...slots);
-}
-
 // ---- Battle ---------------------------------------------------------------
 
 const SCREENS = {
@@ -675,12 +522,6 @@ function el(tag, className, text) {
   return node;
 }
 
-function formatTime(seconds) {
-  if (seconds == null) return "–";
-  const s = Math.max(0, Math.round(seconds));
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-}
-
 // States come every frame; draw at most once per animation frame.
 let latestState = null;
 let drawQueued = false;
@@ -691,10 +532,81 @@ stream("/states", {
     drawQueued = true;
     requestAnimationFrame(() => {
       drawQueued = false;
-      if (status === "running" || status === "paused") drawArena(latestState);
+      if (status !== "running" && status !== "paused") return;
+      drawOpponentDeck(latestState?.battle);
+      if (!$("shot").classList.contains("live")) showShotMessage();
     });
   },
 });
+
+// ---- Screenshot ------------------------------------------------------
+// The emulator's screen with the bot's detections drawn on it, from
+// /api/frames. The bot only encodes frames while someone subscribes, so the
+// socket is open only while the bot is running.
+
+let stopFrames = null;
+let shotUrl = null;
+let lastShotAt = 0;
+
+function clearShot() {
+  $("shot").classList.remove("live");
+  $("shot-img").removeAttribute("src");
+  if (shotUrl) URL.revokeObjectURL(shotUrl);
+  shotUrl = null;
+}
+
+/** Open the frame socket while it's wanted, close it otherwise. */
+function syncFrames() {
+  const want = status === "running" || status === "paused";
+  if (want && !stopFrames) {
+    stopFrames = stream("/frames", {
+      binary: true,
+      onMessage(blob) {
+        const url = URL.createObjectURL(blob);
+        const img = $("shot-img");
+        img.onload = () => { if (shotUrl && shotUrl !== url) URL.revokeObjectURL(shotUrl); shotUrl = url; };
+        img.src = url;
+        lastShotAt = Date.now();
+        $("shot").classList.add("live");
+      },
+    });
+  } else if (!want && stopFrames) {
+    stopFrames();
+    stopFrames = null;
+  }
+  if (!want) clearShot();
+  showShotMessage();
+}
+
+function showShotMessage() {
+  const active = status === "running" || status === "paused";
+  const annotating = Boolean(config?.visuals?.show_images);
+  let message;
+  if (!active) message = "Start the bot to see what it sees.";
+  else if (!annotating) message = "Annotated frames are off.";
+  else if (latestState && !latestState.battle) message = SCREENS[latestState.screen] ?? latestState.screen;
+  else message = "Waiting for the first frame… Screenshots show during battles. If none come, restart the bot: it only reads this setting when it starts.";
+  $("shot-msg").textContent = message;
+  $("shot-enable").hidden = !active || annotating;
+}
+
+$("shot-enable").onclick = async () => {
+  try {
+    showConfig(await api("PATCH", "/config", { visuals: { show_images: true } }));
+    toast("Annotated frames on. Stop and start the bot to see them.");
+  } catch (e) {
+    toast(e.message, true);
+  }
+};
+
+// Out of battle the last screenshot goes stale; show why instead.
+setInterval(() => {
+  if (!$("shot").classList.contains("live")) return;
+  if (Date.now() - lastShotAt > 3000 && latestState && !latestState.battle) {
+    clearShot();
+    showShotMessage();
+  }
+}, 1000);
 
 // ---- Logs -----------------------------------------------------------------
 
